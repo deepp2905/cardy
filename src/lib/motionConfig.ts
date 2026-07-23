@@ -71,6 +71,12 @@ export const drift = {
 
 export const FOLD_STAGGER = 0.25;
 
+// Carousel proximity scaling: a slide is full size dead-centre and shrinks
+// toward CAROUSEL_SCALE_MIN one slide-width out, mapped continuously so the
+// growth tracks the finger rather than snapping on the active change.
+export const CAROUSEL_SCALE_MIN = 0.86;
+export const CAROUSEL_SCALE_MAX = 1;
+
 // Entrance choreography: semantic chunks stagger in, never one big block.
 export const ENTER_STAGGER = 0.08;
 

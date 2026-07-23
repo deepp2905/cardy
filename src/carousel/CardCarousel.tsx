@@ -1,14 +1,20 @@
-import { useEffect, useRef } from "react";
-import { motion } from "motion/react";
+import { useCallback, useEffect, useRef, type ReactNode } from "react";
+import { motion, useMotionValue, type MotionValue } from "motion/react";
 import { Card } from "../card/Card";
 import type { CardConfig } from "../card/cardConfig";
 import { PALETTE } from "../card/cardConfig";
-import { card as cardSpring } from "../lib/motionConfig";
+import {
+  CAROUSEL_SCALE_MAX,
+  CAROUSEL_SCALE_MIN,
+} from "../lib/motionConfig";
+import { mapRange } from "../lib/mapRange";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
 import "./carousel.css";
 
-// Scroll-snap strip; the slide nearest the container center is active.
-// Neighbors recede (scale/blur/opacity) — opacity-only under reduced motion.
+// Scroll-snap strip; the slide nearest the container centre is active.
+// Every card is fully opaque and unblurred — only size conveys focus, and it
+// does so continuously: scale is mapped from each slide's distance to the
+// centre, so cards grow as they approach rather than popping at the handoff.
 type CardCarouselProps = {
   configs: Record<string, CardConfig>;
   ids: string[];
@@ -27,6 +33,30 @@ export function CardCarousel({
   const stripRef = useRef<HTMLDivElement>(null);
   const reduce = usePrefersReducedMotion();
 
+  // One motion value per slide, written straight from the scroll handler.
+  // Driving scale through React state would re-render all 8 cards (each with
+  // a shader canvas and an SVG) on every scroll frame. Slides register their
+  // own value here on mount (hooks can't run in a loop).
+  const scales = useRef<Record<string, MotionValue<number>>>({});
+  const register = useCallback((id: string, value: MotionValue<number>) => {
+    scales.current[id] = value;
+  }, []);
+
+  const applyScales = useCallback(() => {
+    const strip = stripRef.current;
+    if (!strip || reduce) return;
+    const centre = strip.scrollLeft + strip.clientWidth / 2;
+    for (const el of strip.querySelectorAll<HTMLElement>("[data-slide]")) {
+      const value = scales.current[el.dataset.slide!];
+      if (!value) continue;
+      const dist = Math.abs(el.offsetLeft + el.clientWidth / 2 - centre);
+      // Full size dead-centre, easing down to the minimum one slide out.
+      value.set(
+        mapRange(dist, 0, el.clientWidth, CAROUSEL_SCALE_MAX, CAROUSEL_SCALE_MIN),
+      );
+    }
+  }, [reduce]);
+
   const centerSlide = (id: string, smooth = true) => {
     const strip = stripRef.current;
     const slide = strip?.querySelector<HTMLElement>(`[data-slide="${id}"]`);
@@ -36,15 +66,27 @@ export function CardCarousel({
     strip.scrollTo({ left, behavior: smooth ? "smooth" : "instant" });
   };
 
-  // Start centered on the initial active card.
+  // Start centered on the initial active card, then seed the scales so the
+  // first paint already shows the centre card at full size.
   useEffect(() => {
     centerSlide(activeId, false);
+    applyScales();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Re-measure on resize: slide widths and the centre both move.
+  useEffect(() => {
+    const strip = stripRef.current;
+    if (!strip) return;
+    const observer = new ResizeObserver(applyScales);
+    observer.observe(strip);
+    return () => observer.disconnect();
+  }, [applyScales]);
 
   const handleScroll = () => {
     const strip = stripRef.current;
     if (!strip) return;
+    applyScales();
     const center = strip.scrollLeft + strip.clientWidth / 2;
     let best = activeId;
     let bestDist = Infinity;
@@ -84,34 +126,65 @@ export function CardCarousel({
       {ids.map((id, i) => {
         const isActive = id === activeId;
         return (
-          <div
+          <Slide
             key={id}
-            data-slide={id}
-            className="carousel-slide"
-            role="radio"
-            aria-checked={isActive}
-            aria-label={PALETTE[i]?.name ?? id}
-            onClick={() => {
+            id={id}
+            label={PALETTE[i]?.name ?? id}
+            isActive={isActive}
+            reduce={reduce}
+            register={register}
+            onSelect={() => {
               if (!isActive) centerSlide(id);
             }}
           >
-            <motion.div
-              className="carousel-card"
-              animate={{
-                scale: reduce ? 1 : isActive ? 1 : 0.86,
-                opacity: isActive ? 1 : 0.55,
-                filter:
-                  reduce || isActive
-                    ? "blur(0px) saturate(1)"
-                    : "blur(1.5px) saturate(0.85)",
-              }}
-              transition={cardSpring}
-            >
-              <Card config={configs[id]} name={cardName} />
-            </motion.div>
-          </div>
+            <Card config={configs[id]} name={cardName} />
+          </Slide>
         );
       })}
+    </div>
+  );
+}
+
+// One slide. Owns its own scale motion value and hands it to the strip, which
+// writes to it directly during scroll — no re-render per frame.
+function Slide({
+  id,
+  label,
+  isActive,
+  reduce,
+  register,
+  onSelect,
+  children,
+}: {
+  id: string;
+  label: string;
+  isActive: boolean;
+  reduce: boolean;
+  register: (id: string, value: MotionValue<number>) => void;
+  onSelect: () => void;
+  children: ReactNode;
+}) {
+  const scale = useMotionValue(CAROUSEL_SCALE_MIN);
+  useEffect(() => {
+    register(id, scale);
+  }, [id, scale, register]);
+
+  return (
+    <div
+      data-slide={id}
+      className="carousel-slide"
+      role="radio"
+      aria-checked={isActive}
+      aria-label={label}
+      onClick={onSelect}
+    >
+      {/* Scale only — full opacity, no blur, no desaturation. */}
+      <motion.div
+        className="carousel-card"
+        style={reduce ? undefined : { scale }}
+      >
+        {children}
+      </motion.div>
     </div>
   );
 }
