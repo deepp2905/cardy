@@ -1,0 +1,122 @@
+/* Card sizing: parent controls width; internals scale in cqw units.
+   ISO/IEC 7810 ID-1: 85.60 × 53.98 mm, corner radius 3.18 mm.
+   3.18/85.6 = 3.715cqw. */
+
+.card-frame {
+  width: 100%;
+  container-type: inline-size;
+}
+
+.card-surface {
+  position: relative;
+  aspect-ratio: 85.6 / 53.98;
+  border-radius: 3.715cqw;
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.25),
+    0 12px 32px -8px rgba(0, 0, 0, 0.45);
+}
+
+.card-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.card-shader-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* content */
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 5.6cqw 6.2cqw;
+  color: var(--ink);
+}
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.card-wordmark {
+  font-size: 6.4cqw;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  user-select: none;
+}
+
+.card-contactless {
+  width: 6cqw;
+  height: 6cqw;
+  opacity: 0.9;
+}
+
+.card-chip {
+  width: 12.4cqw;
+  height: auto;
+  filter: drop-shadow(0 0.3cqw 0.5cqw rgba(0, 0, 0, 0.2));
+}
+
+.card-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.card-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6cqw;
+  min-width: 0;
+}
+
+.card-name {
+  font-size: 4.4cqw;
+  font-weight: 550;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-shadow: 0 0.25cqw 0.4cqw rgba(0, 0, 0, 0.28);
+  user-select: none;
+}
+
+.card-note {
+  font-size: 3.1cqw;
+  font-weight: 450;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  color: var(--ink-muted);
+  text-shadow: 0 0.2cqw 0.3cqw rgba(0, 0, 0, 0.22);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+
+.card-network {
+  width: 11cqw;
+  height: auto;
+  flex-shrink: 0;
+}
+
+/* Static edge light — the dynamic specular highlight arrives with tilt
+   (Phase D) and replaces the top gradient here. */
+.card-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(255, 255, 255, 0.045) 28%,
+    rgba(255, 255, 255, 0) 55%
+  );
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}

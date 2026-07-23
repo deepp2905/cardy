@@ -1,30 +1,39 @@
 import { useState } from "react";
 import { DialRoot, useDialKit } from "dialkit";
 import "dialkit/styles.css";
-import { motion } from "motion/react";
-import { card as cardSpring } from "./lib/motionConfig";
+import { Card } from "./card/Card";
+import { PALETTE, seedConfigs } from "./card/cardConfig";
 
 type Step = "welcome" | "customize" | "confirm";
 
-// Phase 0 shell: step machine skeleton + dialkit smoke test.
-// The placeholder swatch below gets replaced by Card.tsx in Phase A.
-export default function App() {
-  const [step] = useState<Step>("welcome");
+const configs = seedConfigs();
+const ids = Object.keys(configs);
 
-  const p = useDialKit("Phase 0 smoke test", {
-    hue: [250, 0, 360, 1],
-    scale: [1, 0.5, 1.5, 0.01],
+// Phase A harness: the real Card + dialkit panel for tuning the shader
+// look per palette entry. Steps arrive in Phases C–G.
+export default function App() {
+  const [step] = useState<Step>("customize");
+
+  const p = useDialKit("Card tuning", {
+    palette: [0, 0, PALETTE.length - 1, 1],
+    note: { type: "text", default: "FOR COFFEE ONLY" },
+    shader: {
+      speed: [0.4, 0, 2, 0.05],
+      softness: [0.75, 0, 1, 0.01],
+      intensity: [0.18, 0, 1, 0.01],
+      noise: [0.3, 0, 1, 0.01],
+    },
   });
+
+  const config = {
+    ...configs[ids[Math.round(p.palette)]],
+    note: p.note.toUpperCase().slice(0, 24),
+  };
 
   return (
     <div className="column">
-      <motion.div
-        className="placeholder-card"
-        animate={{ scale: p.scale }}
-        transition={cardSpring}
-        style={{ background: `oklch(0.62 0.19 ${p.hue})` }}
-      />
-      <p className="shell-note">cardy — phase 0 shell ({step})</p>
+      <Card config={config} shaderParams={p.shader} />
+      <p className="shell-note">cardy — phase A ({step})</p>
       <DialRoot />
     </div>
   );
