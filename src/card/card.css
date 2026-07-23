@@ -90,8 +90,8 @@
 .card-name {
   font-family: var(--font-mono);
   font-size: 4.4cqw;
-  font-weight: 500;
-  letter-spacing: 0.08em;
+  font-weight: 590;
+  letter-spacing: 0.05em;
   line-height: 1;
   text-shadow: 0 0.25cqw 0.4cqw rgba(0, 0, 0, 0.28);
   user-select: none;

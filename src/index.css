@@ -43,10 +43,10 @@
   --font-mono: "Spline Sans Mono Variable", ui-monospace, monospace;
 
   /* type scale — every size in the app comes from these steps */
-  --text-xs: 11px; /* uppercase labels, counters */
-  --text-sm: 13px; /* captions, secondary UI */
-  --text-base: 15px; /* buttons, controls */
-  --text-md: 16px; /* body copy, inputs (iOS zoom floor) */
+  --text-xs: 12px; /* uppercase labels, counters */
+  --text-sm: 14px; /* captions, secondary UI */
+  --text-base: 16px; /* buttons, controls */
+  --text-md: 18px; /* body copy, inputs (iOS zoom floor) */
   --text-display: 34px; /* step headlines */
 
   color-scheme: light;

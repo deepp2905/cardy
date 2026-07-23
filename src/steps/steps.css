@@ -53,15 +53,16 @@
 
 .welcome-copy h1 {
   font-size: var(--text-display);
-  font-weight: 620;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   line-height: 1.1;
   color: var(--color-12);
 }
 
 .welcome-copy p {
   font-size: var(--text-md);
-  line-height: 1.55;
+  font-weight: 450;
+  line-height: 1.6;
   color: var(--color-11);
   max-width: 30ch;
   text-wrap: balance;
