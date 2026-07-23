@@ -5,6 +5,16 @@
   margin: 0;
 }
 
+/* Self-hosted variable font (Fontshare, free license). The card's
+   engraved name/note uses Spline Sans Mono (fontsource import in main). */
+@font-face {
+  font-family: "General Sans";
+  src: url("/fonts/GeneralSans-Variable.woff2") format("woff2");
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Neutral primitive scale — the only non-neutral color in the app
    lives on the cards themselves. Steps run background (1) -> text (12);
    the dark block remaps the same semantic steps, so components never
@@ -25,9 +35,21 @@
 
   --knob-highlight: rgba(255, 255, 255, 0.9);
 
+  --font-sans: "General Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "Spline Sans Mono Variable", ui-monospace, monospace;
+
+  /* type scale — every size in the app comes from these steps */
+  --text-xs: 11px; /* uppercase labels, counters */
+  --text-sm: 13px; /* captions, secondary UI */
+  --text-base: 15px; /* buttons, controls */
+  --text-md: 16px; /* body copy, inputs (iOS zoom floor) */
+  --text-display: 34px; /* step headlines */
+
   color-scheme: light;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
+  font-synthesis: none;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 :root[data-theme="dark"] {

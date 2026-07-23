@@ -22,7 +22,7 @@
 }
 
 .confirm-placeholder p {
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: var(--color-11);
 }
 
@@ -46,14 +46,15 @@
 }
 
 .welcome-copy h1 {
-  font-size: 34px;
+  font-size: var(--text-display);
   font-weight: 620;
   letter-spacing: -0.02em;
+  line-height: 1.1;
   color: var(--color-12);
 }
 
 .welcome-copy p {
-  font-size: 16px;
+  font-size: var(--text-md);
   line-height: 1.55;
   color: var(--color-11);
   max-width: 30ch;

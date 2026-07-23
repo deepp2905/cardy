@@ -90,18 +90,20 @@
 }
 
 .card-name {
+  font-family: var(--font-mono);
   font-size: 4.4cqw;
-  font-weight: 550;
-  letter-spacing: 0.14em;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   line-height: 1;
   text-shadow: 0 0.25cqw 0.4cqw rgba(0, 0, 0, 0.28);
   user-select: none;
 }
 
 .card-note {
+  font-family: var(--font-mono);
   font-size: 3.1cqw;
-  font-weight: 450;
-  letter-spacing: 0.18em;
+  font-weight: 400;
+  letter-spacing: 0.12em;
   line-height: 1;
   color: var(--ink-muted);
   text-shadow: 0 0.2cqw 0.3cqw rgba(0, 0, 0, 0.22);

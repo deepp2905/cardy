@@ -64,7 +64,7 @@
 }
 
 .dial-label {
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 550;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -95,7 +95,7 @@
 }
 
 .note-label {
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 550;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -109,7 +109,7 @@
 .note-input {
   width: 100%;
   font: inherit;
-  font-size: 15px;
+  font-size: var(--text-md);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-12);
@@ -141,7 +141,7 @@
   right: 14px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-variant-numeric: tabular-nums;
   color: var(--color-10);
   pointer-events: none;

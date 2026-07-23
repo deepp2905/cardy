@@ -4,7 +4,7 @@
   appearance: none;
   border: none;
   font: inherit;
-  font-size: 15px;
+  font-size: var(--text-base);
   font-weight: 550;
   letter-spacing: 0.02em;
   padding: 14px 24px;
