@@ -18,7 +18,7 @@ export default function App() {
     palette: [0, 0, PALETTE.length - 1, 1],
     note: { type: "text", default: "FOR COFFEE ONLY" },
     shader: {
-      speed: [0.4, 0, 2, 0.05],
+      frame: [8000, 0, 30000, 100],
       softness: [0.75, 0, 1, 0.01],
       intensity: [0.18, 0, 1, 0.01],
       noise: [0.3, 0, 1, 0.01],

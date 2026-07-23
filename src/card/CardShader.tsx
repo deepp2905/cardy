@@ -14,8 +14,10 @@ function hex(l: number, c: number, h: number): string {
 
 type CardShaderProps = {
   baseColor: string;
-  /** 0 pauses the shader — the built-in perf fallback (PLAN.md Phase A). */
+  /** Static by default — a physical card doesn't move. Also the perf fallback. */
   speed?: number;
+  /** Which frame of the (unplayed) animation to freeze on. */
+  frame?: number;
   softness?: number;
   intensity?: number;
   noise?: number;
@@ -26,7 +28,8 @@ type CardShaderProps = {
 // same depth relationship for free.
 export function CardShader({
   baseColor,
-  speed = 0.4,
+  speed = 0,
+  frame = 8000,
   softness = 0.75,
   intensity = 0.18,
   noise = 0.3,
@@ -56,6 +59,7 @@ export function CardShader({
       intensity={intensity}
       noise={noise}
       speed={speed}
+      frame={frame}
       webGlContextAttributes={{ preserveDrawingBuffer: true }}
     />
   );
