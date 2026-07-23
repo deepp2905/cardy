@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Working notes — not part of the shipped repo
+PLAN.md
+UPDATES-AND-CHANGES.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
