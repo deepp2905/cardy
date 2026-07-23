@@ -2,10 +2,15 @@ import type { Transition } from "motion/react";
 
 // Every spring/transition in the app lives here. Never inline values.
 
-export const snappy: Transition = {
-  type: "spring",
+// Options shape for useSpring() (motion values take no `type` field).
+export const snappyOptions = {
   stiffness: 420,
   damping: 30,
+} as const;
+
+export const snappy: Transition = {
+  type: "spring",
+  ...snappyOptions,
 };
 
 export const card: Transition = {

@@ -3,8 +3,8 @@
 export type CardConfig = {
   id: string;
   baseColor: string; // oklch() string from PALETTE
-  curve: { a: number; b: number; phase: number }; // Lissajous params (Phase B)
-  intensity: number; // 0..1, dial 2
+  character: number; // 0..1, dial 1 — swept through a designed curve mapping
+  intensity: number; // 0..1, dial 2 — drives wave amplitude + shader texture
   note: string; // "" | max 24 chars
 };
 
@@ -23,8 +23,6 @@ export const PALETTE: PaletteEntry[] = [
   { name: "graphite", color: "oklch(0.30 0.03 260)" },
 ];
 
-const DEFAULT_CURVE = { a: 3, b: 2, phase: 0.5 };
-
 export function seedConfigs(): Record<string, CardConfig> {
   return Object.fromEntries(
     PALETTE.map((p, i) => [
@@ -32,12 +30,46 @@ export function seedConfigs(): Record<string, CardConfig> {
       {
         id: `card-${i}`,
         baseColor: p.color,
-        curve: { ...DEFAULT_CURVE },
+        character: i / (PALETTE.length - 1), // spread so the strip shows range
         intensity: 0.5,
         note: "",
       } satisfies CardConfig,
     ]),
   );
+}
+
+// --- Designed dial mappings (never expose raw params; PLAN.md Phase C) ---
+
+// Dial 1 sweeps one path through Lissajous space chosen so every position
+// looks intentional: `a` rises steadily, `b` breathes against it, phase drifts.
+export function characterToCurve(t: number): {
+  a: number;
+  b: number;
+  phase: number;
+} {
+  return {
+    a: 1 + 5 * t,
+    b: 1.3 + 2.6 * (0.5 + 0.5 * Math.sin(Math.PI * 2 * 0.8 * t - 1.1)),
+    phase: 0.15 + 0.7 * t,
+  };
+}
+
+// Dial 1 also scrubs which frozen frame of the shader the background uses,
+// so "character" recomposes the whole card, not just the line.
+export function characterToFrame(t: number): number {
+  return 2000 + 24000 * t;
+}
+
+// Dial 2 maps one knob to shader distortion + grain (plus wave amplitude,
+// which WaveGraphic applies itself).
+export function intensityToShader(i: number): {
+  intensity: number;
+  noise: number;
+} {
+  return {
+    intensity: 0.08 + 0.28 * i,
+    noise: 0.12 + 0.5 * i,
+  };
 }
 
 const OKLCH_RE = /oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\)/;
@@ -67,14 +99,19 @@ export function inkFor(baseColor: string): { ink: string; inkMuted: string } {
   };
 }
 
+export const NOTE_MAX = 24;
+export const NOTE_CHARSET = /[^A-Z0-9 .,!♥]/g;
+
+export function sanitizeNote(raw: string): string {
+  return raw.toUpperCase().replace(NOTE_CHARSET, "").slice(0, NOTE_MAX);
+}
+
 // --- URL serialization (applied on confirm; PLAN.md §3) ---
 
 export function cardConfigToParams(config: CardConfig): URLSearchParams {
   const p = new URLSearchParams();
   p.set("c", config.baseColor);
-  p.set("a", String(config.curve.a));
-  p.set("b", String(config.curve.b));
-  p.set("ph", config.curve.phase.toFixed(3));
+  p.set("ch", config.character.toFixed(3));
   p.set("i", config.intensity.toFixed(3));
   if (config.note) p.set("n", config.note);
   return p;
@@ -83,15 +120,12 @@ export function cardConfigToParams(config: CardConfig): URLSearchParams {
 export function cardConfigFromParams(params: URLSearchParams): CardConfig | null {
   const c = params.get("c");
   if (!c || !OKLCH_RE.test(c)) return null;
+  const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
   return {
     id: "shared",
     baseColor: c,
-    curve: {
-      a: Number(params.get("a") ?? DEFAULT_CURVE.a),
-      b: Number(params.get("b") ?? DEFAULT_CURVE.b),
-      phase: Number(params.get("ph") ?? DEFAULT_CURVE.phase),
-    },
-    intensity: Math.min(1, Math.max(0, Number(params.get("i") ?? 0.5))),
-    note: (params.get("n") ?? "").slice(0, 24),
+    character: clamp01(Number(params.get("ch") ?? 0.5)),
+    intensity: clamp01(Number(params.get("i") ?? 0.5)),
+    note: sanitizeNote(params.get("n") ?? ""),
   };
 }

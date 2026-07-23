@@ -1,0 +1,30 @@
+.carousel {
+  display: flex;
+  gap: 14px;
+  width: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-block: 18px; /* room for scale + shadow */
+  padding-inline: 12%;
+  scrollbar-width: none;
+}
+
+.carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel:focus-visible {
+  outline: 2px solid var(--accent, oklch(0.62 0.19 250));
+  outline-offset: -2px;
+  border-radius: 16px;
+}
+
+.carousel-slide {
+  flex: 0 0 76%;
+  scroll-snap-align: center;
+  cursor: pointer;
+}
+
+.carousel-card {
+  will-change: transform;
+}

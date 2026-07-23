@@ -1,0 +1,27 @@
+.customize {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+  width: 100%;
+}
+
+/* Carousel needs to escape the column padding to breathe, while all
+   interaction stays inside the column (PLAN.md §2). */
+.customize .carousel {
+  width: calc(100% + 48px);
+  margin-inline: -24px;
+}
+
+.confirm-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+  width: 100%;
+}
+
+.confirm-placeholder p {
+  font-size: 14px;
+  color: oklch(0.66 0.01 260);
+}

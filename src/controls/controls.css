@@ -1,0 +1,146 @@
+/* dial */
+
+.dial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.dial-knob-hit {
+  padding: 6px; /* generous hit area around the knob */
+  border-radius: 50%;
+  cursor: ns-resize;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.dial-knob-hit:focus-visible {
+  outline: 2px solid var(--accent, oklch(0.62 0.19 250));
+  outline-offset: 2px;
+}
+
+.dial-knob {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  position: relative;
+  background:
+    radial-gradient(
+      circle at 32% 26%,
+      oklch(0.34 0.012 260),
+      oklch(0.22 0.012 260) 70%
+    );
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.14),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.4),
+    0 3px 8px -2px rgba(0, 0, 0, 0.5);
+  transition: box-shadow 0.2s ease;
+}
+
+.dial-knob-hit:hover .dial-knob {
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.4),
+    0 4px 12px -2px rgba(0, 0, 0, 0.6);
+}
+
+.dial-knob-hit:active .dial-knob {
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.1),
+    inset 0 -1px 3px rgba(0, 0, 0, 0.5),
+    0 2px 5px -2px rgba(0, 0, 0, 0.5);
+}
+
+.dial-needle {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 3px;
+  height: 16px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--accent, oklch(0.95 0.005 260));
+}
+
+.dial-label {
+  font-size: 11px;
+  font-weight: 550;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: oklch(0.66 0.01 260);
+}
+
+.dial-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  width: 100%;
+}
+
+.dial-row {
+  display: flex;
+  gap: 48px;
+}
+
+/* note field */
+
+.note-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.note-label {
+  font-size: 11px;
+  font-weight: 550;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: oklch(0.66 0.01 260);
+}
+
+.note-input-wrap {
+  position: relative;
+}
+
+.note-input {
+  width: 100%;
+  font: inherit;
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: oklch(0.95 0.005 260);
+  background: oklch(0.2 0.012 260);
+  border: 1px solid oklch(0.32 0.015 260);
+  border-radius: 12px;
+  padding: 12px 52px 12px 14px;
+  transition: border-color 0.2s ease;
+}
+
+.note-input::placeholder {
+  color: oklch(0.5 0.01 260);
+}
+
+.note-input:hover {
+  border-color: oklch(0.4 0.015 260);
+}
+
+.note-input:focus-visible {
+  outline: none;
+  border-color: var(--accent, oklch(0.62 0.19 250));
+}
+
+.note-count {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: oklch(0.5 0.01 260);
+  pointer-events: none;
+}

@@ -1,6 +1,11 @@
 import type { ComponentProps, CSSProperties } from "react";
 import type { CardConfig } from "./cardConfig";
-import { inkFor } from "./cardConfig";
+import {
+  characterToCurve,
+  characterToFrame,
+  inkFor,
+  intensityToShader,
+} from "./cardConfig";
 import { CardShader } from "./CardShader";
 import { WaveGraphic } from "./WaveGraphic";
 import "./card.css";
@@ -17,6 +22,8 @@ type CardProps = {
 
 export function Card({ config, shaderParams }: CardProps) {
   const { ink, inkMuted } = inkFor(config.baseColor);
+  const curve = characterToCurve(config.character);
+  const shader = intensityToShader(config.intensity);
 
   return (
     <div
@@ -25,9 +32,15 @@ export function Card({ config, shaderParams }: CardProps) {
     >
       <div className="card-surface">
         <div className="card-layer">
-          <CardShader baseColor={config.baseColor} {...shaderParams} />
+          <CardShader
+            baseColor={config.baseColor}
+            frame={characterToFrame(config.character)}
+            intensity={shader.intensity}
+            noise={shader.noise}
+            {...shaderParams}
+          />
         </div>
-        <WaveGraphic curve={config.curve} intensity={config.intensity} />
+        <WaveGraphic curve={curve} intensity={config.intensity} />
         <div className="card-layer card-content">
           <div className="card-top">
             <span className="card-wordmark">cardy</span>

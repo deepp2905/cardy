@@ -1,48 +1,49 @@
 import { useState } from "react";
-import { DialRoot, useDialKit } from "dialkit";
-import "dialkit/styles.css";
+import type { CardConfig } from "./card/cardConfig";
+import { seedConfigs } from "./card/cardConfig";
 import { Card } from "./card/Card";
-import { PALETTE, seedConfigs } from "./card/cardConfig";
+import { Customize } from "./steps/Customize";
+import { Button } from "./ui/Button";
+import { StepIndicator, type Step } from "./ui/StepIndicator";
 
-type Step = "welcome" | "customize" | "confirm";
+const ids = Object.keys(seedConfigs());
 
-const configs = seedConfigs();
-const ids = Object.keys(configs);
-
-// Phase A harness: the real Card + dialkit panel for tuning the shader
-// look per palette entry. Steps arrive in Phases C–G.
 export default function App() {
-  const [step] = useState<Step>("customize");
+  // Welcome arrives in Phase G; the flow currently opens on customize.
+  const [step, setStep] = useState<Step>("customize");
+  const [configs, setConfigs] = useState<Record<string, CardConfig>>(
+    seedConfigs,
+  );
+  const [activeId, setActiveId] = useState<string>(ids[2]);
 
-  const p = useDialKit("Card tuning", {
-    palette: [0, 0, PALETTE.length - 1, 1],
-    note: { type: "text", default: "FOR COFFEE ONLY" },
-    shader: {
-      frame: [8000, 0, 30000, 100],
-      softness: [0.75, 0, 1, 0.01],
-      intensity: [0.18, 0, 1, 0.01],
-      noise: [0.3, 0, 1, 0.01],
-    },
-    wave: {
-      a: [3, 0.5, 8, 0.5],
-      b: [2, 0.5, 8, 0.5],
-      phase: [0.5, 0, 1, 0.01],
-      intensity: [0.5, 0, 1, 0.01],
-    },
-  });
-
-  const config = {
-    ...configs[ids[Math.round(p.palette)]],
-    note: p.note.toUpperCase().slice(0, 24),
-    curve: { a: p.wave.a, b: p.wave.b, phase: p.wave.phase },
-    intensity: p.wave.intensity,
+  const patchConfig = (id: string, patch: Partial<CardConfig>) => {
+    setConfigs((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
   };
 
   return (
     <div className="column">
-      <Card config={config} shaderParams={p.shader} />
-      <p className="shell-note">cardy — phase A ({step})</p>
-      <DialRoot />
+      <header className="app-header">
+        <StepIndicator current={step} />
+      </header>
+      {step === "customize" && (
+        <Customize
+          configs={configs}
+          ids={ids}
+          activeId={activeId}
+          onActiveChange={setActiveId}
+          onPatch={patchConfig}
+          onOrder={() => setStep("confirm")}
+        />
+      )}
+      {step === "confirm" && (
+        <div className="confirm-placeholder">
+          <Card config={configs[activeId]} />
+          <p>Confirm step (paper fold, envelope, mailbox) arrives in Phase E.</p>
+          <Button variant="secondary" onClick={() => setStep("customize")}>
+            Back to designing
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
