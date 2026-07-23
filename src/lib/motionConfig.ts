@@ -71,11 +71,12 @@ export const iconSwap: Transition = {
   bounce: 0,
 };
 
-// Theme icon swap — quick with a little pop (paired with popLayout).
+// Theme icon swap — quick, near-critically damped so the bounce is barely
+// visible (paired with popLayout). Critical damping at this stiffness ~53.
 export const iconPop: Transition = {
   type: "spring",
   stiffness: 700,
-  damping: 16,
+  damping: 44,
 };
 
 // Periodic nudge for the forward CTA arrow: drift right, ease back, pause,
