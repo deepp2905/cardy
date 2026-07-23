@@ -7,9 +7,10 @@
 .pg-nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px 20px;
+  justify-content: flex-start;
+  gap: 20px;
+  /* right padding clears the fixed theme toggle (40px + 16px inset) */
+  padding: 16px 68px 16px 20px;
   border-bottom: 1px solid var(--color-5);
   flex-wrap: wrap;
 }
