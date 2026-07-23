@@ -13,6 +13,7 @@ type CardCarouselProps = {
   configs: Record<string, CardConfig>;
   ids: string[];
   activeId: string;
+  cardName: string;
   onActiveChange: (id: string) => void;
 };
 
@@ -20,6 +21,7 @@ export function CardCarousel({
   configs,
   ids,
   activeId,
+  cardName,
   onActiveChange,
 }: CardCarouselProps) {
   const stripRef = useRef<HTMLDivElement>(null);
@@ -105,7 +107,7 @@ export function CardCarousel({
               }}
               transition={cardSpring}
             >
-              <Card config={configs[id]} />
+              <Card config={configs[id]} name={cardName} />
             </motion.div>
           </div>
         );

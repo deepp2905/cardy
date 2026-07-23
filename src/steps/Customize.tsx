@@ -10,6 +10,7 @@ type CustomizeProps = {
   configs: Record<string, CardConfig>;
   ids: string[];
   activeId: string;
+  cardName: string;
   onActiveChange: (id: string) => void;
   onPatch: (id: string, patch: Partial<CardConfig>) => void;
 };
@@ -19,6 +20,7 @@ export function Customize({
   configs,
   ids,
   activeId,
+  cardName,
   onActiveChange,
   onPatch,
 }: CustomizeProps) {
@@ -46,6 +48,7 @@ export function Customize({
           configs={configs}
           ids={ids}
           activeId={activeId}
+          cardName={cardName}
           onActiveChange={onActiveChange}
         />
       </motion.div>

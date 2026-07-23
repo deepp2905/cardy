@@ -94,6 +94,11 @@
   letter-spacing: 0.05em;
   line-height: 1;
   text-shadow: 0 0.25cqw 0.4cqw rgba(0, 0, 0, 0.28);
+  /* Names come from the URL (Phase P). The parser caps length; this is the
+     structural backstop so an edge case can never break the layout. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   user-select: none;
 }
 

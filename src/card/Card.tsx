@@ -6,6 +6,7 @@ import {
   inkFor,
   intensityToShader,
 } from "./cardConfig";
+import { DEFAULT_PERSON } from "../lib/personalization";
 import { CardShader } from "./CardShader";
 import { WaveGraphic } from "./WaveGraphic";
 import "./card.css";
@@ -16,11 +17,20 @@ import "./card.css";
 
 type CardProps = {
   config: CardConfig;
+  /**
+   * Engraved name. Defaults to the stock holder so the carousel, confirm,
+   * and playground call sites need no change (PLAN.md Phase P).
+   */
+  name?: string;
   /** Dev-tuning override for the shader look (dialkit harness). */
   shaderParams?: Partial<ComponentProps<typeof CardShader>>;
 };
 
-export function Card({ config, shaderParams }: CardProps) {
+export function Card({
+  config,
+  name = DEFAULT_PERSON.cardName,
+  shaderParams,
+}: CardProps) {
   const { ink, inkMuted } = inkFor(config.baseColor);
   const curve = characterToCurve(config.character);
   const shader = intensityToShader(config.intensity);
@@ -49,7 +59,7 @@ export function Card({ config, shaderParams }: CardProps) {
           <ChipMark />
           <div className="card-bottom">
             <div className="card-identity">
-              <span className="card-name">ALEX RIVERA</span>
+              <span className="card-name">{name}</span>
               {config.note && <span className="card-note">{config.note}</span>}
             </div>
             <NetworkMark />

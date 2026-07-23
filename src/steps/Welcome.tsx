@@ -4,7 +4,7 @@ import { usePrefersReducedMotion } from "../lib/reducedMotion";
 import "./steps.css";
 
 // Body only — the CTA lives in the persistent action bar (App).
-export function Welcome() {
+export function Welcome({ firstName }: { firstName: string }) {
   const reduce = usePrefersReducedMotion();
 
   const container: Variants = {
@@ -23,7 +23,7 @@ export function Welcome() {
       initial="hidden"
       animate="show"
     >
-      <motion.h1 variants={item}>Welcome, Alex</motion.h1>
+      <motion.h1 variants={item}>Welcome, {firstName}</motion.h1>
       <motion.p variants={item}>
         Let&rsquo;s get you a card that&rsquo;s tailored to you — your color,
         your wave, your words.

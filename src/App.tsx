@@ -1,9 +1,10 @@
-import { lazy, Suspense, useState, type ReactNode } from "react";
+import { lazy, Suspense, useMemo, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import type { CardConfig } from "./card/cardConfig";
 import { seedConfigs } from "./card/cardConfig";
 import { Card } from "./card/Card";
 import { crossfade } from "./lib/motionConfig";
+import { parsePerson } from "./lib/personalization";
 import { usePrefersReducedMotion } from "./lib/reducedMotion";
 import { useHashRoute } from "./playground/useHashRoute";
 import { Customize } from "./steps/Customize";
@@ -36,6 +37,9 @@ function MainFlow() {
     seedConfigs,
   );
   const [activeId, setActiveId] = useState<string>(ids[2]);
+  // `/first-last` read once — the app never mutates the URL, so this holds
+  // for the whole journey (PLAN.md Phase P).
+  const person = useMemo(() => parsePerson(), []);
 
   const patchConfig = (id: string, patch: Partial<CardConfig>) => {
     setConfigs((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
@@ -70,7 +74,7 @@ function MainFlow() {
         <AnimatePresence mode="wait" initial={false}>
           {step === "welcome" && (
             <StepShell key="welcome">
-              <Welcome />
+              <Welcome firstName={person.first} />
             </StepShell>
           )}
           {step === "customize" && (
@@ -79,6 +83,7 @@ function MainFlow() {
                 configs={configs}
                 ids={ids}
                 activeId={activeId}
+                cardName={person.cardName}
                 onActiveChange={setActiveId}
                 onPatch={patchConfig}
               />
@@ -87,7 +92,7 @@ function MainFlow() {
           {step === "confirm" && (
             <StepShell key="confirm">
               <div className="step-body">
-                <Card config={configs[activeId]} />
+                <Card config={configs[activeId]} name={person.cardName} />
                 <p className="confirm-note">
                   Confirm step (paper fold, envelope, mailbox) arrives in
                   Phase E.
