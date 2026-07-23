@@ -4,6 +4,7 @@ import type { CardConfig } from "../card/cardConfig";
 import { DialPanel } from "../controls/DialPanel";
 import { crossfade, ENTER_STAGGER } from "../lib/motionConfig";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
+import { ActionBar } from "../ui/ActionBar";
 import { Button } from "../ui/Button";
 import "./steps.css";
 
@@ -13,6 +14,7 @@ type CustomizeProps = {
   activeId: string;
   onActiveChange: (id: string) => void;
   onPatch: (id: string, patch: Partial<CardConfig>) => void;
+  onBack: () => void;
   onOrder: () => void;
 };
 
@@ -22,11 +24,16 @@ export function Customize({
   activeId,
   onActiveChange,
   onPatch,
+  onBack,
   onOrder,
 }: CustomizeProps) {
   const reduce = usePrefersReducedMotion();
   const active = configs[activeId];
 
+  const container: Variants = {
+    hidden: {},
+    show: { transition: { staggerChildren: ENTER_STAGGER } },
+  };
   const item: Variants = {
     hidden: { opacity: 0, y: reduce ? 0 : 8 },
     show: { opacity: 1, y: 0, transition: crossfade },
@@ -34,27 +41,31 @@ export function Customize({
 
   return (
     <motion.div
-      className="customize"
+      className="step customize"
+      variants={container}
       initial="hidden"
       animate="show"
-      transition={{ staggerChildren: ENTER_STAGGER }}
     >
-      <motion.div className="customize-carousel" variants={item}>
-        <CardCarousel
-          configs={configs}
-          ids={ids}
-          activeId={activeId}
-          onActiveChange={onActiveChange}
-        />
+      <motion.div className="step-body" variants={container}>
+        <motion.div className="customize-carousel" variants={item}>
+          <CardCarousel
+            configs={configs}
+            ids={ids}
+            activeId={activeId}
+            onActiveChange={onActiveChange}
+          />
+        </motion.div>
+        <motion.div className="customize-panel" variants={item}>
+          <DialPanel
+            config={active}
+            onPatch={(patch) => onPatch(activeId, patch)}
+          />
+        </motion.div>
       </motion.div>
-      <motion.div className="customize-panel" variants={item}>
-        <DialPanel
-          config={active}
-          onPatch={(patch) => onPatch(activeId, patch)}
-        />
-      </motion.div>
-      <motion.div className="customize-cta" variants={item}>
-        <Button onClick={onOrder}>Order this card</Button>
+      <motion.div className="action-bar-slot" variants={item}>
+        <ActionBar onBack={onBack}>
+          <Button onClick={onOrder}>Order this card</Button>
+        </ActionBar>
       </motion.div>
     </motion.div>
   );

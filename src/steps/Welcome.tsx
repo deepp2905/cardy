@@ -1,12 +1,17 @@
 import { motion, type Variants } from "motion/react";
 import { crossfade, ENTER_STAGGER } from "../lib/motionConfig";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
+import { ActionBar } from "../ui/ActionBar";
 import { Button } from "../ui/Button";
 import "./steps.css";
 
 export function Welcome({ onStart }: { onStart: () => void }) {
   const reduce = usePrefersReducedMotion();
 
+  const container: Variants = {
+    hidden: {},
+    show: { transition: { staggerChildren: ENTER_STAGGER } },
+  };
   const item: Variants = {
     hidden: { opacity: 0, y: reduce ? 0 : 10 },
     show: { opacity: 1, y: 0, transition: crossfade },
@@ -14,23 +19,25 @@ export function Welcome({ onStart }: { onStart: () => void }) {
 
   return (
     <motion.div
-      className="welcome"
+      className="step welcome"
+      variants={container}
       initial="hidden"
       animate="show"
-      transition={{ staggerChildren: ENTER_STAGGER }}
     >
-      <div className="welcome-copy">
-        <motion.h1 variants={item}>Welcome, Alex</motion.h1>
-        <motion.p variants={item}>
+      <motion.div className="step-body welcome-copy" variants={item}>
+        <h1>Welcome, Alex</h1>
+        <p>
           Let&rsquo;s get you a card that&rsquo;s tailored to you — your color,
           your wave, your words.
-        </motion.p>
-      </div>
-      <motion.div className="welcome-cta" variants={item}>
-        <Button onClick={onStart}>
-          Start designing
-          <ArrowIcon />
-        </Button>
+        </p>
+      </motion.div>
+      <motion.div className="action-bar-slot" variants={item}>
+        <ActionBar>
+          <Button onClick={onStart}>
+            Start designing
+            <ArrowIcon />
+          </Button>
+        </ActionBar>
       </motion.div>
     </motion.div>
   );

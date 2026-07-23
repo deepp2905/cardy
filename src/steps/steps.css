@@ -1,15 +1,13 @@
-.customize {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 26px;
+/* customize */
+
+.customize-carousel,
+.customize-panel {
   width: 100%;
 }
 
-.customize-carousel,
-.customize-panel,
-.customize-cta {
-  width: 100%;
+.customize-panel {
+  display: flex;
+  justify-content: center;
 }
 
 /* Carousel needs to escape the column padding to breathe, while all
@@ -19,34 +17,18 @@
   margin-inline: -24px;
 }
 
-.confirm-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 26px;
-  width: 100%;
-}
+/* confirm */
 
-.confirm-placeholder p {
+.confirm-note {
   font-size: var(--text-sm);
   color: var(--color-11);
+  text-align: center;
+  max-width: 30ch;
 }
 
 /* welcome */
 
-.welcome {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  flex: 1;
-  align-self: stretch;
-}
-
 .welcome-copy {
-  margin: auto 0; /* vertically centers between top and the CTA */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   gap: 14px;
   text-align: center;
 }
@@ -66,9 +48,4 @@
   color: var(--color-11);
   max-width: 30ch;
   text-wrap: balance;
-}
-
-.welcome-cta {
-  width: 100%;
-  padding-bottom: 8px;
 }

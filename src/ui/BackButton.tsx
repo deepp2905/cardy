@@ -1,0 +1,28 @@
+import { motion } from "motion/react";
+import { snappy } from "../lib/motionConfig";
+import "./ui.css";
+
+// Square, icon-only (24px chevron). Sits left of the primary CTA.
+export function BackButton({ onClick }: { onClick: () => void }) {
+  return (
+    <motion.button
+      type="button"
+      className="btn btn-back"
+      aria-label="Go back"
+      onClick={onClick}
+      whileTap={{ scale: 0.96 }}
+      transition={snappy}
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M15 6l-6 6 6 6"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </motion.button>
+  );
+}

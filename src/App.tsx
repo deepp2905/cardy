@@ -8,6 +8,7 @@ import { usePrefersReducedMotion } from "./lib/reducedMotion";
 import { useHashRoute } from "./playground/useHashRoute";
 import { Customize } from "./steps/Customize";
 import { Welcome } from "./steps/Welcome";
+import { ActionBar } from "./ui/ActionBar";
 import { Button } from "./ui/Button";
 import { StepIndicator, type Step } from "./ui/StepIndicator";
 import { ThemeToggle } from "./ui/ThemeToggle";
@@ -61,20 +62,26 @@ function MainFlow() {
               activeId={activeId}
               onActiveChange={setActiveId}
               onPatch={patchConfig}
+              onBack={() => setStep("welcome")}
               onOrder={() => setStep("confirm")}
             />
           </StepShell>
         )}
         {step === "confirm" && (
           <StepShell key="confirm">
-            <div className="confirm-placeholder">
-              <Card config={configs[activeId]} />
-              <p>
-                Confirm step (paper fold, envelope, mailbox) arrives in Phase E.
-              </p>
-              <Button variant="secondary" onClick={() => setStep("customize")}>
-                Back to designing
-              </Button>
+            <div className="step confirm">
+              <div className="step-body">
+                <Card config={configs[activeId]} />
+                <p className="confirm-note">
+                  Confirm step (paper fold, envelope, mailbox) arrives in
+                  Phase E.
+                </p>
+              </div>
+              <div className="action-bar-slot">
+                <ActionBar onBack={() => setStep("customize")}>
+                  <Button onClick={() => setStep("welcome")}>Start over</Button>
+                </ActionBar>
+              </div>
             </div>
           </StepShell>
         )}
