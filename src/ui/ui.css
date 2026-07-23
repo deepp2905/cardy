@@ -160,12 +160,18 @@
 .steps {
   display: flex;
   gap: 6px;
-  width: 132px;
+  /* Matches the column so the bar and the action bar share one measure.
+     The header is fixed-position, so the column's own padding doesn't
+     apply here — subtract it to line the ends up. */
+  width: calc(100vw - 48px);
+  max-width: 372px; /* 420 column - 2 * 24 padding */
 }
 
 .steps-seg {
   position: relative;
-  flex: 1;
+  /* Zero basis so flex-grow alone sets the ratio — with an auto basis the
+     1.5 would apply only to leftover space, not the whole track. */
+  flex: 1 1 0;
   height: 4px;
   border-radius: 999px;
   background: var(--color-6);
