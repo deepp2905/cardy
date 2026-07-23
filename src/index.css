@@ -1,0 +1,49 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+:root {
+  color-scheme: dark;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: oklch(0.16 0.01 260);
+  color: oklch(0.95 0.005 260);
+}
+
+/* PLAN.md §2 — single centered column, identical on mobile and desktop */
+.column {
+  max-width: 420px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+/* Phase 0 placeholder — exact ID-1 aspect from Phase A onward */
+.placeholder-card {
+  width: 100%;
+  aspect-ratio: 1.586;
+  border-radius: 4.2%/6.7%;
+}
+
+.shell-note {
+  font-size: 13px;
+  opacity: 0.5;
+  letter-spacing: 0.04em;
+}
