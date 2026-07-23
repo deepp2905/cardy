@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useId } from "react";
 import {
   motion,
   useSpring,
@@ -63,6 +63,7 @@ function useSettledParam(target: number): MotionValue<number> {
 }
 
 export function WaveGraphic({ curve, intensity }: WaveGraphicProps) {
+  const id = useId(); // per-instance defs ids — many cards render at once
   const a = useSettledParam(curve.a);
   const b = useSettledParam(curve.b);
   const phase = useSettledParam(curve.phase);
@@ -88,18 +89,18 @@ export function WaveGraphic({ curve, intensity }: WaveGraphicProps) {
       aria-hidden="true"
     >
       <defs>
-        <linearGradient id="wave-fade" x1="0" y1="0" x2="1" y2="0">
+        <linearGradient id={`${id}-fade`} x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stopColor="#fff" stopOpacity="0" />
           <stop offset="0.14" stopColor="#fff" stopOpacity="1" />
           <stop offset="0.86" stopColor="#fff" stopOpacity="1" />
           <stop offset="1" stopColor="#fff" stopOpacity="0" />
         </linearGradient>
-        <mask id="wave-mask">
-          <rect width={VIEW_W} height={VIEW_H} fill="url(#wave-fade)" />
+        <mask id={`${id}-mask`}>
+          <rect width={VIEW_W} height={VIEW_H} fill={`url(#${id}-fade)`} />
         </mask>
       </defs>
       <g
-        mask="url(#wave-mask)"
+        mask={`url(#${id}-mask)`}
         fill="none"
         stroke="currentColor"
         strokeLinecap="round"

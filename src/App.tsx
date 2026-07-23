@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import type { CardConfig } from "./card/cardConfig";
 import { seedConfigs } from "./card/cardConfig";
 import { Card } from "./card/Card";
+import { crossfade } from "./lib/motionConfig";
+import { usePrefersReducedMotion } from "./lib/reducedMotion";
 import { Customize } from "./steps/Customize";
 import { Welcome } from "./steps/Welcome";
 import { Button } from "./ui/Button";
@@ -27,26 +30,54 @@ export default function App() {
         <StepIndicator current={step} />
       </header>
       <ThemeToggle />
-      {step === "welcome" && <Welcome onStart={() => setStep("customize")} />}
-      {step === "customize" && (
-        <Customize
-          configs={configs}
-          ids={ids}
-          activeId={activeId}
-          onActiveChange={setActiveId}
-          onPatch={patchConfig}
-          onOrder={() => setStep("confirm")}
-        />
-      )}
-      {step === "confirm" && (
-        <div className="confirm-placeholder">
-          <Card config={configs[activeId]} />
-          <p>Confirm step (paper fold, envelope, mailbox) arrives in Phase E.</p>
-          <Button variant="secondary" onClick={() => setStep("customize")}>
-            Back to designing
-          </Button>
-        </div>
-      )}
+      <AnimatePresence mode="wait" initial={false}>
+        {step === "welcome" && (
+          <StepShell key="welcome">
+            <Welcome onStart={() => setStep("customize")} />
+          </StepShell>
+        )}
+        {step === "customize" && (
+          <StepShell key="customize">
+            <Customize
+              configs={configs}
+              ids={ids}
+              activeId={activeId}
+              onActiveChange={setActiveId}
+              onPatch={patchConfig}
+              onOrder={() => setStep("confirm")}
+            />
+          </StepShell>
+        )}
+        {step === "confirm" && (
+          <StepShell key="confirm">
+            <div className="confirm-placeholder">
+              <Card config={configs[activeId]} />
+              <p>
+                Confirm step (paper fold, envelope, mailbox) arrives in Phase E.
+              </p>
+              <Button variant="secondary" onClick={() => setStep("customize")}>
+                Back to designing
+              </Button>
+            </div>
+          </StepShell>
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+// Shared step chrome: soft rise on enter, softer drop on exit.
+function StepShell({ children }: { children: ReactNode }) {
+  const reduce = usePrefersReducedMotion();
+  return (
+    <motion.div
+      className="step-shell"
+      initial={{ opacity: 0, y: reduce ? 0 : 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: reduce ? 0 : -6 }}
+      transition={crossfade}
+    >
+      {children}
+    </motion.div>
   );
 }

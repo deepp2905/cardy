@@ -60,3 +60,13 @@ export const drift = {
 } as const;
 
 export const FOLD_STAGGER = 0.25;
+
+// Entrance choreography: semantic chunks stagger in, never one big block.
+export const ENTER_STAGGER = 0.08;
+
+// Icon cross-swap (theme toggle etc): scale/opacity/blur, springs, no bounce.
+export const iconSwap: Transition = {
+  type: "spring",
+  duration: 0.3,
+  bounce: 0,
+};

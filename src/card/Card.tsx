@@ -1,4 +1,4 @@
-import type { ComponentProps, CSSProperties } from "react";
+import { useId, type ComponentProps, type CSSProperties } from "react";
 import type { CardConfig } from "./cardConfig";
 import {
   characterToCurve,
@@ -62,16 +62,18 @@ export function Card({ config, shaderParams }: CardProps) {
 }
 
 function ChipMark() {
+  // Unique gradient id — many cards render at once, ids must not collide.
+  const id = useId();
   return (
     <svg className="card-chip" viewBox="0 0 44 34" aria-hidden="true">
       <defs>
-        <linearGradient id="chip-face" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#e6d9a8" />
           <stop offset="0.55" stopColor="#c9b26e" />
           <stop offset="1" stopColor="#a98f4e" />
         </linearGradient>
       </defs>
-      <rect x="1" y="1" width="42" height="32" rx="6" fill="url(#chip-face)" />
+      <rect x="1" y="1" width="42" height="32" rx="6" fill={`url(#${id})`} />
       <rect
         x="1"
         y="1"

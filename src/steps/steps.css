@@ -6,6 +6,12 @@
   width: 100%;
 }
 
+.customize-carousel,
+.customize-panel,
+.customize-cta {
+  width: 100%;
+}
+
 /* Carousel needs to escape the column padding to breathe, while all
    interaction stays inside the column (PLAN.md §2). */
 .customize .carousel {

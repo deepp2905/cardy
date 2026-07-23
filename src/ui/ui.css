@@ -64,11 +64,11 @@
 
 .theme-toggle {
   position: fixed;
-  top: 14px;
+  top: 12px;
   right: 16px;
   z-index: 10;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: grid;
   place-items: center;
   appearance: none;

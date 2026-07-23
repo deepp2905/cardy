@@ -11,7 +11,7 @@ export function Button({ variant = "primary", className, ...rest }: ButtonProps)
   return (
     <motion.button
       className={["btn", `btn-${variant}`, className].filter(Boolean).join(" ")}
-      whileTap={{ scale: 0.97 }}
+      whileTap={{ scale: 0.96 }}
       transition={snappy}
       {...rest}
     />

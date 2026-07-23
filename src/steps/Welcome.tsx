@@ -1,5 +1,5 @@
-import { motion } from "motion/react";
-import { crossfade } from "../lib/motionConfig";
+import { motion, type Variants } from "motion/react";
+import { crossfade, ENTER_STAGGER } from "../lib/motionConfig";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
 import { Button } from "../ui/Button";
 import "./steps.css";
@@ -7,32 +7,32 @@ import "./steps.css";
 export function Welcome({ onStart }: { onStart: () => void }) {
   const reduce = usePrefersReducedMotion();
 
+  const item: Variants = {
+    hidden: { opacity: 0, y: reduce ? 0 : 10 },
+    show: { opacity: 1, y: 0, transition: crossfade },
+  };
+
   return (
-    <div className="welcome">
-      <motion.div
-        className="welcome-copy"
-        initial={{ opacity: 0, y: reduce ? 0 : 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={crossfade}
-      >
-        <h1>Welcome, Alex</h1>
-        <p>
+    <motion.div
+      className="welcome"
+      initial="hidden"
+      animate="show"
+      transition={{ staggerChildren: ENTER_STAGGER }}
+    >
+      <div className="welcome-copy">
+        <motion.h1 variants={item}>Welcome, Alex</motion.h1>
+        <motion.p variants={item}>
           Let&rsquo;s get you a card that&rsquo;s tailored to you — your color,
           your wave, your words.
-        </p>
-      </motion.div>
-      <motion.div
-        className="welcome-cta"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ ...crossfade, delay: 0.12 }}
-      >
+        </motion.p>
+      </div>
+      <motion.div className="welcome-cta" variants={item}>
         <Button onClick={onStart}>
           Start designing
           <ArrowIcon />
         </Button>
       </motion.div>
-    </div>
+    </motion.div>
   );
 }
 
