@@ -1,4 +1,8 @@
 .carousel {
+  /* Card width is tied to the column, never to the strip — the strip goes
+     full-bleed (steps.css) and percentage sizing would scale cards with the
+     viewport. 76% of the 420px column, matching the pre-full-bleed look. */
+  --slide-w: min(319px, 76vw);
   /* Positioned so slides' offsetLeft is measured from the strip itself —
      the center-detection and centering math depend on this. */
   position: relative;
@@ -8,7 +12,10 @@
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   padding-block: 18px; /* room for scale + shadow */
-  padding-inline: 12%;
+  /* Centres the active slide in a full-bleed strip: half the leftover space
+     either side. Percentages would track the 100vw strip and blow the cards
+     up on desktop, so both this and the slide width key off --slide-w. */
+  padding-inline: calc((100% - var(--slide-w)) / 2);
   scrollbar-width: none;
 }
 
@@ -23,7 +30,7 @@
 }
 
 .carousel-slide {
-  flex: 0 0 76%;
+  flex: 0 0 var(--slide-w);
   scroll-snap-align: center;
   cursor: pointer;
 }

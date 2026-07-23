@@ -13,6 +13,16 @@ export const snappy: Transition = {
   ...snappyOptions,
 };
 
+// Step indicator travelling more than one segment (e.g. confirm -> welcome
+// via "Start over"). Same damping ratio as `snappy` so the character is
+// identical — only faster. 4x stiffness halves the settle time, which on a
+// 2x-longer trip is roughly double the velocity of a single-step slide.
+export const snappyFar: Transition = {
+  type: "spring",
+  stiffness: 1680,
+  damping: 60,
+};
+
 export const card: Transition = {
   type: "spring",
   stiffness: 170,

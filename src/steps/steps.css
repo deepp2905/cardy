@@ -10,11 +10,14 @@
   justify-content: center;
 }
 
-/* Carousel needs to escape the column padding to breathe, while all
-   interaction stays inside the column (PLAN.md §2). */
+/* The carousel is the one element that breaks the column, so neighbour cards
+   bleed to the viewport edges instead of being cut at 420px. Full-bleed via
+   the 50%/50vw trick — the strip stays a scroll container (snap and centre
+   detection depend on it); only its scrollport gets wider. All interaction
+   still resolves inside the column (PLAN.md §2). */
 .customize .carousel {
-  width: calc(100% + 48px);
-  margin-inline: -24px;
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
 }
 
 /* confirm */
