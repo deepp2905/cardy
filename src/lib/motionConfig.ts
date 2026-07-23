@@ -70,3 +70,22 @@ export const iconSwap: Transition = {
   duration: 0.3,
   bounce: 0,
 };
+
+// Theme icon swap — quick with a little pop (paired with popLayout).
+export const iconPop: Transition = {
+  type: "spring",
+  stiffness: 700,
+  damping: 16,
+};
+
+// Periodic nudge for the forward CTA arrow: drift right, ease back, pause,
+// repeat. Draws the eye toward "next" without perpetual motion.
+export const arrowNudge = {
+  x: [0, 5, 0],
+  transition: {
+    duration: 0.7,
+    ease: "easeInOut",
+    repeat: Infinity,
+    repeatDelay: 4,
+  },
+} as const;

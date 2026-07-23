@@ -33,14 +33,25 @@
 }
 
 /* Bottom action row: square back button + CTA filling the rest.
-   Fixed control height keeps the back button a true square. */
+   Fixed control height keeps the back button a true square. No flex gap —
+   the back slot carries its own spacing so its width can animate to/from 0
+   (the next CTA flexes to fill, resizing smoothly). */
 .action-bar {
   --action-h: 52px;
   display: flex;
   align-items: center;
-  gap: 10px;
   width: 100%;
   padding-top: 20px;
+}
+
+.back-slot {
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+}
+
+.back-slot .btn-back {
+  margin-inline-end: 10px; /* 52 + 10 = animated slot width of 62 */
 }
 
 .action-bar .btn-primary {
@@ -65,18 +76,15 @@
   background: var(--color-5);
 }
 
-/* arrow-only CTAs */
+/* arrow-only CTAs — 1.25x the base size */
 .cta-arrow {
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   display: block;
   transition: translate 0.2s ease;
 }
 
-.btn-next:hover .cta-arrow {
-  translate: 2px 0;
-}
-
+/* The next arrow has its own periodic nudge; back keeps a hover slide. */
 .btn-back:hover .cta-arrow {
   translate: -2px 0;
 }

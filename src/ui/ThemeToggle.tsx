@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { iconSwap, snappy } from "../lib/motionConfig";
+import { iconPop, snappy } from "../lib/motionConfig";
 import "./ui.css";
 
 type Theme = "light" | "dark";
@@ -28,14 +28,14 @@ export function ThemeToggle() {
       whileTap={{ scale: 0.96 }}
       transition={snappy}
     >
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="popLayout" initial={false}>
         <motion.span
           key={theme}
           className="theme-toggle-icon"
           initial={{ opacity: 0, scale: 0.25, filter: "blur(4px)" }}
           animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
           exit={{ opacity: 0, scale: 0.25, filter: "blur(4px)" }}
-          transition={iconSwap}
+          transition={iconPop}
         >
           {theme === "light" ? <SunIcon /> : <MoonIcon />}
         </motion.span>
