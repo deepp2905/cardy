@@ -3,14 +3,14 @@ import type { CardConfig } from "./card/cardConfig";
 import { seedConfigs } from "./card/cardConfig";
 import { Card } from "./card/Card";
 import { Customize } from "./steps/Customize";
+import { Welcome } from "./steps/Welcome";
 import { Button } from "./ui/Button";
 import { StepIndicator, type Step } from "./ui/StepIndicator";
 
 const ids = Object.keys(seedConfigs());
 
 export default function App() {
-  // Welcome arrives in Phase G; the flow currently opens on customize.
-  const [step, setStep] = useState<Step>("customize");
+  const [step, setStep] = useState<Step>("welcome");
   const [configs, setConfigs] = useState<Record<string, CardConfig>>(
     seedConfigs,
   );
@@ -25,6 +25,7 @@ export default function App() {
       <header className="app-header">
         <StepIndicator current={step} />
       </header>
+      {step === "welcome" && <Welcome onStart={() => setStep("customize")} />}
       {step === "customize" && (
         <Customize
           configs={configs}

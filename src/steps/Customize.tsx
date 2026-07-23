@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import { CardCarousel } from "../carousel/CardCarousel";
 import type { CardConfig } from "../card/cardConfig";
 import { DialPanel } from "../controls/DialPanel";
@@ -25,10 +24,7 @@ export function Customize({
   const active = configs[activeId];
 
   return (
-    <div
-      className="customize"
-      style={{ "--accent": active.baseColor } as CSSProperties}
-    >
+    <div className="customize">
       <CardCarousel
         configs={configs}
         ids={ids}

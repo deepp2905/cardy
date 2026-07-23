@@ -7,10 +7,10 @@ type ButtonProps = ComponentProps<typeof motion.button> & {
   variant?: "primary" | "secondary";
 };
 
-export function Button({ variant = "primary", ...rest }: ButtonProps) {
+export function Button({ variant = "primary", className, ...rest }: ButtonProps) {
   return (
     <motion.button
-      className={`btn btn-${variant}`}
+      className={["btn", `btn-${variant}`, className].filter(Boolean).join(" ")}
       whileTap={{ scale: 0.97 }}
       transition={snappy}
       {...rest}

@@ -5,8 +5,23 @@
   margin: 0;
 }
 
+/* Neutral primitive scale — the only non-neutral color in the app
+   lives on the cards themselves. */
 :root {
-  color-scheme: dark;
+  --color-1: oklch(0.993 0 0);
+  --color-2: oklch(0.982 0 0);
+  --color-3: oklch(0.961 0 0);
+  --color-4: oklch(0.94 0 0);
+  --color-5: oklch(0.918 0 0);
+  --color-6: oklch(0.894 0 0);
+  --color-7: oklch(0.865 0 0);
+  --color-8: oklch(0.818 0 0);
+  --color-9: oklch(0.649 0 0);
+  --color-10: oklch(0.606 0 0);
+  --color-11: oklch(0.503 0 0);
+  --color-12: oklch(0.375 0 0);
+
+  color-scheme: light;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -18,8 +33,8 @@ body,
 }
 
 body {
-  background: oklch(0.16 0.01 260);
-  color: oklch(0.95 0.005 260);
+  background: var(--color-2);
+  color: var(--color-12);
 }
 
 /* PLAN.md §2 — single centered column, identical on mobile and desktop */
@@ -33,13 +48,6 @@ body {
   align-items: center;
   justify-content: center;
   gap: 24px;
-}
-
-/* Phase 0 placeholder — exact ID-1 aspect from Phase A onward */
-.placeholder-card {
-  width: 100%;
-  aspect-ratio: 1.586;
-  border-radius: 4.2%/6.7%;
 }
 
 .app-header {

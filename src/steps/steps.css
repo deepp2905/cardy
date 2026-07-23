@@ -23,5 +23,44 @@
 
 .confirm-placeholder p {
   font-size: 14px;
-  color: oklch(0.66 0.01 260);
+  color: var(--color-11);
+}
+
+/* welcome */
+
+.welcome {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  flex: 1;
+  align-self: stretch;
+}
+
+.welcome-copy {
+  margin: auto 0; /* vertically centers between top and the CTA */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.welcome-copy h1 {
+  font-size: 34px;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+  color: var(--color-12);
+}
+
+.welcome-copy p {
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--color-11);
+  max-width: 30ch;
+  text-wrap: balance;
+}
+
+.welcome-cta {
+  width: 100%;
+  padding-bottom: 8px;
 }
