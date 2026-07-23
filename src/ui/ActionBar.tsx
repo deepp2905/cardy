@@ -53,7 +53,7 @@ export function ActionBar({
             d="M4 12h15m-6-6 6 6-6 6"
             fill="none"
             stroke="currentColor"
-            strokeWidth="1.5"
+            strokeWidth="1.75"
             strokeLinecap="round"
             strokeLinejoin="round"
           />

@@ -18,7 +18,7 @@ export function BackButton({ onClick }: { onClick: () => void }) {
           d="M20 12H5m6-6-6 6 6 6"
           fill="none"
           stroke="currentColor"
-          strokeWidth="1.5"
+          strokeWidth="1.75"
           strokeLinecap="round"
           strokeLinejoin="round"
         />

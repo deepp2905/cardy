@@ -81,12 +81,6 @@
   width: 30px;
   height: 30px;
   display: block;
-  transition: translate 0.2s ease;
-}
-
-/* The next arrow has its own periodic nudge; back keeps a hover slide. */
-.btn-back:hover .cta-arrow {
-  translate: -2px 0;
 }
 
 .btn-primary:hover {
