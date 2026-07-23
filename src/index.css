@@ -6,7 +6,9 @@
 }
 
 /* Neutral primitive scale — the only non-neutral color in the app
-   lives on the cards themselves. */
+   lives on the cards themselves. Steps run background (1) -> text (12);
+   the dark block remaps the same semantic steps, so components never
+   branch on theme. data-theme is stamped on <html> before paint. */
 :root {
   --color-1: oklch(0.993 0 0);
   --color-2: oklch(0.982 0 0);
@@ -21,9 +23,30 @@
   --color-11: oklch(0.503 0 0);
   --color-12: oklch(0.375 0 0);
 
+  --knob-highlight: rgba(255, 255, 255, 0.9);
+
   color-scheme: light;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+:root[data-theme="dark"] {
+  --color-1: oklch(0.146 0 0);
+  --color-2: oklch(0.176 0 0);
+  --color-3: oklch(0.21 0 0);
+  --color-4: oklch(0.239 0 0);
+  --color-5: oklch(0.268 0 0);
+  --color-6: oklch(0.301 0 0);
+  --color-7: oklch(0.343 0 0);
+  --color-8: oklch(0.405 0 0);
+  --color-9: oklch(0.551 0 0);
+  --color-10: oklch(0.599 0 0);
+  --color-11: oklch(0.723 0 0);
+  --color-12: oklch(0.903 0 0);
+
+  --knob-highlight: rgba(255, 255, 255, 0.08);
+
+  color-scheme: dark;
 }
 
 html,

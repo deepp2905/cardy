@@ -6,6 +6,7 @@ import { Customize } from "./steps/Customize";
 import { Welcome } from "./steps/Welcome";
 import { Button } from "./ui/Button";
 import { StepIndicator, type Step } from "./ui/StepIndicator";
+import { ThemeToggle } from "./ui/ThemeToggle";
 
 const ids = Object.keys(seedConfigs());
 
@@ -25,6 +26,7 @@ export default function App() {
       <header className="app-header">
         <StepIndicator current={step} />
       </header>
+      <ThemeToggle />
       {step === "welcome" && <Welcome onStart={() => setStep("customize")} />}
       {step === "customize" && (
         <Customize
