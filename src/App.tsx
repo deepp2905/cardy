@@ -9,7 +9,6 @@ import { useHashRoute } from "./playground/useHashRoute";
 import { Customize } from "./steps/Customize";
 import { Welcome } from "./steps/Welcome";
 import { ActionBar } from "./ui/ActionBar";
-import { Button } from "./ui/Button";
 import { StepIndicator, type Step } from "./ui/StepIndicator";
 import { ThemeToggle } from "./ui/ThemeToggle";
 
@@ -42,34 +41,51 @@ function MainFlow() {
     setConfigs((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
   };
 
+  // Navigation is constant chrome — the action bar lives outside the step
+  // transitions so the CTAs stay fixed across the journey.
+  const nav = {
+    welcome: {
+      next: () => setStep("customize"),
+      nextLabel: "Start designing",
+    },
+    customize: {
+      back: () => setStep("welcome"),
+      next: () => setStep("confirm"),
+      nextLabel: "Order this card",
+    },
+    confirm: {
+      back: () => setStep("customize"),
+      next: () => setStep("welcome"),
+      nextLabel: "Start over",
+    },
+  }[step] as { back?: () => void; next: () => void; nextLabel: string };
+
   return (
     <div className="column">
       <header className="app-header">
         <StepIndicator current={step} />
       </header>
       <ThemeToggle />
-      <AnimatePresence mode="wait" initial={false}>
-        {step === "welcome" && (
-          <StepShell key="welcome">
-            <Welcome onStart={() => setStep("customize")} />
-          </StepShell>
-        )}
-        {step === "customize" && (
-          <StepShell key="customize">
-            <Customize
-              configs={configs}
-              ids={ids}
-              activeId={activeId}
-              onActiveChange={setActiveId}
-              onPatch={patchConfig}
-              onBack={() => setStep("welcome")}
-              onOrder={() => setStep("confirm")}
-            />
-          </StepShell>
-        )}
-        {step === "confirm" && (
-          <StepShell key="confirm">
-            <div className="step confirm">
+      <main className="step-stage">
+        <AnimatePresence mode="wait" initial={false}>
+          {step === "welcome" && (
+            <StepShell key="welcome">
+              <Welcome />
+            </StepShell>
+          )}
+          {step === "customize" && (
+            <StepShell key="customize">
+              <Customize
+                configs={configs}
+                ids={ids}
+                activeId={activeId}
+                onActiveChange={setActiveId}
+                onPatch={patchConfig}
+              />
+            </StepShell>
+          )}
+          {step === "confirm" && (
+            <StepShell key="confirm">
               <div className="step-body">
                 <Card config={configs[activeId]} />
                 <p className="confirm-note">
@@ -77,15 +93,17 @@ function MainFlow() {
                   Phase E.
                 </p>
               </div>
-              <div className="action-bar-slot">
-                <ActionBar onBack={() => setStep("customize")}>
-                  <Button onClick={() => setStep("welcome")}>Start over</Button>
-                </ActionBar>
-              </div>
-            </div>
-          </StepShell>
-        )}
-      </AnimatePresence>
+            </StepShell>
+          )}
+        </AnimatePresence>
+      </main>
+      <div className="action-bar-fixed">
+        <ActionBar
+          onBack={nav.back}
+          onNext={nav.next}
+          nextLabel={nav.nextLabel}
+        />
+      </div>
     </div>
   );
 }

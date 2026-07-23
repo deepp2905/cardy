@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { snappy } from "../lib/motionConfig";
 import "./ui.css";
 
-// Square, icon-only (24px chevron). Sits left of the primary CTA.
+// Square, icon-only. Same shafted arrow as the next button, mirrored left.
 export function BackButton({ onClick }: { onClick: () => void }) {
   return (
     <motion.button
@@ -13,9 +13,9 @@ export function BackButton({ onClick }: { onClick: () => void }) {
       whileTap={{ scale: 0.96 }}
       transition={snappy}
     >
-      <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+      <svg className="cta-arrow" viewBox="0 0 24 24" aria-hidden="true">
         <path
-          d="M15 6l-6 6 6 6"
+          d="M20 12H5m6-6-6 6 6 6"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
