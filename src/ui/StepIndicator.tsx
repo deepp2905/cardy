@@ -18,16 +18,7 @@ export function StepIndicator({ current }: { current: Step }) {
       aria-label={`Step ${STEPS.indexOf(current) + 1} of ${STEPS.length}`}
     >
       {STEPS.map((s) => (
-        // The active segment takes 1.5x the width of the others. Animating
-        // flex-grow (not width) keeps the three segments filling the track
-        // exactly, with no rounding gap at the end.
-        <motion.div
-          key={s}
-          className="steps-seg"
-          initial={false}
-          animate={{ flexGrow: s === current ? 1.5 : 1 }}
-          transition={snappy}
-        >
+        <div key={s} className="steps-seg">
           {s === current && (
             <motion.div
               className="steps-fill"
@@ -35,7 +26,7 @@ export function StepIndicator({ current }: { current: Step }) {
               transition={snappy}
             />
           )}
-        </motion.div>
+        </div>
       ))}
     </div>
   );
