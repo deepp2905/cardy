@@ -1,19 +1,36 @@
-import { useState, type ReactNode } from "react";
+import { lazy, Suspense, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import type { CardConfig } from "./card/cardConfig";
 import { seedConfigs } from "./card/cardConfig";
 import { Card } from "./card/Card";
 import { crossfade } from "./lib/motionConfig";
 import { usePrefersReducedMotion } from "./lib/reducedMotion";
+import { useHashRoute } from "./playground/useHashRoute";
 import { Customize } from "./steps/Customize";
 import { Welcome } from "./steps/Welcome";
 import { Button } from "./ui/Button";
 import { StepIndicator, type Step } from "./ui/StepIndicator";
 import { ThemeToggle } from "./ui/ThemeToggle";
 
+// Playground is dev tooling — lazy so dialkit + its pages stay out of the
+// main app chunk.
+const Playground = lazy(() => import("./playground/Playground"));
+
 const ids = Object.keys(seedConfigs());
 
 export default function App() {
+  const route = useHashRoute();
+  if (route.startsWith("/play")) {
+    return (
+      <Suspense fallback={null}>
+        <Playground />
+      </Suspense>
+    );
+  }
+  return <MainFlow />;
+}
+
+function MainFlow() {
   const [step, setStep] = useState<Step>("welcome");
   const [configs, setConfigs] = useState<Record<string, CardConfig>>(
     seedConfigs,
