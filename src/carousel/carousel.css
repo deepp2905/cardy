@@ -1,4 +1,7 @@
 .carousel {
+  /* Positioned so slides' offsetLeft is measured from the strip itself —
+     the center-detection and centering math depend on this. */
+  position: relative;
   display: flex;
   gap: 14px;
   width: 100%;
