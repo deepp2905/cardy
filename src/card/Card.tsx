@@ -1,7 +1,8 @@
-import type { ComponentProps, CSSProperties, ReactNode } from "react";
+import type { ComponentProps, CSSProperties } from "react";
 import type { CardConfig } from "./cardConfig";
 import { inkFor } from "./cardConfig";
 import { CardShader } from "./CardShader";
+import { WaveGraphic } from "./WaveGraphic";
 import "./card.css";
 
 // Pure (config) => visual. Used in carousel, welcome, and snapshot.
@@ -10,13 +11,11 @@ import "./card.css";
 
 type CardProps = {
   config: CardConfig;
-  /** Extra layer between shader and content (wave graphic, Phase B). */
-  graphic?: ReactNode;
   /** Dev-tuning override for the shader look (dialkit harness). */
   shaderParams?: Partial<ComponentProps<typeof CardShader>>;
 };
 
-export function Card({ config, graphic, shaderParams }: CardProps) {
+export function Card({ config, shaderParams }: CardProps) {
   const { ink, inkMuted } = inkFor(config.baseColor);
 
   return (
@@ -28,7 +27,7 @@ export function Card({ config, graphic, shaderParams }: CardProps) {
         <div className="card-layer">
           <CardShader baseColor={config.baseColor} {...shaderParams} />
         </div>
-        {graphic && <div className="card-layer">{graphic}</div>}
+        <WaveGraphic curve={config.curve} intensity={config.intensity} />
         <div className="card-layer card-content">
           <div className="card-top">
             <span className="card-wordmark">cardy</span>

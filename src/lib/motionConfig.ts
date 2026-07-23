@@ -27,10 +27,15 @@ export const stamp: Transition = {
   damping: 15,
 };
 
-export const settle: Transition = {
-  type: "spring",
+// Options shape for useSpring() (motion values take no `type` field).
+export const settleOptions = {
   stiffness: 120,
   damping: 18,
+} as const;
+
+export const settle: Transition = {
+  type: "spring",
+  ...settleOptions,
 };
 
 // Opacity crossfades only — never for interactive responses.

@@ -23,11 +23,19 @@ export default function App() {
       intensity: [0.18, 0, 1, 0.01],
       noise: [0.3, 0, 1, 0.01],
     },
+    wave: {
+      a: [3, 0.5, 8, 0.5],
+      b: [2, 0.5, 8, 0.5],
+      phase: [0.5, 0, 1, 0.01],
+      intensity: [0.5, 0, 1, 0.01],
+    },
   });
 
   const config = {
     ...configs[ids[Math.round(p.palette)]],
     note: p.note.toUpperCase().slice(0, 24),
+    curve: { a: p.wave.a, b: p.wave.b, phase: p.wave.phase },
+    intensity: p.wave.intensity,
   };
 
   return (
