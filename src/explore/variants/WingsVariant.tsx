@@ -8,14 +8,14 @@ import "../explore.css";
 // hinge away from it like door panels, anchored on their inner edge.
 export function WingsVariant() {
   const p = useDialKit("Perspective wings", {
-    cardWidth: [330, 180, 520, 5],
-    wingAngle: [64, 0, 88, 1],
+    cardWidth: [235, 180, 520, 5],
+    wingAngle: [60, 0, 88, 1],
     /** Gap between the centre card's edge and the hinge, in px. */
-    hinge: [10, -60, 120, 1],
+    hinge: [48, -60, 120, 1],
     /** How far apart the folded wings stack (multiplies their spacing). */
-    wingSpacing: [0.5, 0.1, 1.2, 0.05],
-    perspective: [900, 300, 2500, 25],
-    wingFade: [0.4, 0, 1, 0.01],
+    wingSpacing: [0.8, 0.1, 1.2, 0.05],
+    perspective: [2500, 300, 2500, 25],
+    wingFade: [0, 0, 1, 0.01],
   });
 
   const { ref, index, focusedIndex } = useCardDeck("x");
