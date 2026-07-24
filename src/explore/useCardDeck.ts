@@ -23,6 +23,21 @@ const WHEEL_DIVISOR = 220; // wheel px per card
 const DRAG_DIVISOR = 190; // pointer px per card
 const SETTLE_MS = 260;
 
+// Rubberband past the ends (same asymptote as the app's slider): the raw
+// overshoot is squashed so it approaches a ceiling but never reaches it, then
+// the release settle springs back to a real card.
+const RUBBER_CEILING = 0.85; // most it can travel past the end, in cards
+const RUBBER_RESISTANCE = 1.1; // overshoot (in cards) that reaches half the ceiling
+
+/** Fold a value that has run past [0, max] back under resistance. */
+function rubberband(v: number, max: number): number {
+  const over = v < 0 ? v : v > max ? v - max : 0;
+  if (over === 0) return v;
+  const pull = Math.abs(over);
+  const eased = (pull / (pull + RUBBER_RESISTANCE)) * RUBBER_CEILING;
+  return over < 0 ? -eased : max + eased;
+}
+
 export function useCardDeck(axis: "x" | "y" = "x", count = COUNT) {
   const ref = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
@@ -34,9 +49,18 @@ export function useCardDeck(axis: "x" | "y" = "x", count = COUNT) {
     const el = ref.current;
     if (!el) return;
 
-    const clamp = (v: number) => Math.min(count - 1, Math.max(0, v));
+    const max = count - 1;
+    const clamp = (v: number) => Math.min(max, Math.max(0, v));
+    // Hard-clamped commit for wheel/keyboard/settle — discrete moves land on
+    // real cards, no bounce.
     const commit = (v: number) => {
       value.current = clamp(v);
+      setIndex(value.current);
+    };
+    // Drag commit: resist past the ends so the deck bounces instead of
+    // stopping dead, then the release settle springs it back.
+    const commitDrag = (v: number) => {
+      value.current = rubberband(v, max);
       setIndex(value.current);
     };
     const stopSettle = () => {
@@ -49,7 +73,9 @@ export function useCardDeck(axis: "x" | "y" = "x", count = COUNT) {
     const settle = () => {
       stopSettle();
       const from = value.current;
-      const to = Math.round(from);
+      // Clamp the target: a rubberbanded overshoot (e.g. -0.7) rounds to an
+      // index outside the deck, so snap to the real end card instead.
+      const to = clamp(Math.round(from));
       if (from === to) return;
       const start = performance.now();
       const step = (now: number) => {
@@ -96,7 +122,7 @@ export function useCardDeck(axis: "x" | "y" = "x", count = COUNT) {
       if (!dragging) return;
       const now = axis === "x" ? e.clientX : e.clientY;
       // Dragging left/up advances the deck, matching scroll direction.
-      commit(startIndex - (now - startPos) / DRAG_DIVISOR);
+      commitDrag(startIndex - (now - startPos) / DRAG_DIVISOR);
     };
 
     const onPointerUp = (e: PointerEvent) => {
