@@ -28,20 +28,34 @@ export function useCentreIndex(axis: "x" | "y" = "x") {
         axis === "x"
           ? el.scrollLeft + el.clientWidth / 2
           : el.scrollTop + el.clientHeight / 2;
+      // Nearest slide, plus how far past it the centre has travelled toward
+      // the next one — without that fraction every layout snaps between
+      // whole sizes instead of tracking the scroll.
+      const mids = Array.from(slides, (slide) =>
+        axis === "x"
+          ? slide.offsetLeft + slide.clientWidth / 2
+          : slide.offsetTop + slide.clientHeight / 2,
+      );
+
       let best = 0;
       let bestDist = Infinity;
-      slides.forEach((slide, i) => {
-        const mid =
-          axis === "x"
-            ? slide.offsetLeft + slide.clientWidth / 2
-            : slide.offsetTop + slide.clientHeight / 2;
+      mids.forEach((mid, i) => {
         const d = Math.abs(mid - centre);
         if (d < bestDist) {
           bestDist = d;
           best = i;
         }
       });
-      setActive(best);
+
+      const signed = centre - mids[best];
+      // Pitch to the neighbour the centre is drifting toward.
+      const neighbour = signed >= 0 ? best + 1 : best - 1;
+      const pitch =
+        mids[neighbour] === undefined
+          ? undefined
+          : Math.abs(mids[neighbour] - mids[best]);
+
+      setActive(pitch ? best + signed / pitch : best);
     };
 
     measure();

@@ -25,7 +25,7 @@ export function ExplodedVariant() {
       {Array.from({ length: COUNT }, (_, i) => {
         const d = i - active;
         const away = Math.abs(d);
-        const focused = i === active;
+        const focused = Math.round(active) === i;
         return (
           <div key={i} className="v-exploded-slot" style={{ height: p.spacing }}>
             <MockCard

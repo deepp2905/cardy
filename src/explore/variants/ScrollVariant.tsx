@@ -28,7 +28,7 @@ export function ScrollVariant() {
           >
             <MockCard
               depth={eased}
-              focused={i === active}
+              focused={Math.round(active) === i}
               style={{ transform: `scale(${scale})` }}
             />
           </div>
