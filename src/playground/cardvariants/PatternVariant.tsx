@@ -23,6 +23,8 @@ export function PatternVariant({ baseColor }: { baseColor: string }) {
       default: "circle",
     },
     filled: false,
+    /** plus-lighter (on) brightens, plus-darker (off) deepens. */
+    plusLighter: true,
     strokeWidth: [1.6, 0.5, 6, 0.1],
     /** Base cell size, px in card space. */
     size: [34, 6, 120, 1],
@@ -43,7 +45,14 @@ export function PatternVariant({ baseColor }: { baseColor: string }) {
 
   const id = useId();
   const shape = p.shape as Shape;
-  const stroke = `rgb(255 255 255 / 0.5)`;
+  // Lighten uses white shapes + plus-lighter; darken uses black + multiply
+  // (plus-darker is NOT a valid CSS mix-blend-mode — it silently no-ops).
+  // The group carries opacity and blend. Filled shapes cover more area than
+  // thin outlines, so they read too strong at the same opacity: 10% filled
+  // vs 25% outline.
+  const stroke = p.plusLighter ? "#fff" : "#000";
+  const blend = p.plusLighter ? "plus-lighter" : "multiply";
+  const groupOpacity = p.filled ? 0.1 : 0.25;
 
   // Overscan the grid so shapes bleed past every edge.
   const cx = VIEW_W / 2;
@@ -122,10 +131,10 @@ export function PatternVariant({ baseColor }: { baseColor: string }) {
           preserveAspectRatio="xMidYMid slice"
           aria-hidden="true"
         >
-          {/* One group, one blend: all shapes composite plus-lighter together
-              rather than each blending separately. */}
+          {/* One group carries the opacity and blend so all shapes composite
+              together once rather than each blending separately. */}
           <g
-            style={{ mixBlendMode: "plus-lighter" }}
+            style={{ opacity: groupOpacity, mixBlendMode: blend }}
             strokeLinejoin="round"
             data-id={id}
           >
