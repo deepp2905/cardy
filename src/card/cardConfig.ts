@@ -146,9 +146,10 @@ export const PATTERN_FIXED = {
   staggerSpacing: 16,
   /** plus-lighter is fixed off: shapes deepen the card colour (plus-darker). */
   plusLighter: false,
-  /** Group opacity by fill mode. Both bumped 25% over the original tuned
-   *  values (0.1 / 0.25) so the pattern reads a touch stronger. */
-  filledOpacity: 0.125,
+  /** Group opacity by fill mode. Outline is +25% over its original tuned
+   *  value (0.25); filled reads lighter at the same bump, so it gets a
+   *  further 15% on top (0.125 -> ~0.144) to match the outline's weight. */
+  filledOpacity: 0.144,
   outlineOpacity: 0.3125,
 } as const;
 

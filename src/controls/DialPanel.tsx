@@ -1,5 +1,4 @@
 import type { CardConfig, PatternShape } from "../card/cardConfig";
-import { NoteField } from "./NoteField";
 import { Slider } from "./Slider";
 import { Segmented, type SegmentedOption } from "./Segmented";
 import "./controls.css";
@@ -8,7 +7,9 @@ import "./controls.css";
 // reads/writes configs[activeId] only — no global control state.
 type DialPanelProps = {
   config: CardConfig;
-  /** Shared across all cards, so it lives above the per-card config. */
+  /** Shared across all cards. The engraving editor is hidden from the panel
+   *  for now (NoteField removed below), but the note still threads through App
+   *  → cards → confirm/share, so these stay on the props. */
   note: string;
   onNoteChange: (note: string) => void;
   onPatch: (patch: Partial<CardConfig>) => void;
@@ -58,13 +59,12 @@ const FILL_OPTIONS: SegmentedOption<"outline" | "filled">[] = [
 // the step, just above the action bar.
 export function DialPanel({
   config,
-  note,
-  onNoteChange,
+  // note / onNoteChange intentionally unused for now — the engraving editor is
+  // hidden from the customize panel but the plumbing is kept.
   onPatch,
 }: DialPanelProps) {
   return (
     <div className="dial-panel">
-      <NoteField value={note} onChange={onNoteChange} />
       <div className="dial-row">
         <Segmented
           label="Shape"
