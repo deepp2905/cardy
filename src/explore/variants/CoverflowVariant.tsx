@@ -8,14 +8,14 @@ import "../explore.css";
 // flat and forward. The classic iTunes mechanic.
 export function CoverflowVariant() {
   const p = useDialKit("Coverflow", {
-    cardWidth: [300, 180, 460, 5],
-    rotateY: [52, 0, 85, 1],
-    spread: [0.48, 0.1, 1.2, 0.01],
-    depthPush: [140, 0, 400, 5],
-    scaleStep: [0.06, 0, 0.2, 0.005],
-    scaleDepth: [3, 1, 7, 1],
-    fade: [0.25, 0, 1, 0.01],
-    perspective: [1100, 400, 3000, 50],
+    cardWidth: [400, 180, 460, 5],
+    rotateY: [64, 0, 85, 1],
+    spread: [0.58, 0.1, 1.2, 0.01],
+    depthPush: [240, 0, 400, 5],
+    scaleStep: [0.04, 0, 0.2, 0.005],
+    scaleDepth: [7, 1, 7, 1],
+    fade: [0, 0, 1, 0.01],
+    perspective: [1200, 400, 3000, 50],
   });
 
   const { ref, index, focusedIndex } = useCardDeck("x");
