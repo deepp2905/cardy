@@ -44,11 +44,15 @@ function rubberband(v: number, max: number): number {
   return over < 0 ? -eased : max + eased;
 }
 
-export function useCardDeck(axis: "x" | "y" = "x", count = COUNT) {
+export function useCardDeck(
+  axis: "x" | "y" = "x",
+  count = COUNT,
+  initial = 0,
+) {
   const ref = useRef<HTMLDivElement>(null);
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(initial);
   // Ref mirrors state so handlers read the live value without re-subscribing.
-  const value = useRef(0);
+  const value = useRef(initial);
   const raf = useRef<number | null>(null);
 
   useEffect(() => {

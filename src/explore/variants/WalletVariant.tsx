@@ -21,7 +21,7 @@ export function WalletVariant() {
     fadeReach: [0.1, 0.1, 1, 0.05],
   });
 
-  const { ref, index, focusedIndex } = useCardDeck("y");
+  const { ref, index, focusedIndex } = useCardDeck("y", COUNT, COUNT - 1);
 
   return (
     <div

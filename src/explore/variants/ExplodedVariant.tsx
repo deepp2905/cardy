@@ -29,7 +29,7 @@ export function ExplodedVariant() {
     perspective: [1200, 400, 3000, 50],
   });
 
-  const { ref, index, focusedIndex } = useCardDeck("y");
+  const { ref, index, focusedIndex } = useCardDeck("y", COUNT, COUNT - 1);
   const clamp = (v: number, lo: number, hi: number) =>
     Math.min(hi, Math.max(lo, v));
 
