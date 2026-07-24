@@ -20,14 +20,14 @@ export type PaletteEntry = { name: string; color: string };
 // Ordered by hue, ascending around the wheel, so the carousel and the
 // playground swatches run as a continuous spectrum.
 export const PALETTE: PaletteEntry[] = [
-  { name: "coral", color: "oklch(0.64 0.18 25)" },
-  { name: "amber", color: "oklch(0.64 0.18 85)" },
-  { name: "lime", color: "oklch(0.64 0.18 115)" },
-  { name: "jade", color: "oklch(0.64 0.18 150)" },
-  { name: "teal", color: "oklch(0.64 0.18 200)" },
-  { name: "cobalt", color: "oklch(0.64 0.18 250)" },
-  { name: "violet", color: "oklch(0.64 0.18 300)" },
-  { name: "magenta", color: "oklch(0.64 0.18 350)" },
+  { name: "coral", color: "oklch(0.68 0.26 25)" },
+  { name: "amber", color: "oklch(0.68 0.26 85)" },
+  { name: "lime", color: "oklch(0.68 0.26 115)" },
+  { name: "jade", color: "oklch(0.68 0.26 150)" },
+  { name: "teal", color: "oklch(0.68 0.26 200)" },
+  { name: "cobalt", color: "oklch(0.68 0.26 250)" },
+  { name: "violet", color: "oklch(0.68 0.26 300)" },
+  { name: "magenta", color: "oklch(0.68 0.26 350)" },
 ];
 
 // One shared starting point for every card: the strip reads as a single
@@ -105,7 +105,9 @@ export function inkFor(baseColor: string): {
   isLight: boolean;
 } {
   const { l, h } = parseOklch(baseColor);
-  if (l >= 0.68) {
+  // 0.72, above the palette's 0.68: the coloured cards keep white ink and
+  // their glowing additive marks. Only genuinely pale cards get dark ink.
+  if (l >= 0.72) {
     return {
       ink: oklchString(0.2, 0.02, h),
       inkMuted: oklchString(0.28, 0.03, h),
