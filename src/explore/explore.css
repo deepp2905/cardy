@@ -123,11 +123,21 @@
    depth so the stack still reads. Gated by the menu toggle. The border
    follows automatically since it reads --fill. */
 .explore[data-colorful="true"] .mock-card {
+  /* --card-tone is the palette colour, lightened in light mode (below) so a
+     mid-lightness fill doesn't read as dark against the near-white ground —
+     simultaneous contrast, not an actual colour change. */
+  --tone: var(--card-color);
   --fill: color-mix(
     in oklch,
-    var(--card-color),
+    var(--tone),
     var(--color-3) calc(var(--depth, 0) * 55%)
   );
+}
+
+/* Light mode: lift the colour toward white so it sits at/above the ground
+   and reads as vivid as the dark-mode version. data-theme is on <html>. */
+:root:not([data-theme="dark"]) .explore[data-colorful="true"] .mock-card {
+  --tone: color-mix(in oklch, var(--card-color), white 22%);
 }
 
 /* Lighter cards catch more shadow than they should in light mode; soften. */
