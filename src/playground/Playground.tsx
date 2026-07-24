@@ -11,6 +11,8 @@ const TABS = [
   { path: "/play/card", label: "Card" },
   { path: "/play/palette", label: "Palette" },
   { path: "/play/type", label: "Type" },
+  // Own route, not a /play page — it has its own chrome and dial panels.
+  { path: "/explore", label: "Carousel ideas" },
 ];
 
 export default function Playground() {
@@ -35,9 +37,6 @@ export default function Playground() {
               {t.label}
             </a>
           ))}
-          <a href="#/explore" className="pg-tab">
-            Carousel ideas
-          </a>
           <a href="#/" className="pg-tab pg-tab-exit">
             ← App
           </a>

@@ -106,9 +106,13 @@
   scroll-snap-type: y mandatory;
   overscroll-behavior-y: contain;
   scrollbar-width: none;
-  max-height: 100%;
+  /* flex:1 + min-height:0 gives the scroller a real height to work against;
+     max-height:100% doesn't resolve inside a flex parent. */
+  flex: 1;
+  min-height: 0;
   width: 100%;
-  padding-block: 40%;
+  /* Enough lead-in/out that the first and last card can reach the centre. */
+  padding-block: 34vh;
 }
 
 .explore-stage ::-webkit-scrollbar {
@@ -137,19 +141,39 @@
   transform-style: preserve-3d;
 }
 
+/* Horizontal slots size from the card, so the card needs a concrete width
+   to derive its aspect-ratio height from. */
+.v-scroll-slide > .mock-card,
+.v-coverflow-slot > .mock-card,
+.v-wings-slot > .mock-card {
+  width: 100%;
+}
+
+/* The slot height is the PEEK — how much of this card shows before the next
+   one overlaps it. The card itself is absolutely positioned so it keeps its
+   full ID-1 height and spills past the slot; without that it would be
+   squashed to the peek height and the stack would render as thin slivers. */
 .v-exploded-slot,
 .v-wallet-slot,
 .v-apple-slot,
 .v-tiers-slot {
   position: relative;
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-shrink: 0;
   transform-style: preserve-3d;
   transition:
     height 0.3s cubic-bezier(0.32, 0.72, 0, 1),
     transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.v-exploded-slot > .mock-card,
+.v-wallet-slot > .mock-card,
+.v-apple-slot > .mock-card,
+.v-tiers-slot > .mock-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
 }
 
 .v-exploded-slot .mock-card,
