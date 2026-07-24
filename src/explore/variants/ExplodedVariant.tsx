@@ -21,6 +21,7 @@ export function ExplodedVariant() {
   return (
     <div
       className="v-deck"
+      data-vertical="true"
       ref={ref}
       tabIndex={0}
       style={

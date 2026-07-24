@@ -22,6 +22,7 @@ export function AppleWalletVariant() {
   return (
     <div
       className="v-deck"
+      data-vertical="true"
       ref={ref}
       tabIndex={0}
       style={{ "--card-w": `${p.cardWidth}px` } as CSSProperties}

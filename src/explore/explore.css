@@ -136,6 +136,37 @@
   overflow: hidden;
 }
 
+/* Vertical decks fade to nothing at the top and bottom so cards dissolve as
+   they leave rather than hitting a hard clip edge. Ease-out ramps: opaque
+   through the middle, tapering over --deck-fade at each end. The stops are an
+   ease-out curve sampled at 0/40/70/100% so the falloff accelerates into the
+   edge instead of being a flat linear gradient. */
+.v-deck[data-vertical="true"] {
+  --deck-fade: 16%;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    rgba(0, 0, 0, 0.35) calc(var(--deck-fade) * 0.4),
+    rgba(0, 0, 0, 0.8) calc(var(--deck-fade) * 0.7),
+    #000 var(--deck-fade),
+    #000 calc(100% - var(--deck-fade)),
+    rgba(0, 0, 0, 0.8) calc(100% - var(--deck-fade) * 0.7),
+    rgba(0, 0, 0, 0.35) calc(100% - var(--deck-fade) * 0.4),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    rgba(0, 0, 0, 0.35) calc(var(--deck-fade) * 0.4),
+    rgba(0, 0, 0, 0.8) calc(var(--deck-fade) * 0.7),
+    #000 var(--deck-fade),
+    #000 calc(100% - var(--deck-fade)),
+    rgba(0, 0, 0, 0.8) calc(100% - var(--deck-fade) * 0.7),
+    rgba(0, 0, 0, 0.35) calc(100% - var(--deck-fade) * 0.4),
+    transparent 100%
+  );
+}
+
 .v-deck:focus-visible {
   outline: 2px solid var(--color-9);
   outline-offset: -4px;

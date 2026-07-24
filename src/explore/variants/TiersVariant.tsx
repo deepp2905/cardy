@@ -22,6 +22,7 @@ export function TiersVariant() {
   return (
     <div
       className="v-deck"
+      data-vertical="true"
       ref={ref}
       tabIndex={0}
       style={{ "--card-w": `${p.cardWidth}px` } as CSSProperties}
