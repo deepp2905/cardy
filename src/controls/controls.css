@@ -59,17 +59,20 @@
     left 0.2s ease;
 }
 
+/* height and top are driven by motion (they shrink toward the pill's
+   rounded ends) — see Slider.tsx. */
 .slider-thumb {
   position: absolute;
-  top: 13px;
-  height: 34px;
   width: 4px;
   /* Sit just inside the fill's leading edge, clamped so the pill stays
      within the track at both extremes. */
   left: clamp(6px, calc(var(--pct) - 10px), calc(100% - 10px));
   border-radius: 999px;
-  background: var(--color-1);
-  opacity: 0.75;
+  /* Light, but held off pure white so it reads as a machined marker rather
+     than a blown-out highlight. Fixed, not themed — it sits on the same
+     mid-grey fill in both light and dark. */
+  background: oklch(0.96 0 0);
+  opacity: 0.85;
   pointer-events: none;
   z-index: 2;
 }

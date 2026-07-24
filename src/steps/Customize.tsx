@@ -11,7 +11,10 @@ type CustomizeProps = {
   ids: string[];
   activeId: string;
   cardName: string;
+  /** Shared across every card — see App. */
+  note: string;
   onActiveChange: (id: string) => void;
+  onNoteChange: (note: string) => void;
   onPatch: (id: string, patch: Partial<CardConfig>) => void;
 };
 
@@ -21,7 +24,9 @@ export function Customize({
   ids,
   activeId,
   cardName,
+  note,
   onActiveChange,
+  onNoteChange,
   onPatch,
 }: CustomizeProps) {
   const reduce = usePrefersReducedMotion();
@@ -49,11 +54,17 @@ export function Customize({
           ids={ids}
           activeId={activeId}
           cardName={cardName}
+          note={note}
           onActiveChange={onActiveChange}
         />
       </motion.div>
       <motion.div className="customize-panel" variants={item}>
-        <DialPanel config={active} onPatch={(patch) => onPatch(activeId, patch)} />
+        <DialPanel
+          config={active}
+          note={note}
+          onNoteChange={onNoteChange}
+          onPatch={(patch) => onPatch(activeId, patch)}
+        />
       </motion.div>
     </motion.div>
   );

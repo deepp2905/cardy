@@ -39,6 +39,9 @@ function MainFlow() {
   // Start on the first card (cobalt); the strip's padding lets the first and
   // last cards both reach dead centre, so the deck reads start-to-end.
   const [activeId, setActiveId] = useState<string>(ids[0]);
+  // The engraving is a property of the order, not of a colourway — it stays
+  // put as you browse. Only the slider values are per-card.
+  const [note, setNote] = useState("");
   // `/first-last` read once — the app never mutates the URL, so this holds
   // for the whole journey (PLAN.md Phase P).
   const person = useMemo(() => parsePerson(), []);
@@ -86,7 +89,9 @@ function MainFlow() {
                 ids={ids}
                 activeId={activeId}
                 cardName={person.cardName}
+                note={note}
                 onActiveChange={setActiveId}
+                onNoteChange={setNote}
                 onPatch={patchConfig}
               />
             </StepShell>
@@ -94,7 +99,10 @@ function MainFlow() {
           {step === "confirm" && (
             <StepShell key="confirm">
               <div className="step-body confirm">
-                <Card config={configs[activeId]} name={person.cardName} />
+                <Card
+                  config={{ ...configs[activeId], note }}
+                  name={person.cardName}
+                />
                 <p className="confirm-note">
                   Confirm step (paper fold, envelope, mailbox) arrives in
                   Phase E.

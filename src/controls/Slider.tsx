@@ -20,6 +20,15 @@ const MAX_STRETCH = 0.12;
 /** Pixels of overshoot that give half of MAX_STRETCH. Higher = stiffer. */
 const STRETCH_PIVOT_PX = 120;
 
+/** Track height — mirrors --control-h. */
+const TRACK_H = 60;
+/** Thumb height at rest in the middle of the track. */
+const THUMB_MAX = 34;
+/** Thumb height at either extreme, where the pill's curve narrows it. */
+const THUMB_MIN = 16;
+/** Fraction of the track over which the thumb shrinks into the corner. */
+const EDGE_ZONE = 0.06;
+
 export function Slider({ value, onChange, label, disabled }: SliderProps) {
   const id = useId();
   const trackRef = useRef<HTMLDivElement>(null);
@@ -39,6 +48,13 @@ export function Slider({ value, onChange, label, disabled }: SliderProps) {
   const pctValue = useTransform(display, (v) => `${v * 100}%`);
 
   const [hovered, setHovered] = useState(false);
+
+  // Thumb height: full in the middle, shrinking toward the rounded ends so it
+  // never crowds the curve. `edge` is 0 at either extreme, 1 once clear of
+  // the corner radius.
+  const edge = Math.min(1, Math.min(value, 1 - value) / EDGE_ZONE);
+  const thumbFull = hovered ? THUMB_MAX : THUMB_MAX / 1.5;
+  const thumbH = THUMB_MIN + (thumbFull - THUMB_MIN) * edge;
   // Brief ease-in when the track is clicked without dragging; cleared on the
   // first move so an actual drag stays 1:1 with the pointer.
   const [animating, setAnimating] = useState(false);
@@ -116,11 +132,10 @@ export function Slider({ value, onChange, label, disabled }: SliderProps) {
           aria-hidden="true"
           // Height, not scaleY: transform-scaling a fixed-px radius squashes
           // it flat on the scaled axis and the pill stops being round.
-          // Centred in the 60px track at both sizes.
-          animate={{
-            height: hovered ? 34 : 34 / 1.5,
-            top: hovered ? 13 : 13 + (34 - 34 / 1.5) / 2,
-          }}
+          // Centred in the 60px track at both sizes. Shrinks near the ends:
+          // the track is a pill, so the usable height collapses with the
+          // curve (only ~36px of the 60 is available 6px in from the edge).
+          animate={{ height: thumbH, top: (TRACK_H - thumbH) / 2 }}
           transition={{ ...snappy, damping: 24 }}
         />
         <input

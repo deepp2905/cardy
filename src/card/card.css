@@ -43,9 +43,16 @@
 .card-content {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   padding: 5.6cqw 6.2cqw;
   color: var(--ink);
+}
+
+/* The chip is fixed relative to the top block; only the identity grows.
+   With space-between, adding the engraving line pushed the chip upward —
+   on a real card the chip is stamped at a fixed position, so the note has
+   to grow downward from the name instead. */
+.card-top {
+  flex-shrink: 0;
 }
 
 .card-top {
@@ -88,6 +95,8 @@
 .card-chip {
   width: 12.4cqw;
   height: auto;
+  margin-top: 4.4cqw;
+  flex-shrink: 0;
   filter: drop-shadow(0 0.3cqw 0.5cqw rgba(0, 0, 0, 0.2));
 }
 
@@ -95,6 +104,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
+  margin-top: auto; /* pinned to the base; the note grows upward into the gap */
 }
 
 .card-identity {

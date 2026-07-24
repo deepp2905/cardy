@@ -24,6 +24,8 @@ type CardCarouselProps = {
   ids: string[];
   activeId: string;
   cardName: string;
+  /** Shared engraving — merged into every card's config at render. */
+  note: string;
   onActiveChange: (id: string) => void;
 };
 
@@ -32,6 +34,7 @@ export function CardCarousel({
   ids,
   activeId,
   cardName,
+  note,
   onActiveChange,
 }: CardCarouselProps) {
   const stripRef = useRef<HTMLDivElement>(null);
@@ -154,7 +157,7 @@ export function CardCarousel({
               if (!isActive) centerSlide(id);
             }}
           >
-            <Card config={configs[id]} name={cardName} />
+            <Card config={{ ...configs[id], note }} name={cardName} />
           </Slide>
         );
       })}

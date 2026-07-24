@@ -7,15 +7,23 @@ import "./controls.css";
 // reads/writes configs[activeId] only — no global control state.
 type DialPanelProps = {
   config: CardConfig;
+  /** Shared across all cards, so it lives above the per-card config. */
+  note: string;
+  onNoteChange: (note: string) => void;
   onPatch: (patch: Partial<CardConfig>) => void;
 };
 
 // Note sits above the sliders; the whole panel is pinned to the bottom of
 // the step, just above the action bar.
-export function DialPanel({ config, onPatch }: DialPanelProps) {
+export function DialPanel({
+  config,
+  note,
+  onNoteChange,
+  onPatch,
+}: DialPanelProps) {
   return (
     <div className="dial-panel">
-      <NoteField value={config.note} onChange={(note) => onPatch({ note })} />
+      <NoteField value={note} onChange={onNoteChange} />
       <Slider
         label="Character"
         value={config.character}
