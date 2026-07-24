@@ -1,55 +1,64 @@
+import type { CSSProperties } from "react";
 import { useDialKit } from "dialkit";
 import { MockCard } from "../MockCard";
-import { COUNT, useCentreIndex } from "../useCentreIndex";
+import { COUNT, useCardDeck } from "../useCardDeck";
 import "../explore.css";
 
 // 5. Perspective wings — the centre card is full size and flat; neighbours
 // hinge away from it like door panels, anchored on their inner edge.
 export function WingsVariant() {
   const p = useDialKit("Perspective wings", {
+    cardWidth: [330, 180, 520, 5],
     wingAngle: [64, 0, 88, 1],
-    centreWidth: [330, 180, 520, 5],
-    wingWidth: [120, 40, 300, 5],
+    /** Gap between the centre card's edge and the hinge, in px. */
+    hinge: [10, -60, 120, 1],
     perspective: [900, 300, 2500, 25],
     wingFade: [0.4, 0, 1, 0.01],
   });
 
-  const { ref, active } = useCentreIndex();
+  const { ref, index, focusedIndex } = useCardDeck("x");
 
   return (
     <div
-      className="v-wings"
+      className="v-deck"
       ref={ref}
-      style={{ perspective: `${p.perspective}px` }}
+      tabIndex={0}
+      style={
+        {
+          perspective: `${p.perspective}px`,
+          "--card-w": `${p.cardWidth}px`,
+        } as CSSProperties
+      }
     >
       {Array.from({ length: COUNT }, (_, i) => {
-        const d = i - active;
-        const focused = d === 0;
-        const side = Math.sign(d);
+        const d = i - index;
+        const away = Math.abs(d);
+        const side = Math.sign(d) || 1;
+        // Wings fold about the centre card's edge, so each step out adds only
+        // the foreshortened width rather than a full card.
+        const fold = Math.min(1, away);
+        const foreshortened =
+          Math.cos((fold * p.wingAngle * Math.PI) / 180) * p.cardWidth;
+        const offset =
+          side *
+          (p.cardWidth / 2 + p.hinge + (away - 0.5) * foreshortened * 0.5);
         return (
           <div
             key={i}
-            className="v-wings-slot"
+            className="deck-item"
             style={{
-              flexBasis: focused ? p.centreWidth : p.wingWidth,
-              zIndex: focused ? COUNT : COUNT - Math.round(Math.abs(d)),
+              transformOrigin: side > 0 ? "left center" : "right center",
+              transform: [
+                `translateX(${away < 0.5 ? d * (p.cardWidth * 0.5) : offset}px)`,
+                `rotateY(${-side * fold * p.wingAngle}deg)`,
+              ].join(" "),
+              zIndex: COUNT - Math.round(away),
             }}
           >
-            <MockCard
-              depth={focused ? 0 : p.wingFade}
-              focused={focused}
-              style={{
-                transformOrigin: side > 0 ? "left center" : "right center",
-                transform: focused
-                  ? "none"
-                  : `rotateY(${-side * p.wingAngle}deg)`,
-                width: focused ? p.centreWidth : p.centreWidth,
-              }}
-            />
+            <MockCard depth={fold * p.wingFade} focused={i === focusedIndex} />
           </div>
         );
       })}
-      <style>{`.v-wings { padding-inline: calc(50% - ${p.centreWidth / 2}px); }`}</style>
     </div>
   );
 }
