@@ -17,7 +17,7 @@ export function ScrollVariant() {
     arc: [80, 0, 80, 2],
   });
 
-  const { ref, index, focusedIndex } = useCardDeck("x");
+  const { ref, index, focusedIndex } = useCardDeck("x", COUNT, 2);
   const pitch = p.cardWidth + p.gap;
 
   return (

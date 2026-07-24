@@ -18,7 +18,7 @@ export function CoverflowVariant() {
     perspective: [1200, 400, 3000, 50],
   });
 
-  const { ref, index, focusedIndex } = useCardDeck("x");
+  const { ref, index, focusedIndex } = useCardDeck("x", COUNT, 2);
   const pitch = p.cardWidth * p.spread;
 
   return (

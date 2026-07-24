@@ -18,7 +18,7 @@ export function WingsVariant() {
     wingFade: [0, 0, 1, 0.01],
   });
 
-  const { ref, index, focusedIndex } = useCardDeck("x");
+  const { ref, index, focusedIndex } = useCardDeck("x", COUNT, 2);
 
   return (
     <div
