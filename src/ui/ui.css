@@ -39,9 +39,27 @@
 .action-bar {
   --action-h: var(--control-h);
   display: flex;
-  align-items: center;
+  flex-direction: column;
   width: 100%;
   padding-top: 20px;
+}
+
+/* The primary row: back slot + flexing next CTA. Was the whole action bar;
+   now nested so a stacked secondary can sit beneath it on the epilogue. */
+.action-bar-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* Stacked secondary CTA (epilogue). Full width to match the primary above,
+   which it animates open beneath. box-sizing so the height tween lands on
+   exactly --action-h including padding. */
+.btn-action-secondary {
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 /* clip-path rather than overflow: hidden — the slot animates its width from

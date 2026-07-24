@@ -1,18 +1,18 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { crossfade } from "../lib/motionConfig";
-import { Button } from "../ui/Button";
 
 /**
  * Post-drop epilogue (PRD-CONFIRM.md §7, PLAN.md Phase F).
  *
- * The flow's real ending: confirmation and the digital-card offer, with a way
- * back to the start. It's also what puts the card back on screen — the
- * sequence buries the thing the user made, and this is where it returns.
+ * The flow's real ending: confirmation and the digital-card offer. The two
+ * CTAs (Start over + Add the digital card) live in the persistent ActionBar,
+ * not here — the primary is the same element that carried every step's CTA, so
+ * returning to step 1 reads as that button coming back rather than a new
+ * screen. This body is just the message and the wallet confirmation note.
  */
-export function Epilogue({ onRestart }: { onRestart: () => void }) {
+export function Epilogue({ walletAdded }: { walletAdded: boolean }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const [walletNote, setWalletNote] = useState(false);
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -33,10 +33,7 @@ export function Epilogue({ onRestart }: { onRestart: () => void }) {
       </h2>
       <p className="epilogue-sub">Your card arrives in about 7 days.</p>
 
-      <Button className="epilogue-cta" onClick={() => setWalletNote(true)}>
-        Add the digital card now
-      </Button>
-      {walletNote && (
+      {walletAdded && (
         <motion.p
           className="epilogue-note"
           initial={{ opacity: 0 }}
@@ -48,14 +45,6 @@ export function Epilogue({ onRestart }: { onRestart: () => void }) {
             : "We've emailed you a link — open it on your phone."}
         </motion.p>
       )}
-
-      <Button
-        variant="secondary"
-        className="epilogue-restart"
-        onClick={onRestart}
-      >
-        Start over
-      </Button>
     </motion.div>
   );
 }

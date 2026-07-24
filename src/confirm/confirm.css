@@ -499,22 +499,13 @@
   max-width: 30ch;
 }
 
-.epilogue-cta {
-  margin-top: 10px;
-}
-
+/* The wallet confirmation note. The CTAs themselves live in the ActionBar
+   (App.tsx) — the epilogue body is only the message. */
 .epilogue-note {
   font-size: var(--text-sm);
   color: var(--color-10);
   margin: 0;
   max-width: 32ch;
-}
-
-/* Secondary escape hatch — a gray-fill pill (same as the back button),
-   sitting a touch below the primary wallet CTA. */
-.epilogue-restart {
-  margin-top: 4px;
-  padding-inline: 28px;
 }
 
 .sr-only {

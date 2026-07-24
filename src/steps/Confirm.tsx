@@ -33,13 +33,17 @@ export function Confirm({
   name,
   firstName,
   started,
-  onRestart,
+  walletAdded,
+  onEpilogueChange,
 }: {
   config: CardConfig;
   name: string;
   firstName: string;
   started: boolean;
-  onRestart: () => void;
+  /** App owns the wallet CTA (it lives in the ActionBar now); this is its state. */
+  walletAdded: boolean;
+  /** Report epilogue visibility up so App can swap the ActionBar to it. */
+  onEpilogueChange: (shown: boolean) => void;
 }) {
   const reduce = usePrefersReducedMotion();
   const stageRef = useRef<HTMLDivElement>(null);
@@ -78,20 +82,27 @@ export function Confirm({
     },
   });
 
-  // Chrome hides for the duration. Done with a root data attribute and rules in
-  // confirm.css so App.tsx and ui.css stay untouched (see §Conflict surface).
+  // Chrome hides for the wrap sequence, then RETURNS on the epilogue: the
+  // ActionBar there hosts "Start over" + the wallet CTA, so it must be visible.
+  // Driven by a root data attribute + rules in confirm.css so ui.css needs no
+  // changes (see §Conflict surface).
   useEffect(() => {
     const root = document.documentElement;
-    if (started) root.dataset.sequence = "playing";
+    if (started && !showEpilogue) root.dataset.sequence = "playing";
     else delete root.dataset.sequence;
     return () => {
       delete root.dataset.sequence;
     };
-  }, [started]);
+  }, [started, showEpilogue]);
 
   useEffect(() => {
     if (!started) setShowEpilogue(false);
   }, [started]);
+
+  // Let App swap the ActionBar to its epilogue form (Start over + wallet).
+  useEffect(() => {
+    onEpilogueChange(showEpilogue);
+  }, [showEpilogue, onEpilogueChange]);
 
   // The live card is only mounted while it can be seen. From `inserting` on it
   // is behind two folded paper panels and the envelope body.
@@ -150,7 +161,7 @@ export function Confirm({
       )}
 
       <AnimatePresence>
-        {showEpilogue && <Epilogue key="epilogue" onRestart={onRestart} />}
+        {showEpilogue && <Epilogue key="epilogue" walletAdded={walletAdded} />}
       </AnimatePresence>
     </div>
   );

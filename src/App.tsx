@@ -58,6 +58,20 @@ function MainFlow() {
   // Step 3's wrap sequence is armed by the forward arrow, not by arriving on
   // the step — the finished card gets a beat to itself first (PRD-CONFIRM.md).
   const [wrapStarted, setWrapStarted] = useState(false);
+  // The epilogue (post-drop) reuses the persistent ActionBar rather than its
+  // own buttons: the primary becomes "Start over" (same slot that carried
+  // every step's CTA, so it reads as the same button returning to step 1) and
+  // the wallet offer stacks below as a secondary. App owns both bits of state
+  // so it can drive that swap from here.
+  const [atEpilogue, setAtEpilogue] = useState(false);
+  const [walletAdded, setWalletAdded] = useState(false);
+
+  const restart = () => {
+    setWrapStarted(false);
+    setAtEpilogue(false);
+    setWalletAdded(false);
+    setStep("welcome");
+  };
   // `/first-last` read once — the app never mutates the URL, so this holds
   // for the whole journey (PLAN.md Phase P).
   const person = useMemo(() => parsePerson(), []);
@@ -78,15 +92,32 @@ function MainFlow() {
       next: () => setStep("confirm"),
       nextLabel: "Order this card",
     },
-    confirm: {
-      back: () => {
-        setWrapStarted(false);
-        setStep("customize");
-      },
-      next: () => setWrapStarted(true),
-      nextLabel: "Wrap and post it",
-    },
-  }[step] as { back?: () => void; next: () => void; nextLabel: string };
+    confirm: atEpilogue
+      ? {
+          // Post-drop: the primary is now the return to step 1, and the wallet
+          // offer stacks beneath it. No back button — the sequence is done.
+          next: restart,
+          nextLabel: "Start over",
+          showArrow: false,
+          secondary: walletAdded
+            ? undefined
+            : { label: "Add the digital card", onClick: () => setWalletAdded(true) },
+        }
+      : {
+          back: () => {
+            setWrapStarted(false);
+            setStep("customize");
+          },
+          next: () => setWrapStarted(true),
+          nextLabel: "Wrap and post it",
+        },
+  }[step] as {
+    back?: () => void;
+    next: () => void;
+    nextLabel: string;
+    showArrow?: boolean;
+    secondary?: { label: string; onClick: () => void };
+  };
 
   return (
     <div className="column">
@@ -125,10 +156,8 @@ function MainFlow() {
                 name={person.cardName}
                 firstName={person.first}
                 started={wrapStarted}
-                onRestart={() => {
-                  setWrapStarted(false);
-                  setStep("welcome");
-                }}
+                walletAdded={walletAdded}
+                onEpilogueChange={setAtEpilogue}
               />
             </StepShell>
           )}
@@ -139,6 +168,8 @@ function MainFlow() {
           onBack={nav.back}
           onNext={nav.next}
           nextLabel={nav.nextLabel}
+          showArrow={nav.showArrow}
+          secondary={nav.secondary}
         />
       </div>
     </div>
