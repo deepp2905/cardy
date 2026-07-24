@@ -1,7 +1,9 @@
 import { memo, useEffect, useState, type CSSProperties } from "react";
+import { motion } from "motion/react";
 import { Card } from "../card/Card";
 import type { CardConfig } from "../card/cardConfig";
 import { PALETTE } from "../card/cardConfig";
+import { CARD_HERO_LAYOUT_ID, cardHeroLayout } from "../lib/motionConfig";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
 import { useCardDeck } from "./useCardDeck";
 import "./carousel.css";
@@ -151,6 +153,15 @@ export function CardCarousel({
         const scale = reduce
           ? 1
           : 1 - Math.min(away, SCALE_DEPTH) * SCALE_STEP;
+        // The active, settled card carries the shared layoutId so it flies into
+        // the wrap step as the same element (no crossfade). It rides an INNER
+        // wrapper — the outer .deck-item owns the coverflow transform, and
+        // Motion's layout projection needs an element whose transform it fully
+        // controls. At focus the wrapper is centred (outer transform ~identity),
+        // so the id maps to a card sitting at screen centre. Only when settled
+        // (index is whole) so mid-drag no card claims it.
+        const settled = Number.isInteger(index);
+        const isHero = active && settled;
         return (
           <div
             key={id}
@@ -167,7 +178,14 @@ export function CardCarousel({
               zIndex: count - Math.round(away),
             }}
           >
-            <DeckCard config={configs[id]} note={note} name={cardName} />
+            <motion.div
+              className="deck-card-inner"
+              {...(isHero
+                ? { layoutId: CARD_HERO_LAYOUT_ID, transition: cardHeroLayout }
+                : {})}
+            >
+              <DeckCard config={configs[id]} note={note} name={cardName} />
+            </motion.div>
           </div>
         );
       })}

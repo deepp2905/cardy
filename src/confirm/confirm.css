@@ -271,9 +271,12 @@
 /* The at-rest hero: a normal grid child of .wrap-scene (which centres its
    children), so it lands exactly where the sheet's card fades in. Placed in
    the same grid cell as the absolutely-positioned sheet and lifted above the
-   still-invisible envelope/slot. */
+   still-invisible envelope/slot. Sized to --slide-w (the customize deck's hero
+   width) rather than the sheet card's mm width, so the shared-element flight
+   from the deck is a clean translate with no resize. */
 .card-holder--rest {
   grid-area: 1 / 1;
+  width: var(--slide-w);
   z-index: 4;
 }
 
@@ -427,7 +430,9 @@
   left: 50%;
   width: calc(139 * var(--mm));
   height: calc(10 * var(--mm));
-  transform: translateX(-50%);
+  /* Centring lives in the motion transform (MailSlot.tsx: x:-50%) so it isn't
+     clobbered by the scaleX/scaleY motion writes to `transform`. */
+  transform-origin: 50% 0;
   background: var(--slot);
   border-radius: calc(5 * var(--mm));
   border-top: 1px solid var(--slot-rim);

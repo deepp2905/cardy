@@ -30,6 +30,21 @@ export const card: Transition = {
   mass: 0.9,
 };
 
+// Shared-element id: the SAME physical card carries from the customize deck's
+// active slot into the wrap step's resting hero, so Motion glides it between
+// the two positions instead of crossfading two separate cards. Applied via
+// layoutId on both ends (CardCarousel active slot + Confirm rest card).
+export const CARD_HERO_LAYOUT_ID = "card-hero";
+
+// Layout transition for that glide — a touch softer than `card` so a
+// cross-container flight reads as a settle, not a snap.
+export const cardHeroLayout: Transition = {
+  type: "spring",
+  stiffness: 260,
+  damping: 30,
+  mass: 0.9,
+};
+
 export const fold: Transition = {
   type: "spring",
   stiffness: 220,

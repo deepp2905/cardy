@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Card } from "../card/Card";
 import { type CardConfig } from "../card/cardConfig";
+import { CARD_HERO_LAYOUT_ID, cardHeroLayout } from "../lib/motionConfig";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
 import { CarrierSheet } from "../confirm/CarrierSheet";
 import { Envelope } from "../confirm/Envelope";
@@ -139,11 +140,19 @@ export function Confirm({
 
       {!showEpilogue && (
         <motion.div className="wrap-scene" style={{ y: values.nudgeY }}>
-          {/* Standalone hero at rest — full opacity, outside the fading sheet. */}
+          {/* Standalone hero at rest — full opacity, outside the fading sheet.
+              Carries the shared layoutId so it IS the card that flew in from
+              the customize deck (no crossfade). Sized directly to --slide-w
+              (the deck's hero width) rather than via `scale`, so its layout
+              box matches the deck card's box and the flight is a clean
+              translate, not a translate-plus-resize. The Card is width-driven
+              (container query), so no scale transform is needed. */}
           {restCardVisible && (
             <motion.div
               className="card-holder card-holder--rest"
-              style={{ scale: values.cardScale, opacity: values.restCardOpacity }}
+              layoutId={CARD_HERO_LAYOUT_ID}
+              transition={cardHeroLayout}
+              style={{ opacity: values.restCardOpacity }}
             >
               <Card config={config} name={name} />
             </motion.div>

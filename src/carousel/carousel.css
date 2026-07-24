@@ -48,6 +48,13 @@
   cursor: grabbing;
 }
 
+/* Inner wrapper carries the shared layoutId for the hero hand-off; it must not
+   add a transform of its own (Motion's layout projection owns it), so it's a
+   plain block that fills the slot. */
+.carousel-deck .deck-card-inner {
+  width: 100%;
+}
+
 /* The index changes every frame during a drag, so no CSS transition is needed
    or wanted here — the spring settle in useCardDeck does the easing. */
 .carousel-deck .deck-item .card-frame {

@@ -129,7 +129,12 @@ function MainFlow() {
         <ThemeToggle />
       </div>
       <main className="step-stage">
-        <AnimatePresence mode="wait" initial={false}>
+        {/* popLayout, not "wait": the wrap step's hero card shares a layoutId
+            with the customize deck's active card, so both must be mounted
+            across the swap for Motion to glide the one element between them
+            instead of crossfading two. popLayout takes the exiting step out of
+            flow so it doesn't shove the entering one while they overlap. */}
+        <AnimatePresence mode="popLayout" initial={false}>
           {step === "welcome" && (
             <StepShell key="welcome">
               <Welcome firstName={person.first} />
@@ -150,7 +155,7 @@ function MainFlow() {
             </StepShell>
           )}
           {step === "confirm" && (
-            <StepShell key="confirm">
+            <StepShell key="confirm" solid>
               <Confirm
                 config={{ ...configs[activeId], note }}
                 name={person.cardName}
@@ -177,12 +182,24 @@ function MainFlow() {
 }
 
 // Shared step chrome: soft rise on enter, softer drop on exit.
-function StepShell({ children }: { children: ReactNode }) {
+//
+// `solid` skips the enter opacity/translate: the confirm step's only visible
+// content on entry is the hero card, which is a shared-layout element gliding
+// in from the customize deck. A wrapper fade/translate would drag that card
+// with it and undercut the continuous flight, so confirm enters static and
+// lets the layout animation be the whole motion. Exit still animates.
+function StepShell({
+  children,
+  solid = false,
+}: {
+  children: ReactNode;
+  solid?: boolean;
+}) {
   const reduce = usePrefersReducedMotion();
   return (
     <motion.div
       className="step-shell"
-      initial={{ opacity: 0, y: reduce ? 0 : 10 }}
+      initial={solid ? false : { opacity: 0, y: reduce ? 0 : 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: reduce ? 0 : -6 }}
       transition={crossfade}
