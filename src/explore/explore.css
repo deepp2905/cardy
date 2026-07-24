@@ -197,9 +197,11 @@
   z-index: 40;
 }
 
+/* Bottom-left by default, sitting above the dialkit panel (which anchors to
+   the same corner). It's draggable, so this is only the starting point. */
 .switcher {
   position: fixed;
-  top: 24px;
+  bottom: 24px;
   left: 24px;
   z-index: 50;
   width: 232px;

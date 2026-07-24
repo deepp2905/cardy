@@ -42,7 +42,7 @@ export default function Playground() {
         )}
       </main>
 
-      <DialRoot />
+      <DialRoot position="bottom-left" />
     </div>
   );
 }

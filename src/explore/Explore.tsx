@@ -89,7 +89,8 @@ export default function Explore() {
         </VariantBoundary>
       </ExploreShell>
 
-      <DialRoot />
+      {/* bottom-RIGHT here: the variant menu owns bottom-left on this page. */}
+      <DialRoot position="bottom-right" />
     </div>
   );
 }
