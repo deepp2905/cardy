@@ -31,13 +31,17 @@ export function Card({
   name = DEFAULT_PERSON.cardName,
   shaderParams,
 }: CardProps) {
-  const { ink, inkMuted } = inkFor(config.baseColor);
+  const { ink, inkMuted, isLight } = inkFor(config.baseColor);
   const curve = characterToCurve(config.character);
   const shader = intensityToShader(config.intensity);
 
   return (
     <div
       className="card-frame"
+      // Additive blending is gated to dark cards: plus-lighter only adds
+      // light, so on the light-card branch (near-black ink) it would erase
+      // the mark rather than glow it.
+      data-additive={!isLight}
       style={{ "--ink": ink, "--ink-muted": inkMuted } as CSSProperties}
     >
       <div className="card-surface">

@@ -62,6 +62,23 @@
   user-select: none;
 }
 
+/* Wordmark + contactless mark blend additively into the shader beneath:
+   half-strength white that ADDS to the backdrop rather than covering it, so
+   the mark picks up the gradient's colour and glows where the card is bright.
+   Dark cards only (see [data-additive]) — plus-lighter can only add light,
+   so on a light card's near-black ink it would wash the mark away. */
+.card-frame[data-additive="true"] .card-wordmark,
+.card-frame[data-additive="true"] .card-contactless {
+  color: rgb(255 255 255 / 0.5);
+  mix-blend-mode: plus-lighter;
+}
+
+/* The mark's arcs already fade 0.45 -> 1 for depth; stacking the element's
+   own 0.9 on top of the 50% fill crushed the faintest arc to 0.20. */
+.card-frame[data-additive="true"] .card-contactless {
+  opacity: 1;
+}
+
 .card-contactless {
   width: 6cqw;
   height: 6cqw;

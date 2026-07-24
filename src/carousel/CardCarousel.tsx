@@ -7,8 +7,9 @@ import {
   CAROUSEL_SCALE_MAX,
   CAROUSEL_SCALE_MIN,
 } from "../lib/motionConfig";
-import { mapRange } from "../lib/mapRange";
+import { mapRangeEased } from "../lib/mapRange";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
+import { useRubberband } from "./useRubberband";
 import "./carousel.css";
 
 // Scroll-snap strip; the slide nearest the container centre is active.
@@ -32,6 +33,8 @@ export function CardCarousel({
 }: CardCarouselProps) {
   const stripRef = useRef<HTMLDivElement>(null);
   const reduce = usePrefersReducedMotion();
+  // Overscroll bounce at both ends — native only exists on iOS/macOS Safari.
+  const rubberX = useRubberband(stripRef, !reduce);
 
   // One motion value per slide, written straight from the scroll handler.
   // Driving scale through React state would re-render all 8 cards (each with
@@ -51,8 +54,16 @@ export function CardCarousel({
       if (!value) continue;
       const dist = Math.abs(el.offsetLeft + el.clientWidth / 2 - centre);
       // Full size dead-centre, easing down to the minimum one slide out.
+      // Ease-out front-loads the change near the centre, so arriving at the
+      // middle reads as a snap into focus rather than a constant drift.
       value.set(
-        mapRange(dist, 0, el.clientWidth, CAROUSEL_SCALE_MAX, CAROUSEL_SCALE_MIN),
+        mapRangeEased(
+          dist,
+          0,
+          el.clientWidth,
+          CAROUSEL_SCALE_MAX,
+          CAROUSEL_SCALE_MIN,
+        ),
       );
     }
   }, [reduce]);
@@ -133,6 +144,7 @@ export function CardCarousel({
             isActive={isActive}
             reduce={reduce}
             register={register}
+            rubberX={rubberX}
             onSelect={() => {
               if (!isActive) centerSlide(id);
             }}
@@ -153,6 +165,7 @@ function Slide({
   isActive,
   reduce,
   register,
+  rubberX,
   onSelect,
   children,
 }: {
@@ -161,6 +174,7 @@ function Slide({
   isActive: boolean;
   reduce: boolean;
   register: (id: string, value: MotionValue<number>) => void;
+  rubberX: MotionValue<number>;
   onSelect: () => void;
   children: ReactNode;
 }) {
@@ -178,10 +192,13 @@ function Slide({
       aria-label={label}
       onClick={onSelect}
     >
-      {/* Scale only — full opacity, no blur, no desaturation. */}
+      {/* Scale only — full opacity, no blur, no desaturation. The rubberband
+          offset rides here rather than on the scroller: transforming a scroll
+          container moves its own scrollport, and a wrapper element would
+          break the offsetLeft the centre detection measures. */}
       <motion.div
         className="carousel-card"
-        style={reduce ? undefined : { scale }}
+        style={reduce ? undefined : { scale, x: rubberX }}
       >
         {children}
       </motion.div>

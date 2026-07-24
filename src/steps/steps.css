@@ -16,8 +16,10 @@
    detection depend on it); only its scrollport gets wider. All interaction
    still resolves inside the column (PLAN.md §2). */
 .customize .carousel {
-  width: 100vw;
-  margin-inline: calc(50% - 50vw);
+  /* dvw tracks the viewport minus any classic scrollbar, so the full-bleed
+     strip can't push the page into horizontal overflow. */
+  width: 100dvw;
+  margin-inline: calc(50% - 50dvw);
 }
 
 /* confirm */

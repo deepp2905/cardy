@@ -2,7 +2,7 @@
   /* Card width is tied to the column, never to the strip — the strip goes
      full-bleed (steps.css) and percentage sizing would scale cards with the
      viewport. 76% of the 420px column, matching the pre-full-bleed look. */
-  --slide-w: min(319px, 76vw);
+  --slide-w: min(319px, 76dvw);
   /* Positioned so slides' offsetLeft is measured from the strip itself —
      the center-detection and centering math depend on this. */
   position: relative;
@@ -12,10 +12,11 @@
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   padding-block: 18px; /* room for scale + shadow */
-  /* Centres the active slide in a full-bleed strip: half the leftover space
-     either side. Percentages would track the 100vw strip and blow the cards
-     up on desktop, so both this and the slide width key off --slide-w. */
-  padding-inline: calc((100% - var(--slide-w)) / 2);
+  /* Centres the first and last slide: half the strip, less half a card.
+     Uses vw, NOT a percentage — percentage padding resolves against the
+     CONTAINING BLOCK (the 372px column), not this element's own 100vw
+     width, which left the first card pinned near the left edge. */
+  padding-inline: calc(50dvw - var(--slide-w) / 2);
   scrollbar-width: none;
 }
 

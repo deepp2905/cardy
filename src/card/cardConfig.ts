@@ -85,17 +85,25 @@ export function oklchString(l: number, c: number, h: number): string {
 }
 
 // Foreground ink chosen purely from base lightness — no per-color tuning.
-export function inkFor(baseColor: string): { ink: string; inkMuted: string } {
+// `isLight` reports which branch was taken: additive blends (plus-lighter)
+// only read on the dark-card branch, where the ink is near-white.
+export function inkFor(baseColor: string): {
+  ink: string;
+  inkMuted: string;
+  isLight: boolean;
+} {
   const { l, h } = parseOklch(baseColor);
   if (l >= 0.68) {
     return {
       ink: oklchString(0.2, 0.02, h),
       inkMuted: oklchString(0.28, 0.03, h),
+      isLight: true,
     };
   }
   return {
     ink: oklchString(0.97, 0.005, h),
     inkMuted: oklchString(0.88, 0.015, h),
+    isLight: false,
   };
 }
 

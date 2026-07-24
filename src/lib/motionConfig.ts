@@ -74,8 +74,39 @@ export const FOLD_STAGGER = 0.25;
 // Carousel proximity scaling: a slide is full size dead-centre and shrinks
 // toward CAROUSEL_SCALE_MIN one slide-width out, mapped continuously so the
 // growth tracks the finger rather than snapping on the active change.
-export const CAROUSEL_SCALE_MIN = 0.86;
+// Eased (not linear) so most of the size change happens near the centre —
+// scale is the only focus cue left now that opacity and blur are gone.
+export const CAROUSEL_SCALE_MIN = 0.75;
 export const CAROUSEL_SCALE_MAX = 1;
+
+// Overscroll rubberband at the strip's ends. Native bounce only exists on
+// iOS/macOS Safari, so this supplies it everywhere.
+//
+// Slightly OVER-damped (ratio ~1.13): the strip is snapping back to a rest
+// position the user already sees, so any overshoot reads as a wobble rather
+// than life. ~130ms to settle.
+export const rubberband: Transition = {
+  type: "spring",
+  stiffness: 700,
+  damping: 60,
+};
+
+/**
+ * Pull, in px, at which the strip reaches HALF its allowed travel.
+ * Bigger = stiffer. This is the asymptote's scale, not a clamp.
+ */
+export const RUBBERBAND_RESISTANCE = 150;
+/** Ceiling the overscroll creeps toward but never reaches, px. */
+export const RUBBERBAND_MAX = 72;
+
+/** Below this scroll speed (px/ms) an edge impact produces no bounce. */
+export const IMPACT_MIN_VELOCITY = 0.15;
+/**
+ * Impact speed (px/ms) that throws the strip HALF of RUBBERBAND_MAX.
+ * Same asymptote as the drag curve, so a fast fling never exceeds the
+ * ceiling a finger can reach.
+ */
+export const IMPACT_VELOCITY_SCALE = 2.2;
 
 // Entrance choreography: semantic chunks stagger in, never one big block.
 export const ENTER_STAGGER = 0.08;

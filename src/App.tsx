@@ -36,7 +36,9 @@ function MainFlow() {
   const [configs, setConfigs] = useState<Record<string, CardConfig>>(
     seedConfigs,
   );
-  const [activeId, setActiveId] = useState<string>(ids[2]);
+  // Start on the first card (cobalt); the strip's padding lets the first and
+  // last cards both reach dead centre, so the deck reads start-to-end.
+  const [activeId, setActiveId] = useState<string>(ids[0]);
   // `/first-last` read once — the app never mutates the URL, so this holds
   // for the whole journey (PLAN.md Phase P).
   const person = useMemo(() => parsePerson(), []);

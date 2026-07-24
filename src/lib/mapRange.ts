@@ -15,3 +15,20 @@ export function mapRange(
   const t = clamp01((v - inMin) / (inMax - inMin));
   return outMin + t * (outMax - outMin);
 }
+
+/** Standard ease-out (quadratic): fast at the start, settling at the end. */
+export const easeOut = (t: number) => 1 - (1 - t) * (1 - t);
+
+/** `mapRange` with the normalised position eased rather than linear. */
+export function mapRangeEased(
+  v: number,
+  inMin: number,
+  inMax: number,
+  outMin: number,
+  outMax: number,
+  ease: (t: number) => number = easeOut,
+): number {
+  if (inMax === inMin) return outMin;
+  const t = ease(clamp01((v - inMin) / (inMax - inMin)));
+  return outMin + t * (outMax - outMin);
+}
