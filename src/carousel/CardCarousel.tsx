@@ -4,12 +4,16 @@ import { Card } from "../card/Card";
 import type { CardConfig } from "../card/cardConfig";
 import { PALETTE } from "../card/cardConfig";
 import {
+  CAROUSEL_FALLOFF_SLIDES,
   CAROUSEL_SCALE_MAX,
   CAROUSEL_SCALE_MIN,
 } from "../lib/motionConfig";
 import { mapRangeEased } from "../lib/mapRange";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
 import "./carousel.css";
+
+/** Must match `gap` on .carousel — used to derive the slide pitch. */
+const SLIDE_GAP = 14;
 
 // Scroll-snap strip; the slide nearest the container centre is active.
 // Every card is fully opaque and unblurred — only size conveys focus, and it
@@ -51,14 +55,18 @@ export function CardCarousel({
       const value = scales.current[el.dataset.slide!];
       if (!value) continue;
       const dist = Math.abs(el.offsetLeft + el.clientWidth / 2 - centre);
-      // Full size dead-centre, easing down to the minimum one slide out.
+      // Falloff spans several cards, not one. Slides are pitched a full
+      // width + gap apart, so a range of one width put even the FIRST
+      // neighbour past the clamp — every off-centre card sat at exactly the
+      // minimum and only the centre one ever changed size.
       // Ease-out front-loads the change near the centre, so arriving at the
       // middle reads as a snap into focus rather than a constant drift.
+      const pitch = el.clientWidth + SLIDE_GAP;
       value.set(
         mapRangeEased(
           dist,
           0,
-          el.clientWidth,
+          pitch * CAROUSEL_FALLOFF_SLIDES,
           CAROUSEL_SCALE_MAX,
           CAROUSEL_SCALE_MIN,
         ),

@@ -1,13 +1,12 @@
 .carousel {
-  /* Card width is tied to the column, never to the strip — the strip goes
-     full-bleed (steps.css) and percentage sizing would scale cards with the
-     viewport. 76% of the 420px column, matching the pre-full-bleed look. */
-  --slide-w: min(319px, 76dvw);
+  /* --slide-w is defined in index.css: card width is tied to the column,
+     never to the strip, which goes full-bleed and would otherwise scale the
+     cards with the viewport. */
   /* Positioned so slides' offsetLeft is measured from the strip itself —
      the center-detection and centering math depend on this. */
   position: relative;
   display: flex;
-  gap: 14px;
+  gap: 14px; /* mirrored as SLIDE_GAP in CardCarousel.tsx */
   width: 100%;
   overflow-x: auto;
   scroll-snap-type: x mandatory;

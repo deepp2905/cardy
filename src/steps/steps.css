@@ -38,6 +38,12 @@
 
 /* confirm */
 
+/* Match the carousel's card size so the card doesn't jump between steps —
+   it's the continuity object of the whole flow (PLAN.md Phase G). */
+.confirm .card-frame {
+  width: var(--slide-w, 319px);
+}
+
 .confirm-note {
   font-size: var(--text-sm);
   color: var(--color-11);

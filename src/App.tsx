@@ -93,7 +93,7 @@ function MainFlow() {
           )}
           {step === "confirm" && (
             <StepShell key="confirm">
-              <div className="step-body">
+              <div className="step-body confirm">
                 <Card config={configs[activeId]} name={person.cardName} />
                 <p className="confirm-note">
                   Confirm step (paper fold, envelope, mailbox) arrives in

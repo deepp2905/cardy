@@ -47,6 +47,11 @@
   --control-h: 60px;
   --radius-pill: 999px;
 
+  /* Card render width. Lives here, not on .carousel, because the confirm
+     step needs the same figure — the card is one object travelling through
+     the flow and must not resize between steps. */
+  --slide-w: min(319px, 76dvw);
+
   /* type scale — every size in the app comes from these steps */
   --text-xs: 12px; /* uppercase labels, counters */
   --text-sm: 14px; /* captions, secondary UI */
