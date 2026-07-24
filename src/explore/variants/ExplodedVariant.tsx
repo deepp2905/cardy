@@ -4,19 +4,24 @@ import { MockCard } from "../MockCard";
 import { COUNT, focusAmount, useCardDeck } from "../useCardDeck";
 import "../explore.css";
 
-// 2. Exploded stack — cards fanned along a depth axis and tilted back so you
-// read the deck edge-on; the focused card flattens toward the viewer.
+// 2. Exploded stack — every card sweeps its tilt through zero in one
+// direction as it travels the deck: leaning back above centre, flat (parallel
+// to the screen) at centre, and continuing to lean the OTHER way below, so it
+// never appears to reverse. Far cards rest near-flat (edge-on) but not fully,
+// or they'd collapse to a line.
 export function ExplodedVariant() {
   const p = useDialKit("Exploded stack", {
     cardWidth: [245, 200, 460, 5],
-    tiltX: [80, 0, 80, 1],
-    /** How much the focused card straightens up (0 = keeps the tilt). */
-    focusFlatten: [1, 0, 1, 0.05],
+    /** Resting tilt of the far cards, degrees. Signed through centre. */
+    maxTilt: [72, 20, 88, 1],
+    /** Cards of travel over which the tilt sweeps 0 -> maxTilt. */
+    tiltSpread: [1.5, 0.5, 4, 0.1],
     spacing: [143, 20, 240, 1],
     scaleStep: [0.15, 0, 0.15, 0.005],
+    /** Forward pop of the focused card, px. */
     focusLift: [76, 0, 200, 2],
-    /** How many cards out the focus flatten/lift reaches. */
-    focusFalloff: [0.5, 0.5, 4, 0.1],
+    /** Cards out the lift reaches. */
+    focusFalloff: [1, 0.5, 4, 0.1],
     /** Per-card z recession behind the deck. */
     depthStep: [0, 0, 60, 1],
     depthCap: [6, 1, 7, 1],
@@ -25,6 +30,8 @@ export function ExplodedVariant() {
   });
 
   const { ref, index, focusedIndex } = useCardDeck("y");
+  const clamp = (v: number, lo: number, hi: number) =>
+    Math.min(hi, Math.max(lo, v));
 
   return (
     <div
@@ -44,6 +51,11 @@ export function ExplodedVariant() {
         const away = Math.abs(d);
         const focus = focusAmount(away, p.focusFalloff);
         const capped = Math.min(away, p.depthCap);
+        // SIGNED tilt through zero: a card leans one way above centre, is flat
+        // at centre, and continues leaning the other way below — one direction
+        // of rotation the whole way through, clamped so far cards rest near
+        // maxTilt rather than folding to a line.
+        const tilt = p.maxTilt * clamp(d / p.tiltSpread, -1, 1);
         return (
           <div
             key={i}
@@ -51,18 +63,13 @@ export function ExplodedVariant() {
             style={{
               transform: [
                 `translateY(${d * p.spacing}px)`,
-                // Tilt keeps a single sign for every card, so nothing appears
-                // to flip direction as it crosses the centre. The focused
-                // card only eases the magnitude toward flat — it never
-                // rotates the opposite way from where it started.
-                `rotateX(${p.tiltX * (1 - focus * p.focusFlatten)}deg)`,
+                `rotateX(${tilt}deg)`,
                 `translateZ(${focus * p.focusLift - capped * p.depthStep}px)`,
                 `scale(${1 - capped * p.scaleStep})`,
               ].join(" "),
-              // Anchor the tilt to the top edge so cards fan consistently
-              // downward rather than pivoting about their centres, which is
-              // what made the apparent direction reverse across the middle.
-              transformOrigin: "center top",
+              // Pivot about the centre now: with a signed tilt there is no
+              // apparent reversal to correct for, and centre-pivot keeps the
+              // flat focused card visually centred.
               zIndex: COUNT - Math.round(away),
             }}
           >
