@@ -11,21 +11,21 @@ import "../explore.css";
 // or they'd collapse to a line.
 export function ExplodedVariant() {
   const p = useDialKit("Exploded stack", {
-    cardWidth: [245, 200, 460, 5],
+    cardWidth: [400, 200, 460, 5],
     /** Resting tilt of the far cards, degrees. Signed through centre. */
-    maxTilt: [72, 20, 88, 1],
+    maxTilt: [88, 20, 88, 1],
     /** Cards of travel over which the tilt sweeps 0 -> maxTilt. */
-    tiltSpread: [1.5, 0.5, 4, 0.1],
-    spacing: [143, 20, 240, 1],
-    scaleStep: [0.15, 0, 0.15, 0.005],
+    tiltSpread: [1, 0.5, 4, 0.1],
+    spacing: [240, 20, 240, 1],
+    scaleStep: [0.1, 0, 0.15, 0.005],
     /** Forward pop of the focused card, px. */
-    focusLift: [76, 0, 200, 2],
+    focusLift: [40, 0, 200, 2],
     /** Cards out the lift reaches. */
-    focusFalloff: [1, 0.5, 4, 0.1],
+    focusFalloff: [1.6, 0.5, 4, 0.1],
     /** Per-card z recession behind the deck. */
-    depthStep: [0, 0, 60, 1],
-    depthCap: [6, 1, 7, 1],
-    fade: [0.53, 0, 1, 0.01],
+    depthStep: [60, 0, 60, 1],
+    depthCap: [1, 1, 7, 1],
+    fade: [0, 0, 1, 0.01],
     perspective: [1200, 400, 3000, 50],
   });
 
