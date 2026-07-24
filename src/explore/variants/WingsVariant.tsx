@@ -32,7 +32,7 @@ export function WingsVariant() {
             className="v-wings-slot"
             style={{
               flexBasis: focused ? p.centreWidth : p.wingWidth,
-              zIndex: focused ? COUNT : COUNT - Math.abs(d),
+              zIndex: focused ? COUNT : COUNT - Math.round(Math.abs(d)),
             }}
           >
             <MockCard

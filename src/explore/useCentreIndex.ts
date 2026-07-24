@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useDragScroll } from "./useDragScroll";
 
 /** How many mock cards every layout renders. */
 export const COUNT = 8;
@@ -11,6 +12,8 @@ export const COUNT = 8;
 export function useCentreIndex(axis: "x" | "y" = "x") {
   const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  // Every sketch is drag-scrollable on desktop, not wheel-only.
+  useDragScroll(ref, axis);
 
   useEffect(() => {
     const el = ref.current;

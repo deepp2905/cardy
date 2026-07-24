@@ -42,7 +42,7 @@ export function CoverflowVariant() {
                   `translateZ(${d === 0 ? 0 : -p.depthPush}px)`,
                   `scale(${1 - Math.min(away, 3) * p.scaleStep})`,
                 ].join(" "),
-                zIndex: COUNT - away,
+                zIndex: COUNT - Math.round(away),
               }}
             />
           </div>

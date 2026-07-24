@@ -50,13 +50,16 @@
   overflow-wrap: anywhere;
 }
 
+/* No justify-content: the scrollers are flex:1 children and need the full
+   stage height. Centring here would let them collapse to content height,
+   leaving nothing to scroll. */
 .explore-stage {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   width: 100%;
+  overflow: hidden;
 }
 
 .explore-controls {
@@ -84,7 +87,6 @@
 .mock-card {
   width: 100%;
   aspect-ratio: 85.6 / 53.98;
-  border-radius: 3.715cqw;
   border-radius: 12px;
   /* Recedes with depth so stacked cards separate without colour. */
   background: color-mix(
@@ -123,6 +125,8 @@
 .v-coverflow,
 .v-wings {
   position: relative;
+  cursor: grab;
+  touch-action: pan-x;
   display: flex;
   align-items: center;
   overflow-x: auto;
@@ -139,6 +143,8 @@
 .v-apple,
 .v-tiers {
   position: relative;
+  cursor: grab;
+  touch-action: pan-y;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -187,6 +193,7 @@
 .v-coverflow-slot > .mock-card,
 .v-wings-slot > .mock-card {
   width: 100%;
+  pointer-events: none; /* the drag belongs to the scroller, not the card */
 }
 
 /* The slot height is the PEEK — how much of this card shows before the next
@@ -214,6 +221,10 @@
   top: 0;
   left: 0;
   right: 0;
+  /* The cards spill well outside their slots and overlap each other; letting
+     them take pointer events means the topmost one swallows the drag before
+     it reaches the scroller. */
+  pointer-events: none;
 }
 
 .v-exploded-slot .mock-card,

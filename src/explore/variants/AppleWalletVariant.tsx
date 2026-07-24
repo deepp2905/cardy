@@ -30,7 +30,7 @@ export function AppleWalletVariant() {
             className="v-apple-slot"
             style={{
               height: focused ? "auto" : p.strip,
-              zIndex: focused ? COUNT + 1 : below ? COUNT - away : away,
+              zIndex: Math.round(focused ? COUNT + 1 : below ? COUNT - away : away),
             }}
           >
             <MockCard

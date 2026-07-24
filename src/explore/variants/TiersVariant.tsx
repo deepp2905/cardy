@@ -26,7 +26,7 @@ export function TiersVariant() {
           <div
             key={i}
             className="v-tiers-slot"
-            style={{ height: focused ? p.band * 2.4 : p.band, zIndex: COUNT - away }}
+            style={{ height: focused ? p.band * 2.4 : p.band, zIndex: COUNT - Math.round(away) }}
           >
             <MockCard
               depth={Math.min(1, away * p.fade * 0.4)}

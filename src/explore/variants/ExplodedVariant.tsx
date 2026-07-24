@@ -7,8 +7,10 @@ import "../explore.css";
 // the deck edge-on. Scrolls vertically; the focused card sits flattest.
 export function ExplodedVariant() {
   const p = useDialKit("Exploded stack", {
-    tiltX: [62, 0, 85, 1],
-    spacing: [86, 20, 200, 1],
+    // 62deg flattened the cards into unreadable bands; 34 keeps the
+    // edge-on read while the faces stay visible.
+    tiltX: [34, 0, 85, 1],
+    spacing: [110, 20, 240, 1],
     scaleStep: [0.03, 0, 0.15, 0.005],
     focusLift: [40, 0, 160, 1],
     perspective: [1200, 400, 3000, 50],
@@ -37,7 +39,8 @@ export function ExplodedVariant() {
                   `translateZ(${focused ? p.focusLift : -away * 12}px)`,
                   `scale(${1 - away * p.scaleStep})`,
                 ].join(" "),
-                zIndex: COUNT - away,
+                // away is fractional now — zIndex must be an integer.
+                zIndex: COUNT - Math.round(away),
               }}
             />
           </div>

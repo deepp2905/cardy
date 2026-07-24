@@ -28,7 +28,7 @@ export function WalletVariant() {
             className="v-wallet-slot"
             style={{
               height: focused ? p.peek + p.focusGap * 2 : p.peek,
-              zIndex: focused ? COUNT + 1 : COUNT - away,
+              zIndex: focused ? COUNT + 1 : COUNT - Math.round(away),
             }}
           >
             <MockCard
