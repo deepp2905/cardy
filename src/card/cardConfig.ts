@@ -146,9 +146,10 @@ export const PATTERN_FIXED = {
   staggerSpacing: 16,
   /** plus-lighter is fixed off: shapes deepen the card colour (plus-darker). */
   plusLighter: false,
-  /** Group opacity by fill mode. */
-  filledOpacity: 0.1,
-  outlineOpacity: 0.25,
+  /** Group opacity by fill mode. Both bumped 25% over the original tuned
+   *  values (0.1 / 0.25) so the pattern reads a touch stronger. */
+  filledOpacity: 0.125,
+  outlineOpacity: 0.3125,
 } as const;
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
