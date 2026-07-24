@@ -19,18 +19,15 @@ import "./explore.css";
 // the layout is judged in the space it would actually get. Cards are grey
 // wireframes — this is about ARRANGEMENT, not artwork.
 
+// Horizontal decks first, then vertical — grouped by scroll axis so the menu
+// reads by mechanic.
 const VARIANTS: (VariantMeta & { render: () => React.ReactElement })[] = [
+  // --- horizontal ---
   {
     id: "scroll",
     name: "Horizontal scroll",
     note: "What ships today",
     render: () => <ScrollVariant />,
-  },
-  {
-    id: "exploded",
-    name: "Exploded stack",
-    note: "Fanned along depth, tilted back",
-    render: () => <ExplodedVariant />,
   },
   {
     id: "coverflow",
@@ -39,16 +36,23 @@ const VARIANTS: (VariantMeta & { render: () => React.ReactElement })[] = [
     render: () => <CoverflowVariant />,
   },
   {
-    id: "wallet",
-    name: "Revolut wallet",
-    note: "Focused card lifts out of the stack",
-    render: () => <WalletVariant />,
-  },
-  {
     id: "wings",
     name: "Perspective wings",
     note: "Neighbours hinge on their inner edge",
     render: () => <WingsVariant />,
+  },
+  // --- vertical ---
+  {
+    id: "exploded",
+    name: "Exploded stack",
+    note: "Fanned along depth, tilted back",
+    render: () => <ExplodedVariant />,
+  },
+  {
+    id: "wallet",
+    name: "Revolut wallet",
+    note: "Focused card lifts out of the stack",
+    render: () => <WalletVariant />,
   },
   {
     id: "apple",
