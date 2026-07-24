@@ -76,6 +76,7 @@ export function ExplodedVariant() {
             <MockCard
               depth={Math.min(1, away * p.fade)}
               focused={i === focusedIndex}
+              index={i}
             />
           </div>
         );

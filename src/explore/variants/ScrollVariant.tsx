@@ -43,7 +43,7 @@ export function ScrollVariant() {
               zIndex: COUNT - Math.round(Math.abs(d)),
             }}
           >
-            <MockCard depth={eased} focused={i === focusedIndex} />
+            <MockCard depth={eased} focused={i === focusedIndex} index={i} />
           </div>
         );
       })}

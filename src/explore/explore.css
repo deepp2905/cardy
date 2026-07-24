@@ -88,7 +88,8 @@
   width: 100%;
   aspect-ratio: 85.6 / 53.98;
   border-radius: 12px;
-  /* Recedes with depth so stacked cards separate without colour. */
+  /* Grey by default; recedes with depth so stacked cards separate. The
+     focused card keeps the same grey — only position/tilt marks it. */
   background: color-mix(
     in oklch,
     var(--color-6),
@@ -102,11 +103,21 @@
   flex-shrink: 0;
 }
 
-.mock-card[data-focused="true"] {
-  background: var(--color-7);
+/* Colour on: each card takes its real palette colour, still dimmed with
+   depth so the stack still reads. Gated by the menu toggle. */
+.explore[data-colorful="true"] .mock-card {
+  background: color-mix(
+    in oklch,
+    var(--card-color),
+    var(--color-3) calc(var(--depth, 0) * 55%)
+  );
+}
+
+/* Lighter cards catch more shadow than they should in light mode; soften. */
+:root:not([data-theme="dark"]) .mock-card {
   box-shadow:
-    0 2px 4px oklch(0 0 0 / 0.16),
-    0 18px 40px -12px oklch(0 0 0 / 0.4);
+    0 1px 2px oklch(0 0 0 / 0.05),
+    0 6px 16px -10px oklch(0 0 0 / 0.14);
 }
 
 .mock-card-label {
@@ -237,6 +248,29 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-11);
+}
+
+/* Colour / grey toggle, pushed to the right of the head row. */
+.switcher-toggle {
+  margin-left: auto;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  color: var(--color-11);
+  background: var(--color-4);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.switcher-toggle[data-on="true"] {
+  color: var(--color-1);
+  background: var(--color-12);
 }
 
 .switcher-list {

@@ -59,7 +59,7 @@ export function WingsVariant() {
               zIndex: COUNT - Math.round(away),
             }}
           >
-            <MockCard depth={fold * p.wingFade} focused={i === focusedIndex} />
+            <MockCard depth={fold * p.wingFade} focused={i === focusedIndex} index={i} />
           </div>
         );
       })}

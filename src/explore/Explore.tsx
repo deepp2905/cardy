@@ -63,10 +63,11 @@ const VARIANTS: (VariantMeta & { render: () => React.ReactElement })[] = [
 
 export default function Explore() {
   const [activeId, setActiveId] = useState(VARIANTS[0].id);
+  const [colorful, setColorful] = useState(false);
   const active = VARIANTS.find((v) => v.id === activeId) ?? VARIANTS[0];
 
   return (
-    <div className="explore">
+    <div className="explore" data-colorful={colorful}>
       <div className="corner-controls">
         <ThemeToggle />
       </div>
@@ -76,6 +77,8 @@ export default function Explore() {
         variants={VARIANTS}
         activeId={activeId}
         onSelect={setActiveId}
+        colorful={colorful}
+        onColorfulChange={setColorful}
       />
 
       {/* Keyed so switching variants remounts: each mounts its own dialkit

@@ -54,6 +54,7 @@ export function WalletVariant() {
             <MockCard
               depth={Math.min(1, away * p.fade * p.fadeReach)}
               focused={i === focusedIndex}
+              index={i}
             />
           </div>
         );

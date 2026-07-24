@@ -12,10 +12,14 @@ export function VariantSwitcher({
   variants,
   activeId,
   onSelect,
+  colorful,
+  onColorfulChange,
 }: {
   variants: VariantMeta[];
   activeId: string;
   onSelect: (id: string) => void;
+  colorful: boolean;
+  onColorfulChange: (v: boolean) => void;
 }) {
   const constraints = useRef<HTMLDivElement>(null);
 
@@ -36,6 +40,15 @@ export function VariantSwitcher({
             ⠿
           </span>
           <span className="switcher-title">Carousel ideas</span>
+          <button
+            type="button"
+            className="switcher-toggle"
+            data-on={colorful}
+            aria-pressed={colorful}
+            onClick={() => onColorfulChange(!colorful)}
+          >
+            {colorful ? "Colour" : "Grey"}
+          </button>
         </div>
         <div className="switcher-list">
           {variants.map((v, i) => (
