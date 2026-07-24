@@ -47,7 +47,7 @@ export function VariantSwitcher({
             aria-pressed={colorful}
             onClick={() => onColorfulChange(!colorful)}
           >
-            {colorful ? "Colour" : "Grey"}
+            Colour
           </button>
         </div>
         <div className="switcher-list">
