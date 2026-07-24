@@ -47,7 +47,6 @@ export function Confirm({
 }) {
   const reduce = usePrefersReducedMotion();
   const stageRef = useRef<HTMLDivElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
   const mmPx = useStageScale(stageRef);
   const [slideW, setSlideW] = useState(372);
   const [showEpilogue, setShowEpilogue] = useState(false);
@@ -106,7 +105,17 @@ export function Confirm({
 
   // The live card is only mounted while it can be seen. From `inserting` on it
   // is behind two folded paper panels and the envelope body.
-  const cardVisible = phase === "rest" || phase === "folding";
+  //
+  // At true rest (before the arrow) the card is a standalone hero OUTSIDE the
+  // sheet — the sheet fades in from opacity 0 and a child can't out-fade a
+  // faded ancestor, so an in-sheet card would be invisible on step entry. Once
+  // the sequence has started it lives on the sheet's mid panel, so the fold can
+  // cover it; the two crossfade at the sheet beat.
+  // Rest card stays mounted through the sheet-beat crossfade (phase is still
+  // "rest" for ~0.6s after start) so it fades out rather than vanishing; by
+  // "folding" its opacity has reached 0 and it can unmount.
+  const restCardVisible = phase === "rest";
+  const sheetCardVisible = started && (phase === "rest" || phase === "folding");
 
   const status =
     phase === "done"
@@ -130,11 +139,20 @@ export function Confirm({
 
       {!showEpilogue && (
         <motion.div className="wrap-scene" style={{ y: values.nudgeY }}>
+          {/* Standalone hero at rest — full opacity, outside the fading sheet. */}
+          {restCardVisible && (
+            <motion.div
+              className="card-holder card-holder--rest"
+              style={{ scale: values.cardScale, opacity: values.restCardOpacity }}
+            >
+              <Card config={config} name={name} />
+            </motion.div>
+          )}
+
           <CarrierSheet v={values}>
-            {cardVisible && (
+            {sheetCardVisible && (
               <motion.div
                 className="card-holder"
-                ref={cardRef}
                 style={{ scale: values.cardScale }}
               >
                 <Card config={config} name={name} />

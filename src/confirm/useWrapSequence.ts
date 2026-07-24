@@ -73,6 +73,10 @@ export function useWrapSequence({
   const cardPx = CARD.w * mmPx;
   const restScale = cardPx > 0 ? slideW / cardPx : 1;
   const cardScale = useMotionValue(1);
+  // The resting card lives OUTSIDE the sheet (the sheet fades in from 0, and a
+  // child can't out-fade a faded ancestor), so it's the hero on step entry.
+  // It hands off to the in-sheet card as the sheet fades in.
+  const restCardOpacity = useMotionValue(1);
 
   // --- Sheet ---------------------------------------------------------------
   const sheetOpacity = useMotionValue(0);
@@ -140,6 +144,7 @@ export function useWrapSequence({
   const values = useMemo(
     () => ({
       cardScale,
+      restCardOpacity,
       sheetOpacity,
       sheetScale,
       sheetY,
@@ -202,6 +207,7 @@ export function useWrapSequence({
       sealScale.set(1);
       sealRot.set(0);
       animate(cardScale, restScale, t);
+      animate(restCardOpacity, 0, t);
       animate(sheetOpacity, 0, t);
       animate(envOpacity, 1, t);
       animate(slotOpacity, 1, t);
@@ -212,6 +218,9 @@ export function useWrapSequence({
     }
 
     at(BEAT.sheet, () => {
+      // Hand the hero card off from the standalone rest copy to the one on the
+      // sheet: the sheet fades in as the rest card fades out, same beat.
+      animate(restCardOpacity, 0, crossfade);
       animate(sheetOpacity, 1, crossfade);
       animate(sheetScale, 1, wrap);
       animate(cardScale, 1, arrive);
@@ -277,6 +286,7 @@ export function useWrapSequence({
     clear();
     setPhase("rest");
     cardScale.set(restScale);
+    restCardOpacity.set(1);
     sheetOpacity.set(0);
     sheetScale.set(0.97);
     sheetY.set(0);
