@@ -17,11 +17,19 @@ import { ThemeToggle } from "./ui/ThemeToggle";
 // Playground is dev tooling — lazy so dialkit + its pages stay out of the
 // main app chunk.
 const Playground = lazy(() => import("./playground/Playground"));
+const Explore = lazy(() => import("./explore/Explore"));
 
 const ids = Object.keys(seedConfigs());
 
 export default function App() {
   const route = useHashRoute();
+  if (route.startsWith("/explore")) {
+    return (
+      <Suspense fallback={null}>
+        <Explore />
+      </Suspense>
+    );
+  }
   if (route.startsWith("/play")) {
     return (
       <Suspense fallback={null}>

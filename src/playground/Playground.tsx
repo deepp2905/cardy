@@ -35,6 +35,9 @@ export default function Playground() {
               {t.label}
             </a>
           ))}
+          <a href="#/explore" className="pg-tab">
+            Carousel ideas
+          </a>
           <a href="#/" className="pg-tab pg-tab-exit">
             ← App
           </a>

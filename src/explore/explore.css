@@ -1,0 +1,277 @@
+/* Layout-idea sandbox. Greyscale wireframes only — the neutral ramp, no
+   card colour, so the arrangement is what you judge. */
+
+.explore {
+  min-height: 100dvh;
+}
+
+/* Mirrors .column from the app so the layouts get the real available space. */
+.explore-column {
+  max-width: 420px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 24px 24px 36px;
+  display: flex;
+  flex-direction: column;
+}
+
+.explore-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+}
+
+.explore-controls {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  opacity: 0.55; /* inert — present for geometry, not interaction */
+  pointer-events: none;
+}
+
+.explore-input {
+  height: var(--control-h);
+  display: flex;
+  align-items: center;
+  padding-inline: 20px;
+  border-radius: var(--radius-pill);
+  background: var(--color-3);
+  color: var(--color-9);
+  font-size: var(--text-base);
+}
+
+/* --- mock card --- */
+
+.mock-card {
+  width: 100%;
+  aspect-ratio: 85.6 / 53.98;
+  border-radius: 3.715cqw;
+  border-radius: 12px;
+  /* Recedes with depth so stacked cards separate without colour. */
+  background: color-mix(
+    in oklch,
+    var(--color-6),
+    var(--color-3) calc(var(--depth, 0) * 100%)
+  );
+  box-shadow:
+    0 1px 2px oklch(0 0 0 / 0.12),
+    0 8px 20px -10px oklch(0 0 0 / 0.28);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.mock-card[data-focused="true"] {
+  background: var(--color-7);
+  box-shadow:
+    0 2px 4px oklch(0 0 0 / 0.16),
+    0 18px 40px -12px oklch(0 0 0 / 0.4);
+}
+
+.mock-card-label {
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-10);
+}
+
+/* --- shared scrollers --- */
+
+.v-scroll,
+.v-coverflow,
+.v-wings {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  width: 100dvw;
+  margin-inline: calc(50% - 50dvw);
+  padding-block: 32px;
+}
+
+.v-exploded,
+.v-wallet,
+.v-apple,
+.v-tiers {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+  max-height: 100%;
+  width: 100%;
+  padding-block: 40%;
+}
+
+.explore-stage ::-webkit-scrollbar {
+  display: none;
+}
+
+.v-scroll > *,
+.v-coverflow > *,
+.v-wings > *,
+.v-exploded > *,
+.v-wallet > *,
+.v-apple > *,
+.v-tiers > * {
+  scroll-snap-align: center;
+  flex-shrink: 0;
+}
+
+/* --- per-variant slots --- */
+
+.v-scroll-slide,
+.v-coverflow-slot,
+.v-wings-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+}
+
+.v-exploded-slot,
+.v-wallet-slot,
+.v-apple-slot,
+.v-tiers-slot {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  transition:
+    height 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+    transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.v-exploded-slot .mock-card,
+.v-wallet-slot .mock-card,
+.v-apple-slot .mock-card,
+.v-tiers-slot .mock-card,
+.v-coverflow-slot .mock-card,
+.v-wings-slot .mock-card,
+.v-scroll-slide .mock-card {
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* --- draggable variant switcher --- */
+
+.switcher-bounds {
+  position: fixed;
+  inset: 12px;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.switcher {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  z-index: 50;
+  width: 232px;
+  padding: 8px;
+  border-radius: 16px;
+  background: var(--color-1);
+  box-shadow:
+    0 0 0 1px var(--color-6),
+    0 12px 32px -12px oklch(0 0 0 / 0.4);
+  cursor: grab;
+}
+
+.switcher:active {
+  cursor: grabbing;
+}
+
+.switcher-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px 8px;
+}
+
+.switcher-grip {
+  color: var(--color-9);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.switcher-title {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-11);
+}
+
+.switcher-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.switcher-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  transition: background-color 0.15s ease;
+}
+
+.switcher-item:hover {
+  background: var(--color-3);
+}
+
+.switcher-item[data-active="true"] {
+  background: var(--color-4);
+}
+
+.switcher-index {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-5);
+  color: var(--color-11);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.switcher-item[data-active="true"] .switcher-index {
+  background: var(--color-12);
+  color: var(--color-1);
+}
+
+.switcher-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.switcher-name {
+  font-size: var(--text-sm);
+  font-weight: 550;
+  color: var(--color-12);
+}
+
+.switcher-note {
+  font-size: 11px;
+  color: var(--color-10);
+}

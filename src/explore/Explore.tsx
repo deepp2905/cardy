@@ -1,0 +1,90 @@
+import { useState } from "react";
+import { DialRoot } from "dialkit";
+import "dialkit/styles.css";
+import { PlaygroundLink } from "../ui/PlaygroundLink";
+import { ThemeToggle } from "../ui/ThemeToggle";
+import { ExploreShell } from "./ExploreShell";
+import { VariantSwitcher, type VariantMeta } from "./VariantSwitcher";
+import { AppleWalletVariant } from "./variants/AppleWalletVariant";
+import { CoverflowVariant } from "./variants/CoverflowVariant";
+import { ExplodedVariant } from "./variants/ExplodedVariant";
+import { ScrollVariant } from "./variants/ScrollVariant";
+import { TiersVariant } from "./variants/TiersVariant";
+import { WalletVariant } from "./variants/WalletVariant";
+import { WingsVariant } from "./variants/WingsVariant";
+import "./explore.css";
+
+// Rough sketches of card-carousel mechanics, each in Step 2's real chrome so
+// the layout is judged in the space it would actually get. Cards are grey
+// wireframes — this is about ARRANGEMENT, not artwork.
+
+const VARIANTS: (VariantMeta & { render: () => React.ReactElement })[] = [
+  {
+    id: "scroll",
+    name: "Horizontal scroll",
+    note: "What ships today",
+    render: () => <ScrollVariant />,
+  },
+  {
+    id: "exploded",
+    name: "Exploded stack",
+    note: "Fanned along depth, tilted back",
+    render: () => <ExplodedVariant />,
+  },
+  {
+    id: "coverflow",
+    name: "Coverflow",
+    note: "Neighbours rotate away like wings",
+    render: () => <CoverflowVariant />,
+  },
+  {
+    id: "wallet",
+    name: "Revolut wallet",
+    note: "Focused card lifts out of the stack",
+    render: () => <WalletVariant />,
+  },
+  {
+    id: "wings",
+    name: "Perspective wings",
+    note: "Neighbours hinge on their inner edge",
+    render: () => <WingsVariant />,
+  },
+  {
+    id: "apple",
+    name: "Apple wallet",
+    note: "Tight stack, strip peek",
+    render: () => <AppleWalletVariant />,
+  },
+  {
+    id: "tiers",
+    name: "Fanned tiers",
+    note: "Pyramid of narrowing bands",
+    render: () => <TiersVariant />,
+  },
+];
+
+export default function Explore() {
+  const [activeId, setActiveId] = useState(VARIANTS[0].id);
+  const active = VARIANTS.find((v) => v.id === activeId) ?? VARIANTS[0];
+
+  return (
+    <div className="explore">
+      <div className="corner-controls">
+        <PlaygroundLink />
+        <ThemeToggle />
+      </div>
+
+      <VariantSwitcher
+        variants={VARIANTS}
+        activeId={activeId}
+        onSelect={setActiveId}
+      />
+
+      {/* Keyed so switching variants remounts: each mounts its own dialkit
+          panel, and only the mounted one's panel is registered. */}
+      <ExploreShell key={active.id}>{active.render()}</ExploreShell>
+
+      <DialRoot />
+    </div>
+  );
+}
