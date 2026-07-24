@@ -18,9 +18,10 @@
   min-height: 0;
 }
 
+/* Spacing above comes from .step-body's 24px gap; the action bar below
+   carries its own 20px top padding. */
 .customize-panel {
   flex-shrink: 0;
-  padding-bottom: 4px;
 }
 
 /* The carousel is the one element that breaks the column, so neighbour cards
