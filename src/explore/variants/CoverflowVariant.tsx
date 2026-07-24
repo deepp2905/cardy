@@ -13,6 +13,8 @@ export function CoverflowVariant() {
     spread: [0.48, 0.1, 1.2, 0.01],
     depthPush: [140, 0, 400, 5],
     scaleStep: [0.06, 0, 0.2, 0.005],
+    scaleDepth: [3, 1, 7, 1],
+    fade: [0.25, 0, 1, 0.01],
     perspective: [1100, 400, 3000, 50],
   });
 
@@ -46,13 +48,13 @@ export function CoverflowVariant() {
                 `translateX(${d * pitch}px)`,
                 `rotateY(${turn}deg)`,
                 `translateZ(${-Math.min(1, away) * p.depthPush}px)`,
-                `scale(${1 - Math.min(away, 3) * p.scaleStep})`,
+                `scale(${1 - Math.min(away, p.scaleDepth) * p.scaleStep})`,
               ].join(" "),
               zIndex: COUNT - Math.round(away),
             }}
           >
             <MockCard
-              depth={Math.min(1, away * 0.25)}
+              depth={Math.min(1, away * p.fade)}
               focused={i === focusedIndex}
             />
           </div>

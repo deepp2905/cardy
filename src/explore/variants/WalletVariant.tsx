@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { useDialKit } from "dialkit";
 import { MockCard } from "../MockCard";
-import { COUNT, useCardDeck } from "../useCardDeck";
+import { COUNT, focusAmount, useCardDeck } from "../useCardDeck";
 import "../explore.css";
 
 // 4. Revolut wallet — vertical overlap with the focused card pulled clear of
@@ -13,8 +13,12 @@ export function WalletVariant() {
     focusScale: [1.12, 1, 1.5, 0.01],
     /** Extra space opened above and below the focused card. */
     focusGap: [40, 0, 160, 1],
+    /** How many cards out the focus lift reaches. */
+    focusFalloff: [1, 0.5, 4, 0.1],
     sideInset: [26, 0, 90, 1],
+    sideStagger: [2, 0.5, 4, 0.5],
     fade: [0.55, 0, 1, 0.01],
+    fadeReach: [0.4, 0.1, 1, 0.05],
   });
 
   const { ref, index, focusedIndex } = useCardDeck("y");
@@ -30,12 +34,13 @@ export function WalletVariant() {
       {Array.from({ length: COUNT }, (_, i) => {
         const d = i - index;
         const away = Math.abs(d);
-        // Proximity to focus, 1 at the centre and 0 a card away — drives the
-        // lift continuously instead of switching on an exact match.
-        const focus = Math.max(0, 1 - away);
-        const y = d * p.peek + Math.sign(d) * Math.min(away, 1) * p.focusGap;
+        // Proximity to focus — drives the lift continuously instead of
+        // switching on an exact match.
+        const focus = focusAmount(away, p.focusFalloff);
+        const y =
+          d * p.peek + Math.sign(d) * Math.min(away, 1) * p.focusGap;
         const scale = 1 + (p.focusScale - 1) * focus;
-        const inset = p.sideInset * Math.min(away, 2) * 0.5;
+        const inset = p.sideInset * Math.min(away, p.sideStagger) * 0.5;
         return (
           <div
             key={i}
@@ -47,7 +52,7 @@ export function WalletVariant() {
             }}
           >
             <MockCard
-              depth={Math.min(1, away * p.fade * 0.4)}
+              depth={Math.min(1, away * p.fade * p.fadeReach)}
               focused={i === focusedIndex}
             />
           </div>

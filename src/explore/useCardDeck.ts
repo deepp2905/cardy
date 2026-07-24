@@ -189,3 +189,14 @@ export function useCardDeck(axis: "x" | "y" = "x", count = COUNT) {
 
   return { ref, index, focusedIndex };
 }
+
+/**
+ * Proximity-to-focus for a card `away` cards from centre, over `falloff`
+ * cards: 1 at the centre, 0 at `falloff` and beyond, eased so the effect
+ * concentrates near the centre. Shared so every variant's focus window is
+ * tunable through one dial instead of a hardcoded `1 - away`.
+ */
+export function focusAmount(away: number, falloff: number): number {
+  const t = Math.min(1, away / Math.max(0.0001, falloff));
+  return (1 - t) * (1 - t); // ease-out: sharper focus, gentler tail
+}

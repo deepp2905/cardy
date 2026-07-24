@@ -11,6 +11,10 @@ export function ScrollVariant() {
     gap: [14, 0, 120, 1],
     minScale: [0.75, 0.4, 1, 0.01],
     falloff: [2, 0.5, 5, 0.1],
+    /** Neighbours dim toward this as they recede. */
+    minOpacity: [1, 0.3, 1, 0.05],
+    /** Vertical drop for receding cards — a subtle arc. */
+    arc: [0, 0, 80, 2],
   });
 
   const { ref, index, focusedIndex } = useCardDeck("x");
@@ -28,12 +32,14 @@ export function ScrollVariant() {
         const t = Math.min(1, Math.abs(d) / p.falloff);
         const eased = 1 - (1 - t) * (1 - t);
         const scale = 1 + (p.minScale - 1) * eased;
+        const opacity = 1 + (p.minOpacity - 1) * eased;
         return (
           <div
             key={i}
             className="deck-item"
             style={{
-              transform: `translateX(${d * pitch}px) scale(${scale})`,
+              transform: `translateX(${d * pitch}px) translateY(${eased * p.arc}px) scale(${scale})`,
+              opacity,
               zIndex: COUNT - Math.round(Math.abs(d)),
             }}
           >

@@ -12,6 +12,8 @@ export function WingsVariant() {
     wingAngle: [64, 0, 88, 1],
     /** Gap between the centre card's edge and the hinge, in px. */
     hinge: [10, -60, 120, 1],
+    /** How far apart the folded wings stack (multiplies their spacing). */
+    wingSpacing: [0.5, 0.1, 1.2, 0.05],
     perspective: [900, 300, 2500, 25],
     wingFade: [0.4, 0, 1, 0.01],
   });
@@ -41,7 +43,9 @@ export function WingsVariant() {
           Math.cos((fold * p.wingAngle * Math.PI) / 180) * p.cardWidth;
         const offset =
           side *
-          (p.cardWidth / 2 + p.hinge + (away - 0.5) * foreshortened * 0.5);
+          (p.cardWidth / 2 +
+            p.hinge +
+            (away - 0.5) * foreshortened * p.wingSpacing);
         return (
           <div
             key={i}
