@@ -1,4 +1,3 @@
-import { useId } from "react";
 import { useDialKit } from "dialkit";
 import { CardShell } from "./CardShell";
 import "./cardvariants.css";
@@ -20,7 +19,6 @@ export function EngravedVariant({ baseColor }: { baseColor: string }) {
     contrast: [0.5, 0, 1, 0.05],
   });
 
-  const id = useId();
   const line = `color-mix(in oklch, ${baseColor}, white ${(
     p.contrast * 55
   ).toFixed(0)}%)`;
@@ -53,23 +51,7 @@ export function EngravedVariant({ baseColor }: { baseColor: string }) {
           preserveAspectRatio="none"
           aria-hidden="true"
         >
-          <mask id={`${id}-m`}>
-            <rect width={VIEW_W} height={VIEW_H} fill="#000" />
-            <rect
-              x="40"
-              y="40"
-              width={VIEW_W - 80}
-              height={VIEW_H - 80}
-              fill="#fff"
-            />
-          </mask>
-          <g
-            mask={`url(#${id}-m)`}
-            fill="none"
-            stroke={line}
-            strokeWidth="1.4"
-            opacity="0.9"
-          >
+          <g fill="none" stroke={line} strokeWidth="1.4" opacity="0.9">
             {paths.map((d, i) => (
               <path key={i} d={d} />
             ))}
