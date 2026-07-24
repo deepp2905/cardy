@@ -89,12 +89,16 @@
   aspect-ratio: 85.6 / 53.98;
   border-radius: 12px;
   /* Grey by default; recedes with depth so stacked cards separate. The
-     focused card keeps the same grey — only position/tilt marks it. */
-  background: color-mix(
+     focused card keeps the same grey — only position/tilt marks it.
+     --fill is hoisted so the border can reuse it. */
+  --fill: color-mix(
     in oklch,
     var(--color-6),
     var(--color-3) calc(var(--depth, 0) * 100%)
   );
+  background: var(--fill);
+  /* Border = the fill at 50% opacity, greyscale or colour alike. */
+  border: 1px solid color-mix(in oklch, var(--fill), transparent 50%);
   box-shadow:
     0 1px 2px oklch(0 0 0 / 0.12),
     0 8px 20px -10px oklch(0 0 0 / 0.28);
@@ -104,9 +108,10 @@
 }
 
 /* Colour on: each card takes its real palette colour, still dimmed with
-   depth so the stack still reads. Gated by the menu toggle. */
+   depth so the stack still reads. Gated by the menu toggle. The border
+   follows automatically since it reads --fill. */
 .explore[data-colorful="true"] .mock-card {
-  background: color-mix(
+  --fill: color-mix(
     in oklch,
     var(--card-color),
     var(--color-3) calc(var(--depth, 0) * 55%)

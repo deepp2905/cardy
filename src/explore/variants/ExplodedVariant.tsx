@@ -16,7 +16,7 @@ export function ExplodedVariant() {
     maxTilt: [88, 20, 88, 1],
     /** Cards of travel over which the tilt sweeps 0 -> maxTilt. */
     tiltSpread: [1, 0.5, 4, 0.1],
-    spacing: [240, 20, 240, 1],
+    spacing: [161, 20, 240, 1],
     scaleStep: [0.1, 0, 0.15, 0.005],
     /** Forward pop of the focused card, px. */
     focusLift: [40, 0, 200, 2],
