@@ -17,15 +17,17 @@ export type PaletteEntry = { name: string; color: string };
 // buys: a consistent family, evenly spaced ~45° around the wheel. graphite
 // was the dark grey outlier; normalising made it a near-duplicate of cobalt,
 // so it was re-hued into the amber→jade gap (a lime) to keep 8 distinct.
+// Ordered by hue, ascending around the wheel, so the carousel and the
+// playground swatches run as a continuous spectrum.
 export const PALETTE: PaletteEntry[] = [
-  { name: "cobalt", color: "oklch(0.64 0.18 250)" },
-  { name: "violet", color: "oklch(0.64 0.18 300)" },
-  { name: "magenta", color: "oklch(0.64 0.18 350)" },
   { name: "coral", color: "oklch(0.64 0.18 25)" },
   { name: "amber", color: "oklch(0.64 0.18 85)" },
   { name: "lime", color: "oklch(0.64 0.18 115)" },
   { name: "jade", color: "oklch(0.64 0.18 150)" },
   { name: "teal", color: "oklch(0.64 0.18 200)" },
+  { name: "cobalt", color: "oklch(0.64 0.18 250)" },
+  { name: "violet", color: "oklch(0.64 0.18 300)" },
+  { name: "magenta", color: "oklch(0.64 0.18 350)" },
 ];
 
 // One shared starting point for every card: the strip reads as a single
