@@ -37,6 +37,9 @@
   /* Slider fill. Themed rather than a plain ramp step: the ramp inverts
      between modes, so one token can't be "darker" in light mode alone. */
   --slider-fill: var(--color-9);
+  /* Ink for content sitting ON the slider-fill pill (segmented control). The
+     fill is a mid-grey in both themes, so near-white reads on it either way. */
+  --segmented-on-fill: oklch(0.99 0 0);
   --card-shadow:
     0 0 0 1px oklch(0 0 0 / 0.06),
     0 1px 2px oklch(0 0 0 / 0.1),

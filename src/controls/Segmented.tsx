@@ -20,6 +20,8 @@ type SegmentedProps<T extends string> = {
   value: T;
   options: SegmentedOption<T>[];
   onChange: (value: T) => void;
+  /** Show the glyph alone; the label survives only as the a11y name. */
+  iconOnly?: boolean;
 };
 
 export function Segmented<T extends string>({
@@ -27,13 +29,19 @@ export function Segmented<T extends string>({
   value,
   options,
   onChange,
+  iconOnly = false,
 }: SegmentedProps<T>) {
   // Unique group so multiple Segmented controls don't share one layout pill.
   const groupId = useId();
   return (
     <div className="segmented-field">
       <span className="segmented-label">{label}</span>
-      <div className="segmented-track" role="radiogroup" aria-label={label}>
+      <div
+        className="segmented-track"
+        data-icon-only={iconOnly}
+        role="radiogroup"
+        aria-label={label}
+      >
         {options.map((opt) => {
           const active = opt.value === value;
           return (
@@ -42,6 +50,8 @@ export function Segmented<T extends string>({
               type="button"
               role="radio"
               aria-checked={active}
+              aria-label={iconOnly ? opt.label : undefined}
+              title={iconOnly ? opt.label : undefined}
               className="segmented-option"
               data-active={active}
               onClick={() => onChange(opt.value)}
@@ -59,7 +69,7 @@ export function Segmented<T extends string>({
                     {opt.icon}
                   </span>
                 )}
-                <span className="segmented-text">{opt.label}</span>
+                {!iconOnly && <span className="segmented-text">{opt.label}</span>}
               </span>
             </button>
           );

@@ -17,8 +17,8 @@ type DialPanelProps = {
 // Tiny previews of the three shapes, so the picker shows what it makes.
 const shapeIcon = (shape: PatternShape) => {
   const common = {
-    width: 14,
-    height: 14,
+    width: 18,
+    height: 18,
     viewBox: "0 0 14 14",
     fill: "none",
     stroke: "currentColor",
@@ -65,18 +65,21 @@ export function DialPanel({
   return (
     <div className="dial-panel">
       <NoteField value={note} onChange={onNoteChange} />
-      <Segmented
-        label="Shape"
-        value={config.shape}
-        options={SHAPE_OPTIONS}
-        onChange={(shape) => onPatch({ shape })}
-      />
-      <Segmented
-        label="Fill"
-        value={config.filled ? "filled" : "outline"}
-        options={FILL_OPTIONS}
-        onChange={(v) => onPatch({ filled: v === "filled" })}
-      />
+      <div className="dial-row">
+        <Segmented
+          label="Shape"
+          value={config.shape}
+          options={SHAPE_OPTIONS}
+          onChange={(shape) => onPatch({ shape })}
+          iconOnly
+        />
+        <Segmented
+          label="Fill"
+          value={config.filled ? "filled" : "outline"}
+          options={FILL_OPTIONS}
+          onChange={(v) => onPatch({ filled: v === "filled" })}
+        />
+      </div>
       <Slider
         label="Spacing"
         value={config.spacing}
