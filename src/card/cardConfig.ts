@@ -1,10 +1,16 @@
 // Types + palette + defaults + serialization for the card. PLAN.md §3–4.
 
+export type PatternShape = "circle" | "rect" | "triangle";
+
 export type CardConfig = {
   id: string;
   baseColor: string; // oklch() string from PALETTE
-  character: number; // 0..1, dial 1 — swept through a designed curve mapping
-  intensity: number; // 0..1, dial 2 — drives wave amplitude + shader texture
+  // --- pattern dials (PLAN.md §3; raw params never exposed to the UI) ---
+  shape: PatternShape; // segmented control
+  filled: boolean; // segmented control (filled vs outline)
+  spacing: number; // 0..1 → grid pitch, SPACING_MIN..SPACING_MAX
+  frequency: number; // 0..1 → radial wavelength, FREQ_MIN..FREQ_MAX
+  phase: number; // 0..1 → wave offset, 0..2π
   note: string; // "" | max 24 chars
 };
 
@@ -30,8 +36,12 @@ export const PALETTE: PaletteEntry[] = [
 
 // One shared starting point for every card: the strip reads as a single
 // design in eight colourways, and the sliders are what makes yours distinct.
-export const DEFAULT_CHARACTER = 0.5;
-export const DEFAULT_INTENSITY = 0.5;
+export const DEFAULT_SHAPE: PatternShape = "circle";
+export const DEFAULT_FILLED = false;
+// Spacing starts at 64 (SPACING_MIN); the slider only ever adds sparseness.
+export const DEFAULT_SPACING = 0;
+export const DEFAULT_FREQUENCY = 0.32; // ≈140px wavelength, the tuned default
+export const DEFAULT_PHASE = 0;
 
 export function seedConfigs(): Record<string, CardConfig> {
   return Object.fromEntries(
@@ -40,8 +50,11 @@ export function seedConfigs(): Record<string, CardConfig> {
       {
         id: `card-${i}`,
         baseColor: p.color,
-        character: DEFAULT_CHARACTER,
-        intensity: DEFAULT_INTENSITY,
+        shape: DEFAULT_SHAPE,
+        filled: DEFAULT_FILLED,
+        spacing: DEFAULT_SPACING,
+        frequency: DEFAULT_FREQUENCY,
+        phase: DEFAULT_PHASE,
         note: "",
       } satisfies CardConfig,
     ]),
@@ -49,36 +62,47 @@ export function seedConfigs(): Record<string, CardConfig> {
 }
 
 // --- Designed dial mappings (never expose raw params; PLAN.md Phase C) ---
+//
+// The pattern engine has ~13 params; all but three are pinned to tuned
+// constants (see PATTERN_FIXED). The three sliders each map 0..1 into a safe
+// band so every position on the track looks intentional.
 
-// Dial 1 sweeps one path through Lissajous space chosen so every position
-// looks intentional: `a` rises steadily, `b` breathes against it, phase drifts.
-export function characterToCurve(t: number): {
-  a: number;
-  b: number;
-  phase: number;
-} {
+/** Grid pitch in card-space px. Slider runs from the tuned default up. */
+export const SPACING_MIN = 64;
+export const SPACING_MAX = 125;
+/** Radial wavelength in px. Lower = tighter rings. */
+export const FREQ_MIN = 40;
+export const FREQ_MAX = 400;
+
+/** Constants the UI never exposes — the pattern's fixed personality. */
+export const PATTERN_FIXED = {
+  strokeWidth: 1.6,
+  size: 32,
+  angle: 0,
+  staggerSize: 0.24,
+  staggerAngle: 90,
+  staggerSpacing: 16,
+  /** plus-lighter is fixed off: shapes deepen the card colour (plus-darker). */
+  plusLighter: false,
+  /** Group opacity by fill mode. */
+  filledOpacity: 0.1,
+  outlineOpacity: 0.25,
+} as const;
+
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+/** Resolve the three sliders + fixed constants into the pattern's real params. */
+export function patternParams(config: CardConfig) {
   return {
-    a: 1 + 5 * t,
-    b: 1.3 + 2.6 * (0.5 + 0.5 * Math.sin(Math.PI * 2 * 0.8 * t - 1.1)),
-    phase: 0.15 + 0.7 * t,
-  };
-}
-
-// Dial 1 also scrubs which frozen frame of the shader the background uses,
-// so "character" recomposes the whole card, not just the line.
-export function characterToFrame(t: number): number {
-  return 2000 + 24000 * t;
-}
-
-// Dial 2 maps one knob to shader distortion + grain (plus wave amplitude,
-// which WaveGraphic applies itself).
-export function intensityToShader(i: number): {
-  intensity: number;
-  noise: number;
-} {
-  return {
-    intensity: 0.08 + 0.28 * i,
-    noise: 0.12 + 0.5 * i,
+    ...PATTERN_FIXED,
+    shape: config.shape,
+    filled: config.filled,
+    spacing: lerp(SPACING_MIN, SPACING_MAX, config.spacing),
+    staggerFreq: lerp(FREQ_MIN, FREQ_MAX, config.frequency),
+    phase: config.phase * Math.PI * 2,
+    opacity: config.filled
+      ? PATTERN_FIXED.filledOpacity
+      : PATTERN_FIXED.outlineOpacity,
   };
 }
 
@@ -131,11 +155,16 @@ export function sanitizeNote(raw: string): string {
 
 // --- URL serialization (applied on confirm; PLAN.md §3) ---
 
+const SHAPES: PatternShape[] = ["circle", "rect", "triangle"];
+
 export function cardConfigToParams(config: CardConfig): URLSearchParams {
   const p = new URLSearchParams();
   p.set("c", config.baseColor);
-  p.set("ch", config.character.toFixed(3));
-  p.set("i", config.intensity.toFixed(3));
+  p.set("sh", config.shape);
+  p.set("f", config.filled ? "1" : "0");
+  p.set("sp", config.spacing.toFixed(3));
+  p.set("fq", config.frequency.toFixed(3));
+  p.set("ph", config.phase.toFixed(3));
   if (config.note) p.set("n", config.note);
   return p;
 }
@@ -144,11 +173,17 @@ export function cardConfigFromParams(params: URLSearchParams): CardConfig | null
   const c = params.get("c");
   if (!c || !OKLCH_RE.test(c)) return null;
   const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+  const shape = params.get("sh");
   return {
     id: "shared",
     baseColor: c,
-    character: clamp01(Number(params.get("ch") ?? 0.5)),
-    intensity: clamp01(Number(params.get("i") ?? 0.5)),
+    shape: SHAPES.includes(shape as PatternShape)
+      ? (shape as PatternShape)
+      : DEFAULT_SHAPE,
+    filled: params.get("f") === "1",
+    spacing: clamp01(Number(params.get("sp") ?? DEFAULT_SPACING)),
+    frequency: clamp01(Number(params.get("fq") ?? DEFAULT_FREQUENCY)),
+    phase: clamp01(Number(params.get("ph") ?? DEFAULT_PHASE)),
     note: sanitizeNote(params.get("n") ?? ""),
   };
 }

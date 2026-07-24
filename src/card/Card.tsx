@@ -1,14 +1,8 @@
-import { useId, type ComponentProps, type CSSProperties } from "react";
+import { useId, type CSSProperties } from "react";
 import type { CardConfig } from "./cardConfig";
-import {
-  characterToCurve,
-  characterToFrame,
-  inkFor,
-  intensityToShader,
-} from "./cardConfig";
+import { inkFor } from "./cardConfig";
 import { DEFAULT_PERSON } from "../lib/personalization";
-import { CardShader } from "./CardShader";
-import { WaveGraphic } from "./WaveGraphic";
+import { CardPattern } from "./CardPattern";
 import "./card.css";
 
 // Pure (config) => visual. Used in carousel, welcome, and snapshot.
@@ -22,18 +16,10 @@ type CardProps = {
    * and playground call sites need no change (PLAN.md Phase P).
    */
   name?: string;
-  /** Dev-tuning override for the shader look (dialkit harness). */
-  shaderParams?: Partial<ComponentProps<typeof CardShader>>;
 };
 
-export function Card({
-  config,
-  name = DEFAULT_PERSON.cardName,
-  shaderParams,
-}: CardProps) {
+export function Card({ config, name = DEFAULT_PERSON.cardName }: CardProps) {
   const { ink, inkMuted, isLight } = inkFor(config.baseColor);
-  const curve = characterToCurve(config.character);
-  const shader = intensityToShader(config.intensity);
 
   return (
     <div
@@ -45,16 +31,9 @@ export function Card({
       style={{ "--ink": ink, "--ink-muted": inkMuted } as CSSProperties}
     >
       <div className="card-surface">
-        <div className="card-layer">
-          <CardShader
-            baseColor={config.baseColor}
-            frame={characterToFrame(config.character)}
-            intensity={shader.intensity}
-            noise={shader.noise}
-            {...shaderParams}
-          />
+        <div className="card-layer" style={{ background: config.baseColor }}>
+          <CardPattern config={config} />
         </div>
-        <WaveGraphic curve={curve} intensity={config.intensity} />
         <div className="card-layer card-content">
           <div className="card-top">
             <span className="card-wordmark">cardy</span>

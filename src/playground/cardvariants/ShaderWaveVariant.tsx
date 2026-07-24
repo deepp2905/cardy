@@ -1,10 +1,21 @@
 import { useDialKit } from "dialkit";
 import { CardShader } from "../../card/CardShader";
 import { WaveGraphic } from "../../card/WaveGraphic";
-import { characterToCurve, characterToFrame } from "../../card/cardConfig";
 import { CardShell } from "./CardShell";
 
-// v1 — the current shipping face: paper-shader gradient + Lissajous wave.
+// The character→curve/frame mappings used to live in cardConfig, but the
+// shipping card is now the pattern field. This playground variant keeps the
+// old shader+wave look as a reference, so the formulas live here with it.
+function characterToCurve(t: number): { a: number; b: number; phase: number } {
+  return {
+    a: 1 + 5 * t,
+    b: 1.3 + 2.6 * (0.5 + 0.5 * Math.sin(Math.PI * 2 * 0.8 * t - 1.1)),
+    phase: 0.15 + 0.7 * t,
+  };
+}
+const characterToFrame = (t: number) => 2000 + 24000 * t;
+
+// v1 — the previous shipping face: paper-shader gradient + Lissajous wave.
 export function ShaderWaveVariant({ baseColor }: { baseColor: string }) {
   const p = useDialKit("Shader + wave", {
     character: [0.5, 0, 1, 0.01],
