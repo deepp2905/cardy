@@ -9,7 +9,7 @@ import "../explore.css";
 export function WalletVariant() {
   const p = useDialKit("Revolut wallet", {
     cardWidth: [400, 200, 460, 5],
-    peek: [65, 16, 160, 1],
+    peek: [56, 16, 160, 1],
     focusScale: [1, 1, 1.5, 0.01],
     /** Extra space opened above and below the focused card. */
     focusGap: [21, 0, 160, 1],
