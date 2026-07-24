@@ -9,12 +9,12 @@ import "../explore.css";
 export function CoverflowVariant() {
   const p = useDialKit("Coverflow", {
     cardWidth: [400, 180, 460, 5],
-    rotateY: [64, 0, 85, 1],
+    rotateY: [56, 0, 85, 1],
     /** Gap next to the flat centre card (fraction of card width). */
-    centreGap: [0.34, 0, 1, 0.01],
+    centreGap: [0.48, 0, 1, 0.01],
     /** Gap between the rotated background cards (fraction of card width). */
-    backGap: [0.12, 0, 0.6, 0.01],
-    depthPush: [240, 0, 400, 5],
+    backGap: [0, 0, 0.6, 0.01],
+    depthPush: [0, 0, 400, 5],
     scaleStep: [0.04, 0, 0.2, 0.005],
     scaleDepth: [7, 1, 7, 1],
     fade: [0, 0, 1, 0.01],
