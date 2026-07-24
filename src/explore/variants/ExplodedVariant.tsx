@@ -8,19 +8,19 @@ import "../explore.css";
 // read the deck edge-on; the focused card flattens toward the viewer.
 export function ExplodedVariant() {
   const p = useDialKit("Exploded stack", {
-    cardWidth: [330, 200, 460, 5],
-    tiltX: [34, 0, 80, 1],
+    cardWidth: [245, 200, 460, 5],
+    tiltX: [80, 0, 80, 1],
     /** How much the focused card straightens up (0 = keeps the tilt). */
-    focusFlatten: [0.7, 0, 1, 0.05],
-    spacing: [96, 20, 240, 1],
-    scaleStep: [0.03, 0, 0.15, 0.005],
-    focusLift: [60, 0, 200, 2],
+    focusFlatten: [1, 0, 1, 0.05],
+    spacing: [143, 20, 240, 1],
+    scaleStep: [0.15, 0, 0.15, 0.005],
+    focusLift: [76, 0, 200, 2],
     /** How many cards out the focus flatten/lift reaches. */
-    focusFalloff: [1, 0.5, 4, 0.1],
+    focusFalloff: [0.5, 0.5, 4, 0.1],
     /** Per-card z recession behind the deck. */
-    depthStep: [12, 0, 60, 1],
-    depthCap: [4, 1, 7, 1],
-    fade: [0.22, 0, 1, 0.01],
+    depthStep: [0, 0, 60, 1],
+    depthCap: [6, 1, 7, 1],
+    fade: [0.53, 0, 1, 0.01],
     perspective: [1200, 400, 3000, 50],
   });
 
@@ -51,11 +51,18 @@ export function ExplodedVariant() {
             style={{
               transform: [
                 `translateY(${d * p.spacing}px)`,
-                // The focused card rotates toward flat and lifts forward.
+                // Tilt keeps a single sign for every card, so nothing appears
+                // to flip direction as it crosses the centre. The focused
+                // card only eases the magnitude toward flat — it never
+                // rotates the opposite way from where it started.
                 `rotateX(${p.tiltX * (1 - focus * p.focusFlatten)}deg)`,
                 `translateZ(${focus * p.focusLift - capped * p.depthStep}px)`,
                 `scale(${1 - capped * p.scaleStep})`,
               ].join(" "),
+              // Anchor the tilt to the top edge so cards fan consistently
+              // downward rather than pivoting about their centres, which is
+              // what made the apparent direction reverse across the middle.
+              transformOrigin: "center top",
               zIndex: COUNT - Math.round(away),
             }}
           >
