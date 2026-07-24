@@ -8,7 +8,7 @@ import "../explore.css";
 export function ScrollVariant() {
   const p = useDialKit("Horizontal scroll", {
     cardWidth: [400, 200, 520, 1],
-    gap: [20, 0, 120, 1],
+    gap: [24, 0, 120, 1],
     minScale: [0.5, 0.4, 1, 0.01],
     falloff: [5, 0.5, 5, 0.1],
     /** Vertical drop for receding cards — a subtle arc. */
