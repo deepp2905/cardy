@@ -8,13 +8,13 @@ import "../explore.css";
 export function ScrollVariant() {
   const p = useDialKit("Horizontal scroll", {
     cardWidth: [372, 200, 520, 1],
-    gap: [14, 0, 120, 1],
+    gap: [0, 0, 120, 1],
     minScale: [0.75, 0.4, 1, 0.01],
-    falloff: [2, 0.5, 5, 0.1],
+    falloff: [5, 0.5, 5, 0.1],
     /** Neighbours dim toward this as they recede. */
     minOpacity: [1, 0.3, 1, 0.05],
     /** Vertical drop for receding cards — a subtle arc. */
-    arc: [0, 0, 80, 2],
+    arc: [80, 0, 80, 2],
   });
 
   const { ref, index, focusedIndex } = useCardDeck("x");
