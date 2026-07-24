@@ -12,22 +12,20 @@ export const CARD_ASPECT = 85.6 / 53.98; // ISO/IEC 7810 ID-1
 
 export type PaletteEntry = { name: string; color: string };
 
-// Locked to one lightness (0.64) and chroma (0.18) so every card reads as
-// equally bright and equally saturated — only hue varies. That's what OKLCH
-// buys: a consistent family, evenly spaced ~45° around the wheel. graphite
-// was the dark grey outlier; normalising made it a near-duplicate of cobalt,
-// so it was re-hued into the amber→jade gap (a lime) to keep 8 distinct.
-// Ordered by hue, ascending around the wheel, so the carousel and the
-// playground swatches run as a continuous spectrum.
+// Nine brand colours, from the 500-level swatches. Each carries its own
+// lightness and chroma (not a normalised ramp), so they read with distinct
+// brightness/saturation — a varied, characterful set rather than a uniform
+// family.
 export const PALETTE: PaletteEntry[] = [
-  { name: "coral", color: "oklch(0.68 0.24 25)" },
-  { name: "amber", color: "oklch(0.68 0.24 85)" },
-  { name: "lime", color: "oklch(0.68 0.24 115)" },
-  { name: "jade", color: "oklch(0.68 0.24 150)" },
-  { name: "teal", color: "oklch(0.68 0.24 200)" },
-  { name: "cobalt", color: "oklch(0.68 0.24 250)" },
-  { name: "violet", color: "oklch(0.68 0.24 300)" },
-  { name: "magenta", color: "oklch(0.68 0.24 350)" },
+  { name: "blue", color: "oklch(0.532 0.255 262.502)" },
+  { name: "pink", color: "oklch(0.724 0.188 346.723)" },
+  { name: "orange", color: "oklch(0.62 0.18 41.644)" },
+  { name: "yellow", color: "oklch(0.794 0.156 85.922)" },
+  { name: "lime", color: "oklch(0.83 0.203 122.796)" },
+  { name: "green", color: "oklch(0.636 0.213 141.929)" },
+  { name: "jade", color: "oklch(0.69 0.115 184.634)" },
+  { name: "cyan", color: "oklch(0.665 0.186 249.535)" },
+  { name: "purple", color: "oklch(0.499 0.241 282.011)" },
 ];
 
 // One shared starting point for every card: the strip reads as a single
