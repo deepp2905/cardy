@@ -80,9 +80,9 @@ const SHAPES_ALL: PatternShape[] = ["circle", "rect", "triangle"];
 const band = (r: number, min: number, max: number) => min + r * (max - min);
 
 // Each colourway also gets its own pattern, so the strip reads as eight
-// distinct designs rather than one design recoloured. Values stay in tasteful
-// bands (the slider mappings already clamp to safe ranges, so the full 0..1 is
-// fair game) and every card is still a valid starting point the user can tune.
+// distinct designs rather than one design recoloured. Bands are deliberately
+// wide — the slider mappings clamp to safe ranges, so even the extremes stay
+// legible — and every card is still a valid starting point the user can tune.
 //
 // The three sliders (spacing/frequency/phase) mostly change density and offset
 // of ONE motif, which is why cards rhymed too closely. The bulk of the variance
@@ -100,20 +100,22 @@ export function seedConfigs(): Record<string, CardConfig> {
           baseColor: p.color,
           shape: SHAPES_ALL[Math.floor(rand() * SHAPES_ALL.length)],
           filled: rand() < 0.5,
-          // Spacing and frequency biased toward the denser, more legible half
-          // of their ranges so no card seeds as a near-empty field.
-          spacing: rand() * 0.7,
-          frequency: 0.15 + rand() * 0.6,
+          // Density is the most visible difference between cards, so spread it
+          // near-full: some seed dense and busy, others sparse and airy. Both
+          // ends are still legible via the slider mappings' safe clamps.
+          spacing: band(rand(), 0, 0.9),
+          frequency: band(rand(), 0.05, 0.95),
           phase: rand(),
           note: "",
-          // Tasteful bands centred on the tuned PATTERN_FIXED values.
+          // Bold bands: wide swings around the tuned PATTERN_FIXED values so
+          // each card reads as its own design, not a recolour of one motif.
           personality: {
-            angle: band(rand(), 0, 30),
-            size: band(rand(), 26, 38),
-            strokeWidth: band(rand(), 1.2, 2.2),
-            staggerSize: band(rand(), 0.14, 0.36),
-            staggerAngle: band(rand(), 50, 130),
-            staggerSpacing: band(rand(), 10, 22),
+            angle: band(rand(), 0, 45),
+            size: band(rand(), 20, 44),
+            strokeWidth: band(rand(), 1, 3),
+            staggerSize: band(rand(), 0.08, 0.55),
+            staggerAngle: band(rand(), 20, 170),
+            staggerSpacing: band(rand(), 4, 30),
           },
         } satisfies CardConfig,
       ];
