@@ -8,7 +8,6 @@ import {
 } from "./CardVariantSwitcher";
 import { ShaderWaveVariant } from "./ShaderWaveVariant";
 import { FlatMinimalVariant } from "./FlatMinimalVariant";
-import { GeometricVariant } from "./GeometricVariant";
 import { EngravedVariant } from "./EngravedVariant";
 import { PatternVariant } from "./PatternVariant";
 import "./cardvariants.css";
@@ -33,12 +32,6 @@ const VARIANTS: Variant[] = [
     name: "Flat minimal",
     note: "Solid fill, one hairline",
     render: (c) => <FlatMinimalVariant baseColor={c} />,
-  },
-  {
-    id: "geometric",
-    name: "Geometric",
-    note: "Hard diagonal split",
-    render: (c) => <GeometricVariant baseColor={c} />,
   },
   {
     id: "engraved",
