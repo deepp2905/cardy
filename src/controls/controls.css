@@ -109,6 +109,15 @@
     left 0.2s ease;
 }
 
+/* Non-interactive full-track layer that carries the thumb's "over the label"
+   dim (Slider.tsx). Its opacity multiplies with the thumb's own below. */
+.slider-thumb-wrap {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2; /* above the fill (1) and label (2 too, drawn earlier); below input (3) */
+}
+
 /* height and top are driven by motion (they shrink toward the pill's
    rounded ends) — see Slider.tsx. */
 .slider-thumb {
