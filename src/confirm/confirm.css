@@ -510,36 +510,11 @@
   max-width: 32ch;
 }
 
-.epilogue-links {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 6px;
-}
-
-.link-btn {
-  appearance: none;
-  border: none;
-  background: none;
-  font: inherit;
-  font-size: var(--text-sm);
-  color: var(--color-11);
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-thickness: 1px;
-  text-decoration-color: var(--color-8);
-}
-
-.link-btn:hover {
-  color: var(--color-12);
-}
-
-.link-btn:focus-visible {
-  outline: 2px solid var(--color-9);
-  outline-offset: 2px;
+/* Secondary escape hatch — a gray-fill pill (same as the back button),
+   sitting a touch below the primary wallet CTA. */
+.epilogue-restart {
+  margin-top: 4px;
+  padding-inline: 28px;
 }
 
 .sr-only {

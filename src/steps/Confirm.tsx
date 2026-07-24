@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Card } from "../card/Card";
-import { cardConfigToParams, type CardConfig } from "../card/cardConfig";
+import { type CardConfig } from "../card/cardConfig";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
 import { CarrierSheet } from "../confirm/CarrierSheet";
 import { Envelope } from "../confirm/Envelope";
@@ -9,7 +9,6 @@ import { Epilogue } from "../confirm/Epilogue";
 import { MailSlot } from "../confirm/MailSlot";
 import { PostHint } from "../confirm/PostHint";
 import { usePostDrag } from "../confirm/usePostDrag";
-import { snapshotCard } from "../confirm/snapshot";
 import { useStageScale } from "../confirm/useStageScale";
 import { useWrapSequence } from "../confirm/useWrapSequence";
 import "../confirm/confirm.css";
@@ -47,7 +46,6 @@ export function Confirm({
   const cardRef = useRef<HTMLDivElement>(null);
   const mmPx = useStageScale(stageRef);
   const [slideW, setSlideW] = useState(372);
-  const [png, setPng] = useState<string | null>(null);
   const [showEpilogue, setShowEpilogue] = useState(false);
 
   // --slide-w is `min(372px, 88dvw)`; read it rather than duplicating the rule.
@@ -90,12 +88,6 @@ export function Confirm({
       delete root.dataset.sequence;
     };
   }, [started]);
-
-  // Fire-and-forget PNG for the epilogue's download. Never awaited.
-  useEffect(() => {
-    if (!started || png || !cardRef.current) return;
-    void snapshotCard(cardRef.current).then(setPng);
-  }, [started, png]);
 
   useEffect(() => {
     if (!started) setShowEpilogue(false);
@@ -158,14 +150,7 @@ export function Confirm({
       )}
 
       <AnimatePresence>
-        {showEpilogue && (
-          <Epilogue
-            key="epilogue"
-            png={png}
-            shareUrl={`${location.origin}${location.pathname}?${cardConfigToParams(config)}`}
-            onRestart={onRestart}
-          />
-        )}
+        {showEpilogue && <Epilogue key="epilogue" onRestart={onRestart} />}
       </AnimatePresence>
     </div>
   );
