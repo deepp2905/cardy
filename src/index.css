@@ -34,6 +34,9 @@
   --color-12: oklch(0.375 0 0);
 
   --knob-highlight: rgba(255, 255, 255, 0.9);
+  /* Slider fill. Themed rather than a plain ramp step: the ramp inverts
+     between modes, so one token can't be "darker" in light mode alone. */
+  --slider-fill: var(--color-9);
   --card-shadow:
     0 0 0 1px oklch(0 0 0 / 0.06),
     0 1px 2px oklch(0 0 0 / 0.1),
@@ -82,6 +85,9 @@
   --color-12: oklch(0.903 0 0);
 
   --knob-highlight: rgba(255, 255, 255, 0.08);
+  /* Dark mode reads the other way — the fill sits above the track, so a
+     lower step keeps it from glowing against the dark surface. */
+  --slider-fill: var(--color-8);
   --card-shadow:
     0 1px 2px oklch(0 0 0 / 0.4),
     0 14px 36px -8px oklch(0 0 0 / 0.55);

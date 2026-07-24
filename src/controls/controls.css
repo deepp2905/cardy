@@ -46,7 +46,7 @@
   position: absolute;
   inset: 0 auto 0 0;
   width: var(--pct);
-  background: var(--color-8);
+  background: var(--slider-fill);
   z-index: 1;
 }
 
