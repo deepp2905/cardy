@@ -61,8 +61,8 @@
 
 .slider-thumb {
   position: absolute;
-  top: 11px;
-  height: 30px;
+  top: 13px;
+  height: 34px;
   width: 4px;
   /* Sit just inside the fill's leading edge, clamped so the pill stays
      within the track at both extremes. */

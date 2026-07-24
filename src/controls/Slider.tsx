@@ -116,10 +116,10 @@ export function Slider({ value, onChange, label, disabled }: SliderProps) {
           aria-hidden="true"
           // Height, not scaleY: transform-scaling a fixed-px radius squashes
           // it flat on the scaled axis and the pill stops being round.
-          // Centred in the 52px track at both sizes.
+          // Centred in the 60px track at both sizes.
           animate={{
-            height: hovered ? 30 : 30 / 1.5,
-            top: hovered ? 11 : 11 + (30 - 30 / 1.5) / 2,
+            height: hovered ? 34 : 34 / 1.5,
+            top: hovered ? 13 : 13 + (34 - 34 / 1.5) / 2,
           }}
           transition={{ ...snappy, damping: 24 }}
         />

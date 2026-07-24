@@ -44,7 +44,7 @@
 
   /* Every interactive control is a pill at one shared height — no borders,
      fills only. Outlines appear on focus, never at rest. */
-  --control-h: 52px;
+  --control-h: 60px;
   --radius-pill: 999px;
 
   /* type scale — every size in the app comes from these steps */

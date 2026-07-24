@@ -4,6 +4,13 @@ import { usePrefersReducedMotion } from "../lib/reducedMotion";
 import { BackButton } from "./BackButton";
 import "./ui.css";
 
+/**
+ * Width the back slot animates to: the square button (--control-h, 60px)
+ * plus the 10px margin in ui.css. Motion needs a number here, so this can't
+ * read the token directly — keep the two in step.
+ */
+const BACK_SLOT_W = 70;
+
 // Persistent bottom action row (lives outside the step transitions so it
 // stays constant across the journey). When the back button appears/leaves,
 // its slot animates its width so the flexing next CTA resizes smoothly.
@@ -26,7 +33,7 @@ export function ActionBar({
             key="back"
             className="back-slot"
             initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 62, opacity: 1 }}
+            animate={{ width: BACK_SLOT_W, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={reduce ? { duration: 0 } : snappy}
           >

@@ -56,7 +56,9 @@
 }
 
 .back-slot .btn-back {
-  margin-inline-end: 10px; /* 52 + 10 = animated slot width of 62 */
+  /* 60px button + 10px = the BACK_SLOT_W ActionBar animates to. If
+     --control-h changes, update that constant too. */
+  margin-inline-end: 10px;
 }
 
 .action-bar .btn-primary {
