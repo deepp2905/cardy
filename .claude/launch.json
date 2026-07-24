@@ -7,18 +7,6 @@
       "runtimeArgs": ["run", "dev"],
       "port": 5173,
       "autoPort": true
-    },
-    {
-      "name": "frames",
-      "runtimeExecutable": "python",
-      "runtimeArgs": [
-        "-m",
-        "http.server",
-        "8931",
-        "--directory",
-        "C:/Users/deeph/AppData/Local/Temp/claude/D--Design-Engineering-cardy/c7a2509c-ffa0-4756-a0ac-d9a9443cebcd/scratchpad"
-      ],
-      "port": 8931
     }
   ]
 }

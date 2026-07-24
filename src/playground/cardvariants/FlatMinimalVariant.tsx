@@ -3,20 +3,31 @@ import { useDialKit } from "dialkit";
 import { CardShell } from "./CardShell";
 import "./cardvariants.css";
 
-// v2 — flat minimal: a solid or gently graded fill and a single hairline rule.
-// Restraint as the statement (the Apple Card school).
+// v2 — flat minimal: a gradient fill, nothing else. Restraint as the
+// statement (the Apple Card school).
 export function FlatMinimalVariant({ baseColor }: { baseColor: string }) {
   const p = useDialKit("Flat minimal", {
-    /** Vertical gradient depth: 0 = solid, 1 = strong top->bottom shade. */
-    gradient: [0.35, 0, 1, 0.01],
-    /** Where the hairline sits, top to bottom (%). */
-    rulePosition: [62, 0, 100, 1],
-    ruleOpacity: [0.5, 0, 1, 0.05],
+    /** Direction of the gradient sweep, degrees. */
+    angle: [160, 0, 360, 1],
+    /** How far the ends shade from the base colour. */
+    darken: [0.34, 0, 0.7, 0.01],
+    lighten: [0.1, 0, 0.5, 0.01],
+    /** Where the colour transition is centred, 0..1 along the sweep. */
+    midpoint: [0.5, 0.1, 0.9, 0.01],
+    /** 0 = smooth blend, 1 = hard two-tone band. */
+    hardness: [0, 0, 1, 0.01],
   });
 
-  const darker = `color-mix(in oklch, ${baseColor}, black ${(
-    p.gradient * 34
+  const light = `color-mix(in oklch, ${baseColor}, white ${(
+    p.lighten * 100
   ).toFixed(0)}%)`;
+  const dark = `color-mix(in oklch, ${baseColor}, black ${(
+    p.darken * 100
+  ).toFixed(0)}%)`;
+  // hardness pinches the two colour stops toward the midpoint.
+  const spread = (1 - p.hardness) * 0.5;
+  const stopA = ((p.midpoint - spread) * 100).toFixed(1);
+  const stopB = ((p.midpoint + spread) * 100).toFixed(1);
 
   return (
     <CardShell baseColor={baseColor}>
@@ -24,16 +35,10 @@ export function FlatMinimalVariant({ baseColor }: { baseColor: string }) {
         className="cv-flat"
         style={
           {
-            "--top": baseColor,
-            "--bottom": darker,
+            background: `linear-gradient(${p.angle}deg, ${light} ${stopA}%, ${dark} ${stopB}%)`,
           } as CSSProperties
         }
-      >
-        <span
-          className="cv-flat-rule"
-          style={{ top: `${p.rulePosition}%`, opacity: p.ruleOpacity }}
-        />
-      </div>
+      />
     </CardShell>
   );
 }

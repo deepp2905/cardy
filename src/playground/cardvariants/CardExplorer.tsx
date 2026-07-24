@@ -10,6 +10,7 @@ import { ShaderWaveVariant } from "./ShaderWaveVariant";
 import { FlatMinimalVariant } from "./FlatMinimalVariant";
 import { GeometricVariant } from "./GeometricVariant";
 import { EngravedVariant } from "./EngravedVariant";
+import { PatternVariant } from "./PatternVariant";
 import "./cardvariants.css";
 
 // Explore art-direction treatments of the card face. One shared colour drives
@@ -44,6 +45,12 @@ const VARIANTS: Variant[] = [
     name: "Engraved",
     note: "Guilloché line field",
     render: (c) => <EngravedVariant baseColor={c} />,
+  },
+  {
+    id: "pattern",
+    name: "Pattern",
+    note: "Staggered shape field",
+    render: (c) => <PatternVariant baseColor={c} />,
   },
 ];
 
