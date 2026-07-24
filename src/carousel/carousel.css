@@ -11,6 +11,10 @@
   width: 100%;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
+  /* Keep the platform's own elastic overscroll, but stop the gesture chaining
+     to the page — a horizontal swipe past the end otherwise triggers browser
+     back-navigation on trackpads and Android. */
+  overscroll-behavior-x: contain;
   padding-block: 18px; /* room for scale + shadow */
   /* Centres the first and last slide: half the strip, less half a card.
      Uses vw, NOT a percentage — percentage padding resolves against the

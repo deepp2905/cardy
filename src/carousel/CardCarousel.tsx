@@ -9,7 +9,6 @@ import {
 } from "../lib/motionConfig";
 import { mapRangeEased } from "../lib/mapRange";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
-import { useRubberband } from "./useRubberband";
 import "./carousel.css";
 
 // Scroll-snap strip; the slide nearest the container centre is active.
@@ -33,9 +32,8 @@ export function CardCarousel({
 }: CardCarouselProps) {
   const stripRef = useRef<HTMLDivElement>(null);
   const reduce = usePrefersReducedMotion();
-  // Overscroll bounce at both ends — native only exists on iOS/macOS Safari.
-  const rubberX = useRubberband(stripRef, !reduce);
-
+  // Overscroll bounce is left to the platform: a custom one runs on top of
+  // native elastic scrolling rather than replacing it, and the two fight.
   // One motion value per slide, written straight from the scroll handler.
   // Driving scale through React state would re-render all 8 cards (each with
   // a shader canvas and an SVG) on every scroll frame. Slides register their
@@ -144,7 +142,6 @@ export function CardCarousel({
             isActive={isActive}
             reduce={reduce}
             register={register}
-            rubberX={rubberX}
             onSelect={() => {
               if (!isActive) centerSlide(id);
             }}
@@ -165,7 +162,6 @@ function Slide({
   isActive,
   reduce,
   register,
-  rubberX,
   onSelect,
   children,
 }: {
@@ -174,7 +170,6 @@ function Slide({
   isActive: boolean;
   reduce: boolean;
   register: (id: string, value: MotionValue<number>) => void;
-  rubberX: MotionValue<number>;
   onSelect: () => void;
   children: ReactNode;
 }) {
@@ -192,13 +187,10 @@ function Slide({
       aria-label={label}
       onClick={onSelect}
     >
-      {/* Scale only — full opacity, no blur, no desaturation. The rubberband
-          offset rides here rather than on the scroller: transforming a scroll
-          container moves its own scrollport, and a wrapper element would
-          break the offsetLeft the centre detection measures. */}
+      {/* Scale only — full opacity, no blur, no desaturation. */}
       <motion.div
         className="carousel-card"
-        style={reduce ? undefined : { scale, x: rubberX }}
+        style={reduce ? undefined : { scale }}
       >
         {children}
       </motion.div>

@@ -5,9 +5,22 @@
   width: 100%;
 }
 
-.customize-panel {
+/* Carousel takes the free space and centres the deck in it; the controls
+   pin to the bottom, directly above the action bar. */
+.customize {
+  justify-content: flex-start;
+}
+
+.customize-carousel {
+  flex: 1;
   display: flex;
-  justify-content: center;
+  align-items: center;
+  min-height: 0;
+}
+
+.customize-panel {
+  flex-shrink: 0;
+  padding-bottom: 4px;
 }
 
 /* The carousel is the one element that breaks the column, so neighbour cards

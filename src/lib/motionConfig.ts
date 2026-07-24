@@ -69,6 +69,14 @@ export const drift = {
   },
 } as const;
 
+// Slider overscroll stretch. Safe to hand-roll here (unlike the carousel):
+// the track is a plain div, so there is no native scroll bounce to fight.
+export const sliderStretch = {
+  stiffness: 380,
+  damping: 32,
+  mass: 0.6,
+} as const;
+
 export const FOLD_STAGGER = 0.25;
 
 // Carousel proximity scaling: a slide is full size dead-centre and shrinks
@@ -79,34 +87,10 @@ export const FOLD_STAGGER = 0.25;
 export const CAROUSEL_SCALE_MIN = 0.75;
 export const CAROUSEL_SCALE_MAX = 1;
 
-// Overscroll rubberband at the strip's ends. Native bounce only exists on
-// iOS/macOS Safari, so this supplies it everywhere.
-//
-// Slightly OVER-damped (ratio ~1.13): the strip is snapping back to a rest
-// position the user already sees, so any overshoot reads as a wobble rather
-// than life. ~130ms to settle.
-export const rubberband: Transition = {
-  type: "spring",
-  stiffness: 700,
-  damping: 60,
-};
-
-/**
- * Pull, in px, at which the strip reaches HALF its allowed travel.
- * Bigger = stiffer. This is the asymptote's scale, not a clamp.
- */
-export const RUBBERBAND_RESISTANCE = 150;
-/** Ceiling the overscroll creeps toward but never reaches, px. */
-export const RUBBERBAND_MAX = 72;
-
-/** Below this scroll speed (px/ms) an edge impact produces no bounce. */
-export const IMPACT_MIN_VELOCITY = 0.15;
-/**
- * Impact speed (px/ms) that throws the strip HALF of RUBBERBAND_MAX.
- * Same asymptote as the drag curve, so a fast fling never exceeds the
- * ceiling a finger can reach.
- */
-export const IMPACT_VELOCITY_SCALE = 2.2;
+// Overscroll bounce is deliberately NOT implemented here. A custom rubberband
+// layers on top of the platform's own elastic scrolling instead of replacing
+// it (there is no way to opt out of native overscroll while keeping the
+// scroller), and the two animating the same gesture never resolve cleanly.
 
 // Entrance choreography: semantic chunks stagger in, never one big block.
 export const ENTER_STAGGER = 0.08;

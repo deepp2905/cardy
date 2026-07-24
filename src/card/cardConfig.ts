@@ -23,6 +23,11 @@ export const PALETTE: PaletteEntry[] = [
   { name: "graphite", color: "oklch(0.30 0.03 260)" },
 ];
 
+// One shared starting point for every card: the strip reads as a single
+// design in eight colourways, and the sliders are what makes yours distinct.
+export const DEFAULT_CHARACTER = 0.5;
+export const DEFAULT_INTENSITY = 0.5;
+
 export function seedConfigs(): Record<string, CardConfig> {
   return Object.fromEntries(
     PALETTE.map((p, i) => [
@@ -30,8 +35,8 @@ export function seedConfigs(): Record<string, CardConfig> {
       {
         id: `card-${i}`,
         baseColor: p.color,
-        character: i / (PALETTE.length - 1), // spread so the strip shows range
-        intensity: 0.5,
+        character: DEFAULT_CHARACTER,
+        intensity: DEFAULT_INTENSITY,
         note: "",
       } satisfies CardConfig,
     ]),
