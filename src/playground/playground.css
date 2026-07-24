@@ -33,8 +33,9 @@
   font-weight: 550;
   color: var(--color-11);
   text-decoration: none;
+  white-space: nowrap;
   padding: 7px 14px;
-  border-radius: 9px;
+  border-radius: var(--radius-pill);
   transition:
     color 0.18s ease,
     background-color 0.18s ease;
@@ -216,15 +217,33 @@
 
 .pg-index-links {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 10px;
 }
 
+/* Pills on one line each, matching the app's control language. The old
+   fixed-height buttons wrapped "Carousel ideas" onto two lines and left
+   the row visibly ragged. */
 .pg-index-link {
   font-size: var(--text-base);
   font-weight: 550;
-  color: var(--color-1);
-  background: var(--color-12);
+  white-space: nowrap;
+  color: var(--color-12);
+  background: var(--color-4);
   text-decoration: none;
-  padding: 10px 20px;
-  border-radius: 11px;
+  padding: 12px 22px;
+  border-radius: var(--radius-pill);
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.pg-index-link:hover {
+  background: var(--color-5);
+}
+
+.pg-index-link:focus-visible {
+  outline: 2px solid var(--color-9);
+  outline-offset: 3px;
 }

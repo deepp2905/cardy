@@ -3,16 +3,31 @@
 
 .explore {
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Mirrors .column from the app so the layouts get the real available space. */
+/* Fills what's left under the dev nav rather than claiming the whole
+   viewport, which would push the page into a scroll by the nav's height. */
 .explore-column {
   max-width: 420px;
-  min-height: 100dvh;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
   margin: 0 auto;
   padding: 24px 24px 36px;
   display: flex;
   flex-direction: column;
+}
+
+/* In the app this is fixed to the viewport; here it sits under the dev nav,
+   so it flows with the column instead of overlapping it. */
+.explore .app-header {
+  position: static;
+  transform: none;
+  align-self: center;
+  margin-bottom: 8px;
 }
 
 .explore-stage {

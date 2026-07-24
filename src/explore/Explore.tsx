@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { DialRoot } from "dialkit";
 import "dialkit/styles.css";
-import { PlaygroundLink } from "../ui/PlaygroundLink";
+import { DevNav } from "../playground/DevNav";
 import { ThemeToggle } from "../ui/ThemeToggle";
 import { ExploreShell } from "./ExploreShell";
 import { VariantSwitcher, type VariantMeta } from "./VariantSwitcher";
@@ -70,9 +70,9 @@ export default function Explore() {
   return (
     <div className="explore">
       <div className="corner-controls">
-        <PlaygroundLink />
         <ThemeToggle />
       </div>
+      <DevNav />
 
       <VariantSwitcher
         variants={VARIANTS}

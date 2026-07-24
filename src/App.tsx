@@ -23,21 +23,25 @@ const ids = Object.keys(seedConfigs());
 
 export default function App() {
   const route = useHashRoute();
-  if (route.startsWith("/explore")) {
+  const isExplore = route.startsWith("/explore");
+  const isPlay = route.startsWith("/play");
+
+  if (isExplore || isPlay) {
+    // One Suspense boundary for both dev routes, with a real fallback —
+    // `null` left the page blank while the chunk loaded, which looked like
+    // a broken route when navigating between them.
     return (
-      <Suspense fallback={null}>
-        <Explore />
-      </Suspense>
-    );
-  }
-  if (route.startsWith("/play")) {
-    return (
-      <Suspense fallback={null}>
-        <Playground />
+      <Suspense fallback={<RouteFallback />}>
+        {isExplore ? <Explore /> : <Playground />}
       </Suspense>
     );
   }
   return <MainFlow />;
+}
+
+// Holds the viewport open so a route swap doesn't flash an empty document.
+function RouteFallback() {
+  return <div className="route-fallback" aria-busy="true" />;
 }
 
 function MainFlow() {
