@@ -63,7 +63,7 @@ const VARIANTS: (VariantMeta & { render: () => React.ReactElement })[] = [
 
 export default function Explore() {
   const [activeId, setActiveId] = useState(VARIANTS[0].id);
-  const [colorful, setColorful] = useState(false);
+  const [colorful, setColorful] = useState(true);
   const active = VARIANTS.find((v) => v.id === activeId) ?? VARIANTS[0];
 
   return (
