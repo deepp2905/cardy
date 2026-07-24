@@ -95,7 +95,13 @@
 .card-chip {
   width: 12.4cqw;
   height: auto;
-  margin-top: 4.4cqw;
+  /* Absolutely centred on the card's vertical axis, out of the flex flow, so
+     it stays put regardless of the note line while the top and bottom blocks
+     keep their edge pinning. Left-aligned to the content padding. */
+  position: absolute;
+  top: 50%;
+  left: 6.2cqw;
+  transform: translateY(-50%);
   flex-shrink: 0;
   filter: drop-shadow(0 0.3cqw 0.5cqw rgba(0, 0, 0, 0.2));
 }
