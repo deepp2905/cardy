@@ -86,8 +86,13 @@ export const FOLD_STAGGER = 0.25;
 // scale is the only focus cue left now that opacity and blur are gone.
 export const CAROUSEL_SCALE_MIN = 0.75;
 export const CAROUSEL_SCALE_MAX = 1;
-/** How many slide pitches the falloff spans before reaching the minimum. */
-export const CAROUSEL_FALLOFF_SLIDES = 3;
+/**
+ * How many slide pitches the falloff spans before reaching the minimum.
+ * 2 puts the first neighbour at ~81% and the second at the 75% floor —
+ * enough of a gradient to read across the deck, while the floor is
+ * actually reached by a card the user can see.
+ */
+export const CAROUSEL_FALLOFF_SLIDES = 2;
 
 // Overscroll bounce is deliberately NOT implemented here. A custom rubberband
 // layers on top of the platform's own elastic scrolling instead of replacing
