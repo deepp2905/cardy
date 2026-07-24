@@ -24,7 +24,7 @@ export function PostHint({
     return (
       <motion.div
         className="post-hint post-hint--reduced"
-        style={{ opacity: v.hintOpacity, top: mm(SLOT_TOP - 26) }}
+        style={{ opacity: v.hintOpacity, top: `calc(50% + ${mm(SLOT_TOP - 26)})` }}
       >
         <button type="button" className="btn btn-primary btn-mail" onClick={onMail}>
           Mail it
@@ -35,7 +35,7 @@ export function PostHint({
   return (
     <motion.div
       className="post-hint"
-      style={{ opacity: v.hintOpacity, top: mm(SLOT_TOP - 22) }}
+      style={{ opacity: v.hintOpacity, top: `calc(50% + ${mm(SLOT_TOP - 22)})` }}
       aria-hidden="true"
     >
       {/* A sine bob: the ease-in-out on a symmetric 0 → peak → 0 keyframe set is
