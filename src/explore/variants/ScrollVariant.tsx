@@ -7,9 +7,9 @@ import "../explore.css";
 // 1. Horizontal scroll — what the app ships today, for side-by-side comparison.
 export function ScrollVariant() {
   const p = useDialKit("Horizontal scroll", {
-    cardWidth: [372, 200, 520, 1],
+    cardWidth: [400, 200, 520, 1],
     gap: [0, 0, 120, 1],
-    minScale: [0.75, 0.4, 1, 0.01],
+    minScale: [0.5, 0.4, 1, 0.01],
     falloff: [5, 0.5, 5, 0.1],
     /** Neighbours dim toward this as they recede. */
     minOpacity: [1, 0.3, 1, 0.05],
