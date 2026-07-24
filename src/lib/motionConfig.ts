@@ -128,3 +128,45 @@ export const arrowNudge = {
     repeatDelay: 4,
   },
 } as const;
+
+// --- Confirm sequence (PRD-CONFIRM.md §9) ------------------------------------
+
+// Card settling back to sequence scale as the carrier sheet appears behind it.
+export const arrive: Transition = {
+  type: "spring",
+  stiffness: 200,
+  damping: 28,
+};
+
+// Carrier sheet fade-and-settle.
+export const wrap: Transition = {
+  type: "spring",
+  stiffness: 260,
+  damping: 30,
+};
+
+// Packet descending into the envelope pocket. mass > 1 so it reads as paper
+// with weight rather than a div changing its y.
+export const insert: Transition = {
+  type: "spring",
+  stiffness: 200,
+  damping: 28,
+  mass: 1.1,
+};
+
+// 180° envelope flip. Deliberately under-damped: the small rock at settle is
+// the reference animation's signature and must survive tuning.
+export const flip: Transition = {
+  type: "spring",
+  stiffness: 180,
+  damping: 22,
+  mass: 1.1,
+};
+
+// Envelope gliding into the slot after release. A response to a gesture, so a
+// spring — never a duration tween (§6 rules).
+export const post: Transition = {
+  type: "spring",
+  stiffness: 240,
+  damping: 30,
+};

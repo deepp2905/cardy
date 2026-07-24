@@ -1,0 +1,552 @@
+/* Confirm sequence — PRD-CONFIRM.md §3.
+
+   Every token for this step lives HERE, not in index.css. Paper and kraft are
+   the only non-ramp colours in the app: the 12-step ramp inverts between
+   themes, and paper that changes colour with the UI theme stops reading as a
+   physical object. These shift value slightly between themes for glare and
+   separation, never hue.
+
+   Every dimension is calc(<mm> * var(--mm)). --mm is written by useStageScale.
+   Raw px appears only for hairlines and shadow offsets. */
+
+:root {
+  --paper: oklch(0.968 0.012 88);
+  --paper-edge: oklch(0 0 0 / 0.07); /* hairline — light theme only */
+  --paper-rule: oklch(0.895 0.012 85);
+  --paper-bar: oklch(0.878 0.013 85);
+  --paper-ink-muted: oklch(0.7 0.02 85);
+
+  --kraft: oklch(0.792 0.052 72);
+  --kraft-flap: oklch(0.754 0.056 70);
+  --kraft-inner: oklch(0.7 0.05 68);
+  --kraft-ink: oklch(0.32 0.03 65);
+
+  --seal: oklch(0.26 0.02 70);
+  --seal-ink: oklch(0.95 0.01 85);
+
+  --slot: oklch(0.1 0 0);
+  --slot-rim: transparent;
+
+  --sheet-shadow:
+    0 2px 6px oklch(0 0 0 / 0.1),
+    0 20px 50px -18px oklch(0 0 0 / 0.35);
+  --oncard-shadow:
+    0 1px 2px oklch(0 0 0 / 0.18),
+    0 4px 10px -4px oklch(0 0 0 / 0.22);
+}
+
+:root[data-theme="dark"] {
+  --paper: oklch(0.935 0.014 86); /* dimmed so a lit sheet doesn't glare */
+  --paper-edge: transparent; /* the dark stage separates it already */
+  --paper-rule: oklch(0.862 0.013 84);
+  --paper-bar: oklch(0.845 0.014 84);
+  --paper-ink-muted: oklch(0.66 0.022 84);
+
+  --kraft: oklch(0.735 0.052 70);
+  --kraft-flap: oklch(0.698 0.055 68);
+  --kraft-inner: oklch(0.64 0.048 66);
+  --kraft-ink: oklch(0.28 0.03 64);
+
+  --seal: oklch(0.2 0.02 70);
+
+  --slot: oklch(0.08 0 0);
+  --slot-rim: oklch(0.38 0 0); /* without this a black hole on a dark stage
+                                  simply doesn't exist */
+
+  --sheet-shadow:
+    0 2px 6px oklch(0 0 0 / 0.35),
+    0 24px 56px -18px oklch(0 0 0 / 0.6);
+}
+
+/* Chrome hides for the sequence (PRD §D9). Driven by a root data attribute so
+   App.tsx and ui.css need no changes — keeps the merge surface to a minimum. */
+:root[data-sequence="playing"] .app-header,
+:root[data-sequence="playing"] .action-bar-fixed,
+:root[data-sequence="playing"] .corner-controls {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ---------------------------------------------------------------- stage --- */
+
+.confirm-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+
+.wrap-scene {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  perspective: 1400px;
+  perspective-origin: 50% 50%;
+}
+
+/* ---------------------------------------------------------------- sheet --- */
+
+.sheet {
+  position: absolute;
+  width: calc(120 * var(--mm));
+  height: calc(192 * var(--mm));
+  transform-style: preserve-3d;
+  z-index: 1;
+  filter: drop-shadow(0 calc(6 * var(--mm)) calc(14 * var(--mm)) oklch(0 0 0 / 0.3));
+}
+
+.panel {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: calc(64 * var(--mm));
+  background: var(--paper);
+  transform-style: preserve-3d;
+  box-shadow: 0 0 0 1px var(--paper-edge);
+}
+
+.panel--mid {
+  top: calc(64 * var(--mm));
+  z-index: 1;
+}
+
+/* Hinged on its TOP edge (the lower crease); rotateX(-180deg) swings it up and
+   toward the viewer, landing face-down over the card. */
+.panel--bottom {
+  top: calc(128 * var(--mm));
+  transform-origin: top center;
+  border-radius: 0 0 calc(1.5 * var(--mm)) calc(1.5 * var(--mm));
+  z-index: 2;
+}
+
+/* Hinged on its BOTTOM edge (the upper crease); lands last, nearest camera. */
+.panel--top {
+  top: 0;
+  transform-origin: bottom center;
+  border-radius: calc(1.5 * var(--mm)) calc(1.5 * var(--mm)) 0 0;
+  z-index: 3;
+}
+
+/* Two solid faces, swapped by a MotionValue threshold. No backface-visibility
+   anywhere in this step — it's the least reliable thing in Safari's 3D. */
+.panel-side {
+  position: absolute;
+  inset: 0;
+  background: var(--paper);
+}
+
+.panel-side--back {
+  background: linear-gradient(
+    to bottom,
+    oklch(0 0 0 / 0.06),
+    oklch(0 0 0 / 0) 40%
+  ),
+  var(--paper);
+}
+
+.panel-shade {
+  position: absolute;
+  inset: 0;
+  background: oklch(0 0 0);
+  pointer-events: none;
+}
+
+/* Cast shadow on the panel beneath. This is what sells paper — without it a
+   fold is a flat rectangle rotating. */
+.panel-cast {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: calc(64 * var(--mm));
+  background: linear-gradient(to bottom, oklch(0 0 0 / 0.55), oklch(0 0 0 / 0));
+  filter: blur(calc(1.5 * var(--mm)));
+  pointer-events: none;
+}
+
+.panel-cast--bottom {
+  top: calc(64 * var(--mm));
+  transform-origin: bottom center;
+  background: linear-gradient(to top, oklch(0 0 0 / 0.55), oklch(0 0 0 / 0));
+  z-index: 1;
+}
+
+.panel-cast--top {
+  top: calc(64 * var(--mm));
+  transform-origin: top center;
+  z-index: 2;
+}
+
+/* -------------------------------------------------------- sheet printing --- */
+
+.sheet-print {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.sheet-face {
+  position: absolute;
+  inset: 0 calc(14 * var(--mm));
+}
+
+.sheet-bar {
+  position: absolute;
+  background: var(--paper-bar);
+}
+
+.sheet-bar--fine {
+  background: var(--paper-rule);
+}
+
+.sheet-rule {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--paper-rule);
+}
+
+.sheet-wordmark {
+  position: absolute;
+  left: 0;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  color: var(--paper-ink-muted);
+  user-select: none;
+}
+
+/* Registration outline: 2.5mm outside the card, so it stays a visible frame
+   rather than being covered by the thing it marks. */
+.reg-outline {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(90.6 * var(--mm));
+  height: calc(59 * var(--mm));
+  transform: translate(-50%, -50%);
+  border: 1px dashed var(--paper-rule);
+  border-radius: calc(5.7 * var(--mm));
+}
+
+.reg-tick {
+  position: absolute;
+  width: calc(4 * var(--mm));
+  height: calc(4 * var(--mm));
+  border-color: var(--paper-ink-muted);
+  border-style: solid;
+  border-width: 0;
+}
+
+.reg-tick--tl { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
+.reg-tick--tr { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
+.reg-tick--bl { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
+.reg-tick--br { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
+
+/* The card's bed. The card renders at its sequence size and is scaled UP at
+   rest so it matches --slide-w (index.css: it must not resize between steps —
+   it resizes when the sequence starts, which is a different thing). */
+.card-bed {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.card-holder {
+  width: calc(85.6 * var(--mm));
+}
+
+.card-holder .card-frame {
+  width: 100%;
+  box-shadow: var(--oncard-shadow);
+}
+
+/* ------------------------------------------------------------- envelope --- */
+
+.envelope {
+  position: absolute;
+  width: calc(126 * var(--mm));
+  height: calc(70 * var(--mm));
+  transform-style: preserve-3d;
+  z-index: 2;
+  border-radius: calc(1.5 * var(--mm));
+}
+
+.envelope:focus-visible {
+  outline: 2px solid var(--color-9);
+  outline-offset: 4px;
+}
+
+.env-shadow {
+  position: absolute;
+  width: calc(112 * var(--mm));
+  height: calc(14 * var(--mm));
+  top: calc(50% + 28 * var(--mm));
+  background: radial-gradient(50% 50% at 50% 50%, oklch(0 0 0 / 0.55), oklch(0 0 0 / 0));
+  filter: blur(calc(2 * var(--mm)));
+  z-index: 1;
+  pointer-events: none;
+}
+
+.env-face {
+  position: absolute;
+  inset: 0;
+  border-radius: calc(1.5 * var(--mm));
+  background: var(--kraft);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.12),
+    0 1px 3px oklch(0 0 0 / 0.2);
+}
+
+.env-face--back {
+  transform-style: preserve-3d;
+}
+
+/* Pre-mirrored so it reads correctly once the group is at 180°. */
+.env-face--front {
+  transform: rotateY(180deg);
+  display: grid;
+  place-items: center;
+}
+
+.env-body {
+  position: absolute;
+  inset: 0;
+  border-radius: calc(1.5 * var(--mm));
+  background: var(--kraft);
+  overflow: hidden;
+  z-index: 2; /* above the packet: this IS the mask (§5.3) */
+}
+
+.env-mouth {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(6 * var(--mm));
+  background: linear-gradient(to bottom, var(--kraft-inner), oklch(0 0 0 / 0));
+  opacity: 0.7;
+}
+
+/* Triangular flap hinged on the envelope's top edge. Open sits at -165°, not a
+   full 180 — the residual 15° reads as depth, as in the reference. */
+.env-flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(38.5 * var(--mm));
+  transform-origin: top center;
+  transform-style: preserve-3d;
+  background: var(--kraft-flap);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  z-index: 3;
+}
+
+.env-flap .panel-shade {
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+.env-seal {
+  position: absolute;
+  top: calc(55% - 7 * var(--mm));
+  left: calc(50% - 7 * var(--mm));
+  width: calc(14 * var(--mm));
+  height: calc(14 * var(--mm));
+  border-radius: 50%;
+  background: var(--seal);
+  color: var(--seal-ink);
+  display: grid;
+  place-items: center;
+  font-size: calc(3.6 * var(--mm));
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  z-index: 4;
+  box-shadow: 0 1px 2px oklch(0 0 0 / 0.3);
+  user-select: none;
+}
+
+.env-for {
+  font-size: calc(6 * var(--mm));
+  font-weight: 500;
+  color: var(--kraft-ink);
+  max-width: calc(100 * var(--mm));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ----------------------------------------------------------------- slot --- */
+
+.slot-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 5; /* above the envelope — the plate is the mask */
+  pointer-events: none;
+}
+
+.slot-plate {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(50% + 75 * var(--mm));
+  width: 100vw;
+  height: 100vh;
+  background: var(--color-2);
+}
+
+.slot-rect {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: calc(139 * var(--mm));
+  height: calc(10 * var(--mm));
+  transform: translateX(-50%);
+  background: var(--slot);
+  border-radius: calc(5 * var(--mm));
+  border-top: 1px solid var(--slot-rim);
+  box-shadow: inset 0 calc(1.5 * var(--mm)) calc(2 * var(--mm)) oklch(0 0 0 / 0.6);
+}
+
+/* Falls on the envelope as it enters, so it darkens into the slot. */
+.slot-lip {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(50% + 69 * var(--mm));
+  width: calc(139 * var(--mm));
+  height: calc(6 * var(--mm));
+  background: linear-gradient(to top, oklch(0 0 0 / 0.35), oklch(0 0 0 / 0));
+}
+
+.post-hint {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-sm);
+  color: var(--color-10);
+  z-index: 4;
+  pointer-events: none;
+}
+
+.post-hint--reduced {
+  pointer-events: auto;
+}
+
+.post-hint-arrow {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-mail {
+  width: auto;
+  padding-inline: 28px;
+}
+
+/* ------------------------------------------------------------- epilogue --- */
+
+.epilogue {
+  position: relative;
+  z-index: 6;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.epilogue-title {
+  font-size: var(--text-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.epilogue-title:focus-visible {
+  outline: 2px solid var(--color-9);
+  outline-offset: 6px;
+  border-radius: 6px;
+}
+
+.epilogue-sub {
+  font-size: var(--text-md);
+  color: var(--color-10);
+  margin: 0;
+  max-width: 30ch;
+}
+
+.epilogue-cta {
+  margin-top: 10px;
+}
+
+.epilogue-note {
+  font-size: var(--text-sm);
+  color: var(--color-10);
+  margin: 0;
+  max-width: 32ch;
+}
+
+.epilogue-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.link-btn {
+  appearance: none;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--color-11);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--color-8);
+}
+
+.link-btn:hover {
+  color: var(--color-12);
+}
+
+.link-btn:focus-visible {
+  outline: 2px solid var(--color-9);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Reduced motion: PLAN.md §7 — the fold, insert, seal and flip are replaced by
+   two crossfades in useWrapSequence. Nothing here needs to move either. */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-sequence="playing"] .app-header,
+  :root[data-sequence="playing"] .action-bar-fixed,
+  :root[data-sequence="playing"] .corner-controls {
+    transition: none;
+  }
+}

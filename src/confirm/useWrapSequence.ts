@@ -1,0 +1,303 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { animate, useMotionValue, useTransform } from "motion/react";
+import {
+  arrive,
+  crossfade,
+  flip,
+  fold,
+  insert,
+  stamp,
+  wrap,
+} from "../lib/motionConfig";
+import { CARD, ENVELOPE_ENTER_Y, INSERT_TRAVEL } from "./geometry";
+
+/**
+ * The whole 3.85s wrap sequence, as MotionValues plus a beat schedule.
+ * PRD-CONFIRM.md §4 — retimed, see note below.
+ *
+ * The PRD's beat sheet opened with an `arrive` beat that carried the card from
+ * the carousel into the sheet via layoutId. The sequence now starts on the
+ * arrow press on step 3 instead, so the card is *already* on screen at
+ * `--slide-w` when the first beat fires. `arrive` therefore becomes a scale
+ * settle (index.css requires the card not to resize between steps — it
+ * resizes when the sequence starts, which is a different thing) and every
+ * later beat shifts 0.35s earlier.
+ */
+
+export type Phase =
+  | "rest" // card on screen, awaiting the arrow
+  | "folding"
+  | "inserting"
+  | "sealing"
+  | "flipping"
+  | "idle" // sealed, addressed, awaiting the drag
+  | "posting"
+  | "done";
+
+/** Beat times in seconds from the arrow press. */
+const BEAT = {
+  sheet: 0,
+  printing: 0.35,
+  fold1: 0.6,
+  fold2: 0.85,
+  envelope: 1.4,
+  insert: 1.7,
+  close: 2.25,
+  seal: 2.7,
+  hidePacket: 3.1,
+  flip: 3.3,
+  rest: 3.85,
+  slot: 4.25,
+  hint: 4.4,
+} as const;
+
+/** Reduced-motion path: two crossfades, 0.7s total (PLAN.md §7). */
+const REDUCED = { swap: 0.35 } as const;
+
+export function useWrapSequence({
+  mmPx,
+  slideW,
+  started,
+  reduce,
+}: {
+  mmPx: number;
+  slideW: number;
+  started: boolean;
+  reduce: boolean;
+}) {
+  const [phase, setPhase] = useState<Phase>("rest");
+
+  // --- Card -----------------------------------------------------------------
+  // The card renders at its sequence size (85.6mm) and is scaled UP at rest so
+  // it matches --slide-w, per index.css's "must not resize between steps".
+  const cardPx = CARD.w * mmPx;
+  const restScale = cardPx > 0 ? slideW / cardPx : 1;
+  const cardScale = useMotionValue(1);
+
+  // --- Sheet ---------------------------------------------------------------
+  const sheetOpacity = useMotionValue(0);
+  const sheetScale = useMotionValue(0.97);
+  const sheetY = useMotionValue(0);
+  const printOpacity = useMotionValue(0);
+  const rotBottom = useMotionValue(0); // 0 → -180
+  const rotTop = useMotionValue(0); // 0 → +180
+
+  // --- Envelope ------------------------------------------------------------
+  const envOpacity = useMotionValue(0);
+  const envY = useMotionValue(0);
+  const flapRot = useMotionValue(-165);
+  const sealScale = useMotionValue(0);
+  const sealRot = useMotionValue(-8);
+  const flipRot = useMotionValue(0);
+  const nudgeY = useMotionValue(0);
+
+  // --- Slot ----------------------------------------------------------------
+  const slotOpacity = useMotionValue(0);
+  const slotScaleX = useMotionValue(0.9);
+  /** Driven by the post, not the timeline — the slot flexes as it swallows. */
+  const slotSwallow = useMotionValue(1);
+  const hintOpacity = useMotionValue(0);
+
+  // Keep the resting card scale correct across resizes, but never fight the
+  // sequence for control of the value once it has started.
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (!startedRef.current && restScale > 0) cardScale.set(restScale);
+  }, [restScale, cardScale]);
+
+  // --- Derived: fold shading (PRD §5.2) ------------------------------------
+  // Peak darkness edge-on to the light at 90°, settling to 0.14 on the landed
+  // back face so the folded packet keeps layer separation.
+  const bottomShade = useTransform(rotBottom, [-180, -90, 0], [0.14, 0.5, 0]);
+  const topShade = useTransform(rotTop, [0, 90, 180], [0, 0.5, 0.14]);
+  const bottomCast = useTransform(rotBottom, [-180, -90, 0], [0.12, 0.35, 0]);
+  const topCast = useTransform(rotTop, [0, 90, 180], [0, 0.35, 0.12]);
+  const bottomCastScale = useTransform(rotBottom, [-180, -90, 0], [1, 0.7, 0.2]);
+  const topCastScale = useTransform(rotTop, [0, 90, 180], [0.2, 0.7, 1]);
+
+  // Face swap by threshold, never backface-visibility (PRD §5.1).
+  const bottomFront = useTransform(rotBottom, (r) => (Math.abs(r) > 90 ? 0 : 1));
+  const bottomBack = useTransform(rotBottom, (r) => (Math.abs(r) > 90 ? 1 : 0));
+  const topFront = useTransform(rotTop, (r) => (Math.abs(r) > 90 ? 0 : 1));
+  const topBack = useTransform(rotTop, (r) => (Math.abs(r) > 90 ? 1 : 0));
+  const flapShade = useTransform(flapRot, [-165, -90, 0], [0.2, 0.5, 0]);
+
+  // --- Derived: flip (PRD §5.5) --------------------------------------------
+  const norm = (r: number) => ((r % 360) + 360) % 360;
+  const isBack = (r: number) => norm(r) < 90 || norm(r) > 270;
+  const envBackOpacity = useTransform(flipRot, (r) => (isBack(r) ? 1 : 0));
+  const envFrontOpacity = useTransform(flipRot, (r) => (isBack(r) ? 0 : 1));
+  // The shadow must shrink through the edge-on frame or the flip is weightless.
+  const shadowScaleX = useTransform(
+    flipRot,
+    (r) => 0.3 + 0.7 * Math.abs(Math.cos((r * Math.PI) / 180)),
+  );
+  const shadowOpacity = useTransform(
+    flipRot,
+    (r) => 0.35 + 0.65 * Math.abs(Math.cos((r * Math.PI) / 180)),
+  );
+
+  const values = useMemo(
+    () => ({
+      cardScale,
+      sheetOpacity,
+      sheetScale,
+      sheetY,
+      printOpacity,
+      rotBottom,
+      rotTop,
+      envOpacity,
+      envY,
+      flapRot,
+      sealScale,
+      sealRot,
+      flipRot,
+      nudgeY,
+      slotOpacity,
+      slotScaleX,
+      slotSwallow,
+      hintOpacity,
+      bottomShade,
+      topShade,
+      bottomCast,
+      topCast,
+      bottomCastScale,
+      topCastScale,
+      bottomFront,
+      bottomBack,
+      topFront,
+      topBack,
+      flapShade,
+      envBackOpacity,
+      envFrontOpacity,
+      shadowScaleX,
+      shadowOpacity,
+    }),
+    // MotionValues are stable identities; this object never needs rebuilding.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  // --- Schedule ------------------------------------------------------------
+  const timers = useRef<number[]>([]);
+  const clear = useCallback(() => {
+    timers.current.forEach(clearTimeout);
+    timers.current = [];
+  }, []);
+
+  const at = useCallback((seconds: number, run: () => void) => {
+    timers.current.push(window.setTimeout(run, seconds * 1000));
+  }, []);
+
+  useEffect(() => {
+    if (!started || mmPx <= 0) return;
+    startedRef.current = true;
+
+    if (reduce) {
+      // Two crossfades, no folds, no flip. The card and sheet leave; a sealed,
+      // addressed envelope arrives in their place.
+      const t = { duration: REDUCED.swap };
+      flipRot.set(180);
+      flapRot.set(0);
+      sealScale.set(1);
+      sealRot.set(0);
+      animate(cardScale, restScale, t);
+      animate(sheetOpacity, 0, t);
+      animate(envOpacity, 1, t);
+      animate(slotOpacity, 1, t);
+      animate(slotScaleX, 1, t);
+      animate(hintOpacity, 1, t);
+      setPhase("idle");
+      return clear;
+    }
+
+    at(BEAT.sheet, () => {
+      animate(sheetOpacity, 1, crossfade);
+      animate(sheetScale, 1, wrap);
+      animate(cardScale, 1, arrive);
+    });
+    at(BEAT.printing, () => {
+      animate(printOpacity, 1, { duration: 0.25, ease: crossfade.ease });
+    });
+    at(BEAT.fold1, () => {
+      setPhase("folding");
+      animate(rotBottom, -180, fold);
+    });
+    at(BEAT.fold2, () => {
+      animate(rotTop, 180, fold);
+    });
+    at(BEAT.envelope, () => {
+      setPhase("inserting");
+      envY.set(ENVELOPE_ENTER_Y * mmPx);
+      animate(envOpacity, 1, { duration: 0.3, ease: crossfade.ease });
+    });
+    at(BEAT.insert, () => {
+      animate(sheetY, INSERT_TRAVEL * mmPx, insert);
+    });
+    at(BEAT.close, () => {
+      // Flap closes while the pair rises to centre — one beat, two motions.
+      animate(flapRot, 0, fold);
+      animate(envY, 0, fold);
+      animate(sheetY, 0, fold);
+    });
+    at(BEAT.seal, () => {
+      setPhase("sealing");
+      // `stamp` is under-damped (ζ ≈ 0.34), so a plain 0 → 1 produces the
+      // ~1.15 overshoot the PRD asks for. No keyframes needed.
+      animate(sealScale, 1, stamp);
+      animate(sealRot, 0, stamp);
+      nudgeY.set(-2);
+      animate(nudgeY, 0, stamp);
+    });
+    at(BEAT.hidePacket, () => {
+      // Fully occluded by now — stop compositing it.
+      animate(sheetOpacity, 0, { duration: 0.2 });
+    });
+    at(BEAT.flip, () => {
+      setPhase("flipping");
+      animate(flipRot, 180, flip);
+    });
+    at(BEAT.rest, () => setPhase("idle"));
+    at(BEAT.slot, () => {
+      animate(slotOpacity, 1, { duration: 0.4, ease: crossfade.ease });
+      animate(slotScaleX, 1, wrap);
+    });
+    at(BEAT.hint, () => {
+      animate(hintOpacity, 1, { duration: 0.3, ease: crossfade.ease });
+    });
+
+    return clear;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [started, reduce, mmPx]);
+
+  // Leaving the step (back button) rewinds everything.
+  useEffect(() => {
+    if (started) return;
+    startedRef.current = false;
+    clear();
+    setPhase("rest");
+    cardScale.set(restScale);
+    sheetOpacity.set(0);
+    sheetScale.set(0.97);
+    sheetY.set(0);
+    printOpacity.set(0);
+    rotBottom.set(0);
+    rotTop.set(0);
+    envOpacity.set(0);
+    envY.set(0);
+    flapRot.set(-165);
+    sealScale.set(0);
+    sealRot.set(-8);
+    flipRot.set(0);
+    nudgeY.set(0);
+    slotOpacity.set(0);
+    slotScaleX.set(0.9);
+    slotSwallow.set(1);
+    hintOpacity.set(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [started]);
+
+  return { phase, setPhase, values, restScale };
+}
+
+export type SequenceValues = ReturnType<typeof useWrapSequence>["values"];

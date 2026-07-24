@@ -2,11 +2,11 @@ import { lazy, Suspense, useMemo, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import type { CardConfig } from "./card/cardConfig";
 import { seedConfigs } from "./card/cardConfig";
-import { Card } from "./card/Card";
 import { crossfade } from "./lib/motionConfig";
 import { parsePerson } from "./lib/personalization";
 import { usePrefersReducedMotion } from "./lib/reducedMotion";
 import { useHashRoute } from "./playground/useHashRoute";
+import { Confirm } from "./steps/Confirm";
 import { Customize } from "./steps/Customize";
 import { Welcome } from "./steps/Welcome";
 import { ActionBar } from "./ui/ActionBar";
@@ -55,6 +55,9 @@ function MainFlow() {
   // The engraving is a property of the order, not of a colourway — it stays
   // put as you browse. Only the slider values are per-card.
   const [note, setNote] = useState("");
+  // Step 3's wrap sequence is armed by the forward arrow, not by arriving on
+  // the step — the finished card gets a beat to itself first (PRD-CONFIRM.md).
+  const [wrapStarted, setWrapStarted] = useState(false);
   // `/first-last` read once — the app never mutates the URL, so this holds
   // for the whole journey (PLAN.md Phase P).
   const person = useMemo(() => parsePerson(), []);
@@ -76,9 +79,12 @@ function MainFlow() {
       nextLabel: "Order this card",
     },
     confirm: {
-      back: () => setStep("customize"),
-      next: () => setStep("welcome"),
-      nextLabel: "Start over",
+      back: () => {
+        setWrapStarted(false);
+        setStep("customize");
+      },
+      next: () => setWrapStarted(true),
+      nextLabel: "Wrap and post it",
     },
   }[step] as { back?: () => void; next: () => void; nextLabel: string };
 
@@ -114,16 +120,16 @@ function MainFlow() {
           )}
           {step === "confirm" && (
             <StepShell key="confirm">
-              <div className="step-body confirm">
-                <Card
-                  config={{ ...configs[activeId], note }}
-                  name={person.cardName}
-                />
-                <p className="confirm-note">
-                  Confirm step (paper fold, envelope, mailbox) arrives in
-                  Phase E.
-                </p>
-              </div>
+              <Confirm
+                config={{ ...configs[activeId], note }}
+                name={person.cardName}
+                firstName={person.first}
+                started={wrapStarted}
+                onRestart={() => {
+                  setWrapStarted(false);
+                  setStep("welcome");
+                }}
+              />
             </StepShell>
           )}
         </AnimatePresence>
