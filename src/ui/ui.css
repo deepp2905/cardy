@@ -120,20 +120,22 @@
 
 /* theme toggle */
 
+/* Matches the back button: same square-circle geometry, same neutral fill.
+   Aligned to the header's 24px inset rather than its own arbitrary offset. */
 .theme-toggle {
   position: fixed;
-  top: 12px;
-  right: 16px;
+  top: 24px;
+  right: 24px;
   z-index: 10;
-  width: 40px;
-  height: 40px;
+  width: var(--control-h);
+  height: var(--control-h);
   display: grid;
   place-items: center;
   appearance: none;
   border: none;
   border-radius: var(--radius-pill);
-  background: transparent;
-  color: var(--color-11);
+  background: var(--color-4);
+  color: var(--color-12);
   cursor: pointer;
   transition:
     color 0.2s ease,
@@ -141,8 +143,7 @@
 }
 
 .theme-toggle:hover {
-  color: var(--color-12);
-  background: var(--color-4);
+  background: var(--color-5);
 }
 
 .theme-toggle:focus-visible {
@@ -150,16 +151,18 @@
   outline-offset: 2px;
 }
 
+/* 24px in a 60px button — a touch smaller than the CTA arrows' 30px, since
+   a filled sun/moon glyph carries more visual weight than a line arrow. */
 .theme-toggle-icon {
   display: grid;
   place-items: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
 }
 
 .theme-toggle-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
 }
 
 /* step indicator */
