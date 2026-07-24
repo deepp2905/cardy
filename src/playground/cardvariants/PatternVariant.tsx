@@ -45,13 +45,17 @@ export function PatternVariant({ baseColor }: { baseColor: string }) {
 
   const id = useId();
   const shape = p.shape as Shape;
-  // Lighten uses white shapes + plus-lighter; darken uses black + multiply
-  // (plus-darker is NOT a valid CSS mix-blend-mode — it silently no-ops).
-  // The group carries opacity and blend. Filled shapes cover more area than
-  // thin outlines, so they read too strong at the same opacity: 10% filled
-  // vs 25% outline.
-  const stroke = p.plusLighter ? "#fff" : "#000";
-  const blend = p.plusLighter ? "plus-lighter" : "multiply";
+  // Two composite modes:
+  //  Lighten — white shapes + plus-lighter (adds light, vibrant highlights).
+  //  Darken  — the "implied colour" trick for plus-darker, which CSS only
+  //    supports in WebKit: instead of black + a blend (which muddies toward
+  //    grey), the shapes ARE a deepened tint of the card colour drawn
+  //    normally, so the darkening stays saturated. Same result as plus-darker
+  //    but Chromium-safe.
+  const stroke = p.plusLighter
+    ? "#fff"
+    : `color-mix(in oklch, ${baseColor}, black 55%)`;
+  const blend = p.plusLighter ? "plus-lighter" : "normal";
   const groupOpacity = p.filled ? 0.1 : 0.25;
 
   // Overscan the grid so shapes bleed past every edge.
