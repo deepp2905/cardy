@@ -74,6 +74,8 @@ export function Slider({ value, onChange, label, disabled }: SliderProps) {
   const trackOrigin = useTransform(overshootSpring, (o) =>
     o >= 0 ? "0% 50%" : "100% 50%",
   );
+  // Both label copies counter the track's stretch by the same factor.
+  const labelCounterScale = useTransform(trackScaleX, (s) => 1 / s);
 
   // Measure against the UNSTRETCHED width — scaleX is anchored at one edge,
   // so rect.width already includes any current stretch.
@@ -124,16 +126,29 @@ export function Slider({ value, onChange, label, disabled }: SliderProps) {
         }
       >
         <div className="slider-fill" />
-        {/* Label lives inside the track now, pinned left. Counter-scaled so the
-            track's overshoot stretch doesn't smear the text, and non-interactive
-            so it never intercepts a drag. */}
+        {/* Two stacked copies of the label, both pinned left and counter-scaled
+            so the track's overshoot stretch doesn't smear the text. The base is
+            the resting gray; the white copy is clipped to exactly the fill's
+            width (--pct), so the label reads gray on the empty track and flips
+            to white only where the dark fill has slid over it. Non-interactive
+            so neither ever intercepts a drag. */}
         <motion.span
           className="slider-label"
           aria-hidden="true"
           style={{
-            scaleX: useTransform(trackScaleX, (s) => 1 / s),
+            scaleX: labelCounterScale,
             // Text is left-pinned, so cancel the stretch from the left edge —
             // regardless of which way the track itself is anchored.
+            transformOrigin: "0% 50%",
+          }}
+        >
+          {label}
+        </motion.span>
+        <motion.span
+          className="slider-label slider-label-over"
+          aria-hidden="true"
+          style={{
+            scaleX: labelCounterScale,
             transformOrigin: "0% 50%",
           }}
         >

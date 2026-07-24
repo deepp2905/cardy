@@ -58,15 +58,25 @@
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  /* The fill slides left-to-right over the label, so a fixed colour goes
-     dark-on-dark once covered. `difference` inverts the text per-pixel against
-     whatever is behind it: near-black over the light track, near-white over
-     the dark fill — legible across the whole travel, in either theme. */
-  color: #fff;
-  mix-blend-mode: difference;
+  color: var(--color-11);
   white-space: nowrap;
   pointer-events: none;
   z-index: 2; /* above the fill (1), below the range input (3) */
+}
+
+/* White copy of the label, clipped to the fill's width so it shows ONLY over
+   the dark fill. The base gray copy shows everywhere else; together the label
+   reads gray on the empty track and white where the fill has covered it —
+   without any blend maths that would over-darken the light-mode track.
+   `right: 0` makes this copy span the full track, so --pct (a fraction of the
+   TRACK width, same as the fill) clips at exactly the fill's leading edge. */
+.slider-label-over {
+  right: 0;
+  /* The fill is dark in BOTH themes, so the covered label is always near-white
+     — a fixed light, not a theme token (--color-1 is near-black in dark mode
+     and would vanish over the fill). Matches the thumb's rest colour. */
+  color: oklch(0.96 0 0);
+  clip-path: inset(0 calc(100% - var(--pct)) 0 0);
 }
 
 .slider-track {
