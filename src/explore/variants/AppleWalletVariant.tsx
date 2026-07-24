@@ -8,18 +8,18 @@ import "../explore.css";
 // shows; the focused one lifts clear of the cards behind it.
 export function AppleWalletVariant() {
   const p = useDialKit("Apple wallet", {
-    cardWidth: [330, 200, 460, 5],
-    strip: [34, 12, 90, 1],
-    focusScale: [1.06, 1, 1.4, 0.01],
+    cardWidth: [400, 200, 460, 5],
+    strip: [38, 12, 90, 1],
+    focusScale: [1, 1, 1.4, 0.01],
     /** How much the stack opens up around the focused card. */
-    focusGap: [120, 0, 300, 2],
+    focusGap: [0, 0, 300, 2],
     /** How many cards out the focus lift reaches. */
-    focusFalloff: [1, 0.5, 4, 0.1],
+    focusFalloff: [1.6, 0.5, 4, 0.1],
     shrinkStep: [0.03, 0, 0.15, 0.005],
     /** Cards beyond this stop shrinking further. */
     shrinkDepth: [4, 1, 7, 1],
-    fade: [0.3, 0, 1, 0.01],
-    fadeReach: [0.5, 0.1, 1, 0.05],
+    fade: [0, 0, 1, 0.01],
+    fadeReach: [0.1, 0.1, 1, 0.05],
   });
 
   const { ref, index, focusedIndex } = useCardDeck("y");

@@ -8,17 +8,17 @@ import "../explore.css";
 // the stack and scaled up; the cards above and below peek out behind it.
 export function WalletVariant() {
   const p = useDialKit("Revolut wallet", {
-    cardWidth: [330, 200, 460, 5],
-    peek: [58, 16, 160, 1],
-    focusScale: [1.12, 1, 1.5, 0.01],
+    cardWidth: [400, 200, 460, 5],
+    peek: [65, 16, 160, 1],
+    focusScale: [1, 1, 1.5, 0.01],
     /** Extra space opened above and below the focused card. */
-    focusGap: [40, 0, 160, 1],
+    focusGap: [21, 0, 160, 1],
     /** How many cards out the focus lift reaches. */
-    focusFalloff: [1, 0.5, 4, 0.1],
-    sideInset: [26, 0, 90, 1],
-    sideStagger: [2, 0.5, 4, 0.5],
-    fade: [0.55, 0, 1, 0.01],
-    fadeReach: [0.4, 0.1, 1, 0.05],
+    focusFalloff: [4, 0.5, 4, 0.1],
+    sideInset: [56, 0, 90, 1],
+    sideStagger: [4, 0.5, 4, 0.5],
+    fade: [0, 0, 1, 0.01],
+    fadeReach: [0.1, 0.1, 1, 0.05],
   });
 
   const { ref, index, focusedIndex } = useCardDeck("y");

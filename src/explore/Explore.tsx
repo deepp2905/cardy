@@ -10,7 +10,6 @@ import { AppleWalletVariant } from "./variants/AppleWalletVariant";
 import { CoverflowVariant } from "./variants/CoverflowVariant";
 import { ExplodedVariant } from "./variants/ExplodedVariant";
 import { ScrollVariant } from "./variants/ScrollVariant";
-import { TiersVariant } from "./variants/TiersVariant";
 import { WalletVariant } from "./variants/WalletVariant";
 import { WingsVariant } from "./variants/WingsVariant";
 import "./explore.css";
@@ -59,12 +58,6 @@ const VARIANTS: (VariantMeta & { render: () => React.ReactElement })[] = [
     name: "Apple wallet",
     note: "Tight stack, strip peek",
     render: () => <AppleWalletVariant />,
-  },
-  {
-    id: "tiers",
-    name: "Fanned tiers",
-    note: "Pyramid of narrowing bands",
-    render: () => <TiersVariant />,
   },
 ];
 
