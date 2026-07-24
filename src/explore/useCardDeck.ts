@@ -21,7 +21,13 @@ export const COUNT = 8;
 
 const WHEEL_DIVISOR = 220; // wheel px per card
 const DRAG_DIVISOR = 190; // pointer px per card
-const SETTLE_MS = 260;
+
+// Settle spring. Damping ratio ~0.9 — under 1 so it feels alive, but high
+// enough that it eases into the card without visibly overshooting past it.
+// Lower STIFFNESS = slower; lower DAMPING_RATIO = bouncier.
+const SETTLE_STIFFNESS = 210;
+const SETTLE_DAMPING_RATIO = 0.82;
+const REST_DELTA = 0.001; // stop when this close and near-still
 
 // Rubberband past the ends (same asymptote as the app's slider): the raw
 // overshoot is squashed so it approaches a ceiling but never reaches it, then
@@ -68,22 +74,39 @@ export function useCardDeck(axis: "x" | "y" = "x", count = COUNT) {
       raf.current = null;
     };
 
-    // Ease to the nearest whole card on release. A short tween rather than a
-    // spring: overshooting past the last card looks like a bug, not life.
+    // Spring to the nearest whole card on release — integrated each frame so
+    // the motion has real spring character (a slight settle) rather than a
+    // fixed-duration tween, without the overshoot of an under-damped bounce.
     const settle = () => {
       stopSettle();
-      const from = value.current;
       // Clamp the target: a rubberbanded overshoot (e.g. -0.7) rounds to an
       // index outside the deck, so snap to the real end card instead.
-      const to = clamp(Math.round(from));
-      if (from === to) return;
-      const start = performance.now();
+      const to = clamp(Math.round(value.current));
+      const damping =
+        SETTLE_DAMPING_RATIO * 2 * Math.sqrt(SETTLE_STIFFNESS);
+      let velocity = 0;
+      let last = performance.now();
+
       const step = (now: number) => {
-        const t = Math.min(1, (now - start) / SETTLE_MS);
-        const eased = 1 - Math.pow(1 - t, 3);
-        commit(from + (to - from) * eased);
-        if (t < 1) raf.current = requestAnimationFrame(step);
-        else raf.current = null;
+        // Clamp dt so a background-tab stall can't fling the spring.
+        const dt = Math.min((now - last) / 1000, 1 / 30);
+        last = now;
+        const x = value.current - to;
+        const accel = -SETTLE_STIFFNESS * x - damping * velocity;
+        velocity += accel * dt;
+        const next = value.current + velocity * dt;
+
+        if (Math.abs(next - to) < REST_DELTA && Math.abs(velocity) < REST_DELTA) {
+          commit(to);
+          raf.current = null;
+          return;
+        }
+        // Write raw, not clamped: settling from a rubberbanded overshoot
+        // (e.g. -0.7 -> 0) passes through the out-of-range region, and
+        // clamping would freeze it at the boundary.
+        value.current = next;
+        setIndex(next);
+        raf.current = requestAnimationFrame(step);
       };
       raf.current = requestAnimationFrame(step);
     };
