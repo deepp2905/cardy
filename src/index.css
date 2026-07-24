@@ -143,14 +143,16 @@ body {
   max-width: 420px;
   min-height: 100dvh;
   margin: 0 auto;
-  padding: 24px;
+  /* 36px below the action bar, 24px elsewhere. The action bar sits in flow
+     at the column's end, so this padding IS its bottom spacing. */
+  padding: 24px 24px 36px;
   display: flex;
   flex-direction: column;
 }
 
 .app-header {
   position: fixed;
-  top: 20px;
+  top: 24px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
