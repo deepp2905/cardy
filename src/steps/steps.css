@@ -24,16 +24,12 @@
   flex-shrink: 0;
 }
 
-/* The carousel is the one element that breaks the column, so neighbour cards
-   bleed to the viewport edges instead of being cut at 420px. Full-bleed via
-   the 50%/50vw trick — the strip stays a scroll container (snap and centre
-   detection depend on it); only its scrollport gets wider. All interaction
-   still resolves inside the column (PLAN.md §2). */
-.customize .carousel {
-  /* dvw tracks the viewport minus any classic scrollbar, so the full-bleed
-     strip can't push the page into horizontal overflow. */
-  width: 100dvw;
-  margin-inline: calc(50% - 50dvw);
+/* The Coverflow deck is the one element that breaks the column, so rotated
+   neighbour cards bleed to the viewport edges instead of being cut at 420px.
+   It manages its own full-bleed (carousel.css); this wrapper only needs to
+   not clip it. */
+.customize-carousel {
+  overflow: visible;
 }
 
 /* confirm */

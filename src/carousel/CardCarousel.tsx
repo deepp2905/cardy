@@ -1,24 +1,49 @@
-import { useCallback, useEffect, useRef, type ReactNode } from "react";
-import { motion, useMotionValue, type MotionValue } from "motion/react";
+import { memo, useEffect, useState, type CSSProperties } from "react";
 import { Card } from "../card/Card";
 import type { CardConfig } from "../card/cardConfig";
 import { PALETTE } from "../card/cardConfig";
-import {
-  CAROUSEL_FALLOFF_SLIDES,
-  CAROUSEL_SCALE_MAX,
-  CAROUSEL_SCALE_MIN,
-} from "../lib/motionConfig";
-import { mapRangeEased } from "../lib/mapRange";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
+import { useCardDeck } from "./useCardDeck";
 import "./carousel.css";
 
-/** Must match `gap` on .carousel — used to derive the slide pitch. */
-const SLIDE_GAP = 14;
+// The deck re-renders every frame during a drag (the index is React state),
+// but CardPattern rebuilds a several-hundred-cell SVG on each render. Memoise
+// the card subtree so only the wrapper's transform changes per frame — the
+// artwork rebuilds only when its own config actually changes. `config` is
+// stable parent state and `note`/`name` are strings, so the merge happens here
+// behind the memo boundary rather than creating a fresh object every frame.
+const DeckCard = memo(function DeckCard({
+  config,
+  note,
+  name,
+}: {
+  config: CardConfig;
+  note: string;
+  name: string;
+}) {
+  return <Card config={{ ...config, note }} name={name} />;
+});
 
-// Scroll-snap strip; the slide nearest the container centre is active.
-// Every card is fully opaque and unblurred — only size conveys focus, and it
-// does so continuously: scale is mapped from each slide's distance to the
-// centre, so cards grow as they approach rather than popping at the handoff.
+// Coverflow deck (ported from the explore playground's Coverflow experiment).
+// Neighbours rotate away on Y like wings; the centre card stays flat and
+// forward — the classic cover-flow mechanic. No scroll container: useCardDeck
+// owns a fractional index driven by drag/wheel/keyboard, and every card is
+// placed by transform from that index, so all cards respond continuously to
+// the gesture rather than popping at a snap point.
+
+// Tuned constants, lifted from the playground's dialkit defaults.
+const ROTATE_Y = 56; // degrees a neighbour turns away
+const CENTRE_GAP = 0.48; // gap beside the flat centre card (fraction of width)
+const BACK_GAP = 0; // gap between the rotated background cards
+const SCALE_STEP = 0.04; // per-card shrink with depth
+const SCALE_DEPTH = 7; // cards out at which shrink stops
+const PERSPECTIVE = 1200; // px
+
+// Card render width: the column width, clamped to fit narrow viewports. The
+// footprint math below needs a concrete number, so it's measured rather than
+// left to CSS.
+const MAX_CARD_W = 372;
+
 type CardCarouselProps = {
   configs: Record<string, CardConfig>;
   ids: string[];
@@ -37,174 +62,115 @@ export function CardCarousel({
   note,
   onActiveChange,
 }: CardCarouselProps) {
-  const stripRef = useRef<HTMLDivElement>(null);
   const reduce = usePrefersReducedMotion();
-  // Overscroll bounce is left to the platform: a custom one runs on top of
-  // native elastic scrolling rather than replacing it, and the two fight.
-  // One motion value per slide, written straight from the scroll handler.
-  // Driving scale through React state would re-render all 8 cards (each with
-  // a shader canvas and an SVG) on every scroll frame. Slides register their
-  // own value here on mount (hooks can't run in a loop).
-  const scales = useRef<Record<string, MotionValue<number>>>({});
-  const register = useCallback((id: string, value: MotionValue<number>) => {
-    scales.current[id] = value;
-  }, []);
+  const count = ids.length;
+  const activePos = Math.max(0, ids.indexOf(activeId));
 
-  const applyScales = useCallback(() => {
-    const strip = stripRef.current;
-    if (!strip || reduce) return;
-    const centre = strip.scrollLeft + strip.clientWidth / 2;
-    for (const el of strip.querySelectorAll<HTMLElement>("[data-slide]")) {
-      const value = scales.current[el.dataset.slide!];
-      if (!value) continue;
-      const dist = Math.abs(el.offsetLeft + el.clientWidth / 2 - centre);
-      // Falloff spans several cards, not one. Slides are pitched a full
-      // width + gap apart, so a range of one width put even the FIRST
-      // neighbour past the clamp — every off-centre card sat at exactly the
-      // minimum and only the centre one ever changed size.
-      // Ease-out front-loads the change near the centre, so arriving at the
-      // middle reads as a snap into focus rather than a constant drift.
-      const pitch = el.clientWidth + SLIDE_GAP;
-      value.set(
-        mapRangeEased(
-          dist,
-          0,
-          pitch * CAROUSEL_FALLOFF_SLIDES,
-          CAROUSEL_SCALE_MAX,
-          CAROUSEL_SCALE_MIN,
-        ),
-      );
-    }
-  }, [reduce]);
+  const { ref, index, focusedIndex, goTo } = useCardDeck("x", count, activePos);
 
-  const centerSlide = (id: string, smooth = true) => {
-    const strip = stripRef.current;
-    const slide = strip?.querySelector<HTMLElement>(`[data-slide="${id}"]`);
-    if (!strip || !slide) return;
-    const left =
-      slide.offsetLeft - (strip.clientWidth - slide.clientWidth) / 2;
-    strip.scrollTo({ left, behavior: smooth ? "smooth" : "instant" });
-  };
-
-  // Start centered on the initial active card, then seed the scales so the
-  // first paint already shows the centre card at full size.
+  // Card width, measured from the deck so the footprint math is in real px.
+  const [cardW, setCardW] = useState(MAX_CARD_W);
   useEffect(() => {
-    centerSlide(activeId, false);
-    applyScales();
+    const el = ref.current;
+    if (!el) return;
+    const measure = () =>
+      setCardW(Math.min(MAX_CARD_W, Math.max(200, el.clientWidth - 32)));
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [ref]);
+
+  // Report the centred card up to the parent as the deck settles.
+  useEffect(() => {
+    const next = ids[focusedIndex];
+    if (next && next !== activeId) onActiveChange(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [focusedIndex]);
 
-  // Re-measure on resize: slide widths and the centre both move.
+  // Follow an external selection (parent sets activeId): spring the deck to it,
+  // unless it's already the settled card.
   useEffect(() => {
-    const strip = stripRef.current;
-    if (!strip) return;
-    const observer = new ResizeObserver(applyScales);
-    observer.observe(strip);
-    return () => observer.disconnect();
-  }, [applyScales]);
+    if (activePos !== focusedIndex) goTo(activePos);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePos]);
 
-  const handleScroll = () => {
-    const strip = stripRef.current;
-    if (!strip) return;
-    applyScales();
-    const center = strip.scrollLeft + strip.clientWidth / 2;
-    let best = activeId;
-    let bestDist = Infinity;
-    for (const el of strip.querySelectorAll<HTMLElement>("[data-slide]")) {
-      const dist = Math.abs(el.offsetLeft + el.clientWidth / 2 - center);
-      if (dist < bestDist) {
-        bestDist = dist;
-        best = el.dataset.slide!;
-      }
-    }
-    if (best !== activeId) onActiveChange(best);
+  // --- Coverflow layout, computed from the fractional index ----------------
+  // A flat centre card is full width on screen; a rotated neighbour is
+  // foreshortened to cardW * cos(angle). Each card is placed by its OWN
+  // on-screen footprint (plus a gap), accumulated along the strip from its
+  // actual rotation at the current index — so the flat centre gets a wide
+  // berth while the compressed background cards pack tighter, and rotated
+  // cards never overlap even mid-drag between positions.
+  const footprintOf = (i: number) => {
+    const away = Math.min(1, Math.abs(i - index));
+    return cardW * Math.cos((away * ROTATE_Y * Math.PI) / 180);
+  };
+  const gapOf = (i: number) => {
+    const nearCentre = Math.max(0, 1 - Math.abs(i - index - 0.5));
+    return cardW * (BACK_GAP + (CENTRE_GAP - BACK_GAP) * nearCentre);
   };
 
-  const step = (dir: -1 | 1) => {
-    const next = ids[ids.indexOf(activeId) + dir];
-    if (next) centerSlide(next);
-  };
+  const centres: number[] = [];
+  for (let i = 0, acc = 0; i < count; i++) {
+    acc +=
+      i === 0
+        ? footprintOf(0) / 2
+        : footprintOf(i - 1) / 2 + gapOf(i) + footprintOf(i) / 2;
+    centres.push(acc);
+  }
+  const lo = Math.floor(index);
+  const hi = Math.min(count - 1, lo + 1);
+  const originX = centres[lo] + (centres[hi] - centres[lo]) * (index - lo);
 
   return (
     <div
-      className="carousel"
-      ref={stripRef}
-      onScroll={handleScroll}
+      className="carousel-deck"
+      ref={ref}
       tabIndex={0}
       role="radiogroup"
       aria-label="Choose a card color"
-      onKeyDown={(e) => {
-        if (e.key === "ArrowLeft") {
-          e.preventDefault();
-          step(-1);
-        } else if (e.key === "ArrowRight") {
-          e.preventDefault();
-          step(1);
-        }
-      }}
+      style={
+        {
+          perspective: `${PERSPECTIVE}px`,
+          "--card-w": `${cardW}px`,
+        } as CSSProperties
+      }
     >
       {ids.map((id, i) => {
-        const isActive = id === activeId;
+        const d = i - index;
+        const away = Math.abs(d);
+        const active = i === focusedIndex;
+        // Rotation saturates at one card out so distant cards sit parallel
+        // rather than continuing to spin.
+        // Reduced motion: a flat draggable strip — cards still track the
+        // finger (keyed off the continuous index), just without the Y-rotation,
+        // depth scale, or perspective that make it a coverflow.
+        const turn = reduce ? 0 : -Math.sign(d) * Math.min(1, away) * ROTATE_Y;
+        const x = reduce ? d * cardW * 1.06 : centres[i] - originX;
+        const scale = reduce
+          ? 1
+          : 1 - Math.min(away, SCALE_DEPTH) * SCALE_STEP;
         return (
-          <Slide
+          <div
             key={id}
-            id={id}
-            label={PALETTE[i]?.name ?? id}
-            isActive={isActive}
-            reduce={reduce}
-            register={register}
-            onSelect={() => {
-              if (!isActive) centerSlide(id);
+            className="deck-item"
+            data-active={active}
+            role="radio"
+            aria-checked={active}
+            aria-label={PALETTE[i]?.name ?? id}
+            onClick={() => {
+              if (!active) goTo(i);
+            }}
+            style={{
+              transform: `translateX(${x}px) rotateY(${turn}deg) scale(${scale})`,
+              zIndex: count - Math.round(away),
             }}
           >
-            <Card config={{ ...configs[id], note }} name={cardName} />
-          </Slide>
+            <DeckCard config={configs[id]} note={note} name={cardName} />
+          </div>
         );
       })}
-    </div>
-  );
-}
-
-// One slide. Owns its own scale motion value and hands it to the strip, which
-// writes to it directly during scroll — no re-render per frame.
-function Slide({
-  id,
-  label,
-  isActive,
-  reduce,
-  register,
-  onSelect,
-  children,
-}: {
-  id: string;
-  label: string;
-  isActive: boolean;
-  reduce: boolean;
-  register: (id: string, value: MotionValue<number>) => void;
-  onSelect: () => void;
-  children: ReactNode;
-}) {
-  const scale = useMotionValue(CAROUSEL_SCALE_MIN);
-  useEffect(() => {
-    register(id, scale);
-  }, [id, scale, register]);
-
-  return (
-    <div
-      data-slide={id}
-      className="carousel-slide"
-      role="radio"
-      aria-checked={isActive}
-      aria-label={label}
-      onClick={onSelect}
-    >
-      {/* Scale only — full opacity, no blur, no desaturation. */}
-      <motion.div
-        className="carousel-card"
-        style={reduce ? undefined : { scale }}
-      >
-        {children}
-      </motion.div>
     </div>
   );
 }

@@ -1,44 +1,61 @@
-.carousel {
-  /* --slide-w is defined in index.css: card width is tied to the column,
-     never to the strip, which goes full-bleed and would otherwise scale the
-     cards with the viewport. */
-  /* Positioned so slides' offsetLeft is measured from the strip itself —
-     the center-detection and centering math depend on this. */
+/* Coverflow deck. No scroll container: useCardDeck owns a fractional index
+   and every card is positioned from it by transform alone — nothing depends
+   on document flow or measured offsets. Ported from the explore playground's
+   Coverflow experiment. */
+.carousel-deck {
   position: relative;
-  display: flex;
-  gap: 14px; /* mirrored as SLIDE_GAP in CardCarousel.tsx */
-  width: 100%;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  /* Keep the platform's own elastic overscroll, but stop the gesture chaining
-     to the page — a horizontal swipe past the end otherwise triggers browser
-     back-navigation on trackpads and Android. */
-  overscroll-behavior-x: contain;
-  padding-block: 18px; /* room for scale + shadow */
-  /* Centres the first and last slide: half the strip, less half a card.
-     Uses vw, NOT a percentage — percentage padding resolves against the
-     CONTAINING BLOCK (the 372px column), not this element's own 100vw
-     width, which left the first card pinned near the left edge. */
-  padding-inline: calc(50dvw - var(--slide-w) / 2);
-  scrollbar-width: none;
+  /* Full-bleed so rotated neighbours can extend past the column edges, then
+     re-centred on the column. */
+  width: 100dvw;
+  margin-inline: calc(50% - 50dvw);
+  display: grid;
+  place-items: center;
+  /* Room for the tallest card plus its shadow; the deck sits in the step body
+     above the control panel. */
+  min-height: calc(var(--card-w, 372px) / (85.6 / 53.98) + 72px);
+  cursor: grab;
+  touch-action: none; /* the deck owns horizontal drags */
+  user-select: none;
+  -webkit-user-select: none;
+  overflow: hidden;
 }
 
-.carousel::-webkit-scrollbar {
-  display: none;
+.carousel-deck:active {
+  cursor: grabbing;
 }
 
-.carousel:focus-visible {
+.carousel-deck:focus-visible {
   outline: 2px solid var(--color-9);
-  outline-offset: -2px;
-  border-radius: var(--radius-pill);
+  outline-offset: -4px;
+  border-radius: 12px;
 }
 
-.carousel-slide {
-  flex: 0 0 var(--slide-w);
-  scroll-snap-align: center;
+/* Every card sits centred and is displaced by transform alone. */
+.carousel-deck .deck-item {
+  position: absolute;
+  width: var(--card-w, 372px);
+  will-change: transform;
+  /* Non-active cards are clickable (bring themselves to centre); the active
+     card owns the drag. */
   cursor: pointer;
 }
 
-.carousel-card {
+.carousel-deck .deck-item[data-active="true"] {
+  cursor: grab;
+}
+
+.carousel-deck:active .deck-item[data-active="true"] {
+  cursor: grabbing;
+}
+
+/* The index changes every frame during a drag, so no CSS transition is needed
+   or wanted here — the spring settle in useCardDeck does the easing. */
+.carousel-deck .deck-item .card-frame {
   will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel-deck {
+    touch-action: pan-x;
+  }
 }
