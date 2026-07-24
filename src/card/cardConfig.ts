@@ -34,8 +34,8 @@ export const PALETTE: PaletteEntry[] = [
   { name: "purple", color: "oklch(0.499 0.241 282.011)" },
 ];
 
-// One shared starting point for every card: the strip reads as a single
-// design in eight colourways, and the sliders are what makes yours distinct.
+// Defaults kept for the shared-link fallback path (cardConfigFromParams) and
+// as the neutral centre of the randomised bands below.
 export const DEFAULT_SHAPE: PatternShape = "circle";
 export const DEFAULT_FILLED = false;
 // Spacing starts at 64 (SPACING_MIN); the slider only ever adds sparseness.
@@ -43,21 +43,45 @@ export const DEFAULT_SPACING = 0;
 export const DEFAULT_FREQUENCY = 0.32; // ≈140px wavelength, the tuned default
 export const DEFAULT_PHASE = 0;
 
+// Deterministic per-card PRNG. Seeding from the card index (rather than
+// Math.random) keeps each colourway's pattern stable across reloads — the
+// same eight cards every visit — which also keeps a demo reproducible.
+function mulberry32(seed: number): () => number {
+  return () => {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const SHAPES_ALL: PatternShape[] = ["circle", "rect", "triangle"];
+
+// Each colourway also gets its own pattern, so the strip reads as eight
+// distinct designs rather than one design recoloured. Values stay in tasteful
+// bands (the slider mappings already clamp to safe ranges, so the full 0..1 is
+// fair game) and every card is still a valid starting point the user can tune.
 export function seedConfigs(): Record<string, CardConfig> {
   return Object.fromEntries(
-    PALETTE.map((p, i) => [
-      `card-${i}`,
-      {
-        id: `card-${i}`,
-        baseColor: p.color,
-        shape: DEFAULT_SHAPE,
-        filled: DEFAULT_FILLED,
-        spacing: DEFAULT_SPACING,
-        frequency: DEFAULT_FREQUENCY,
-        phase: DEFAULT_PHASE,
-        note: "",
-      } satisfies CardConfig,
-    ]),
+    PALETTE.map((p, i) => {
+      const rand = mulberry32(i * 2654435761 + 0x9e37);
+      return [
+        `card-${i}`,
+        {
+          id: `card-${i}`,
+          baseColor: p.color,
+          shape: SHAPES_ALL[Math.floor(rand() * SHAPES_ALL.length)],
+          filled: rand() < 0.5,
+          // Spacing and frequency biased toward the denser, more legible half
+          // of their ranges so no card seeds as a near-empty field.
+          spacing: rand() * 0.7,
+          frequency: 0.15 + rand() * 0.6,
+          phase: rand(),
+          note: "",
+        } satisfies CardConfig,
+      ];
+    }),
   );
 }
 
