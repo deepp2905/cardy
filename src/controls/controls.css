@@ -68,20 +68,25 @@
      within the track at both extremes. */
   left: clamp(6px, calc(var(--pct) - 10px), calc(100% - 10px));
   border-radius: 999px;
-  /* Light, but held off pure white so it reads as a machined marker rather
-     than a blown-out highlight. Fixed, not themed — it sits on the same
-     mid-grey fill in both light and dark. */
-  background: oklch(0.96 0 0);
-  opacity: 0.85;
+  /* Recedes at rest so the cards stay the brightest thing on screen, and
+     lifts to near-white only on hover. Fixed, not themed — it sits on the
+     same mid-grey fill in both light and dark. */
+  background: oklch(0.9 0 0);
+  opacity: 0.9;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
   pointer-events: none;
   z-index: 2;
 }
 
 .slider-track:hover .slider-thumb {
-  opacity: 0.9;
+  background: oklch(0.96 0 0);
+  opacity: 1;
 }
 
 .slider-track:has(.slider-range:active) .slider-thumb {
+  background: oklch(0.99 0 0);
   opacity: 1;
 }
 
