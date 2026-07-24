@@ -17,12 +17,14 @@ export function MailSlot({ v }: { v: SequenceValues }) {
       style={{ opacity: v.slotOpacity }}
       aria-hidden="true"
     >
-      {/* Lip shadow. Above the envelope — it has to fall on the moving object. */}
-      <div className="slot-lip" />
       <div className="slot-plate">
         <motion.div
           className="slot-rect"
-          style={{ scaleX: v.slotScaleX, scaleY: v.slotSwallow }}
+          // x:-50% centres the rect; it MUST live in the motion transform, not
+          // in CSS. Motion writes scaleX/scaleY straight to `transform`, which
+          // would otherwise clobber a CSS `translateX(-50%)` and shove the rect
+          // half its width to the right.
+          style={{ x: "-50%", scaleX: v.slotScaleX, scaleY: v.slotSwallow }}
         />
       </div>
     </motion.div>

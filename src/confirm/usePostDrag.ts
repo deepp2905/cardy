@@ -10,10 +10,12 @@ import {
 import { post, snappy } from "../lib/motionConfig";
 import {
   DRAG_TOP_GIVE,
+  ENVELOPE,
   POST_COMMIT_MM,
   POST_FLICK_MM,
   POST_FLICK_VELOCITY,
   POST_TRAVEL,
+  SLOT_TOP,
 } from "./geometry";
 import type { Phase, SequenceValues } from "./useWrapSequence";
 
@@ -46,13 +48,16 @@ export function usePostDrag({
   const rawTilt = useTransform(velocity, [-800, 800], [2, -2], { clamp: true });
   const dragTilt = useSpring(rawTilt, snappy);
 
-  // Insurance against a seam at the plate edge: the last 20mm of travel fades.
-  const vanish = useTransform(
-    v.envY,
-    [(POST_TRAVEL - 20) * mmPx, POST_TRAVEL * mmPx],
-    [1, 0],
-    { clamp: true },
-  );
+  // Fade the envelope as it sinks into the slot. It starts disappearing when
+  // it's HALFWAY into the box — its centre level with the slot's top edge
+  // (envY == SLOT_TOP) — and is gone by the time its top edge has submerged
+  // (envY == SLOT_TOP + half its height). So the card visibly dissolves into
+  // the slot rather than vanishing at a seam right at the end of travel.
+  const vanishStart = SLOT_TOP * mmPx;
+  const vanishEnd = (SLOT_TOP + ENVELOPE.h / 2) * mmPx;
+  const vanish = useTransform(v.envY, [vanishStart, vanishEnd], [1, 0], {
+    clamp: true,
+  });
 
   const runPost = useCallback(() => {
     if (phase !== "idle") return;
@@ -60,10 +65,8 @@ export function usePostDrag({
     animate(v.envY, POST_TRAVEL * mmPx, post);
     animate(dragScale, 0.97, post);
     animate(v.hintOpacity, 0, { duration: 0.15 });
-    window.setTimeout(() => {
-      v.slotSwallow.set(0.86);
-      animate(v.slotSwallow, 1, snappy);
-    }, 150);
+    // No slot "swallow" flex — the envelope sinks straight in without the box
+    // squeezing around it.
     window.setTimeout(onPosted, 450);
   }, [phase, setPhase, v, mmPx, dragScale, onPosted]);
 

@@ -24,7 +24,9 @@
   --seal: oklch(0.26 0.02 70);
   --seal-ink: oklch(0.95 0.01 85);
 
-  --slot: oklch(0.1 0 0);
+  /* The slot uses the primary-CTA fill (--color-12), not a near-black hole —
+     a lighter, friendlier grey that matches the action button. */
+  --slot: var(--color-12);
   --slot-rim: transparent;
 
   --sheet-shadow:
@@ -53,9 +55,11 @@
 
   --seal: oklch(0.2 0.02 70);
 
-  --slot: oklch(0.08 0 0);
-  --slot-rim: oklch(0.38 0 0); /* without this a black hole on a dark stage
-                                  simply doesn't exist */
+  /* Match the primary-CTA fill in dark mode too (near-white here). No rim: the
+     old one existed to make a black hole visible on a dark stage, and a light
+     slot doesn't need it. */
+  --slot: var(--color-12);
+  --slot-rim: transparent;
 
   --sheet-shadow:
     0 2px 6px oklch(0 0 0 / 0.35),
@@ -436,18 +440,6 @@
   background: var(--slot);
   border-radius: calc(5 * var(--mm));
   border-top: 1px solid var(--slot-rim);
-  box-shadow: inset 0 calc(1.5 * var(--mm)) calc(2 * var(--mm)) oklch(0 0 0 / 0.6);
-}
-
-/* Falls on the envelope as it enters, so it darkens into the slot. */
-.slot-lip {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  top: calc(50% + 69 * var(--mm));
-  width: calc(139 * var(--mm));
-  height: calc(6 * var(--mm));
-  background: linear-gradient(to top, oklch(0 0 0 / 0.35), oklch(0 0 0 / 0));
 }
 
 .post-hint {
