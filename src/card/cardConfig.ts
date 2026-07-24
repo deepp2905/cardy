@@ -2,6 +2,22 @@
 
 export type PatternShape = "circle" | "rect" | "triangle";
 
+/**
+ * Per-card "personality": constants the UI never exposes but that we vary at
+ * seed time so every colourway reads as its own design, not the same motif
+ * recoloured. Overrides the matching PATTERN_FIXED values in patternParams.
+ * Optional so a shared-link config (no personality in the URL) simply falls
+ * back to the tuned defaults.
+ */
+export type CardPersonality = {
+  angle: number; // base grid rotation, deg
+  size: number; // mark size, px
+  strokeWidth: number; // outline weight, px
+  staggerSize: number; // wave pulse on cell size
+  staggerAngle: number; // wave twist on cell angle, deg
+  staggerSpacing: number; // wave shove along the radial, px
+};
+
 export type CardConfig = {
   id: string;
   baseColor: string; // oklch() string from PALETTE
@@ -12,6 +28,8 @@ export type CardConfig = {
   frequency: number; // 0..1 → radial wavelength, FREQ_MIN..FREQ_MAX
   phase: number; // 0..1 → wave offset, 0..2π
   note: string; // "" | max 24 chars
+  /** Seed-time flavour; absent on shared links (falls back to PATTERN_FIXED). */
+  personality?: CardPersonality;
 };
 
 export const CARD_ASPECT = 85.6 / 53.98; // ISO/IEC 7810 ID-1
@@ -58,10 +76,19 @@ function mulberry32(seed: number): () => number {
 
 const SHAPES_ALL: PatternShape[] = ["circle", "rect", "triangle"];
 
+/** Random value in [min, max] from a 0..1 source. */
+const band = (r: number, min: number, max: number) => min + r * (max - min);
+
 // Each colourway also gets its own pattern, so the strip reads as eight
 // distinct designs rather than one design recoloured. Values stay in tasteful
 // bands (the slider mappings already clamp to safe ranges, so the full 0..1 is
 // fair game) and every card is still a valid starting point the user can tune.
+//
+// The three sliders (spacing/frequency/phase) mostly change density and offset
+// of ONE motif, which is why cards rhymed too closely. The bulk of the variance
+// comes from the seed-time `personality`: grid angle, mark weight, and how hard
+// the radial wave twists/pulses/shoves each cell — the levers that actually
+// change a pattern's character. The dials stay untouched.
 export function seedConfigs(): Record<string, CardConfig> {
   return Object.fromEntries(
     PALETTE.map((p, i) => {
@@ -79,6 +106,15 @@ export function seedConfigs(): Record<string, CardConfig> {
           frequency: 0.15 + rand() * 0.6,
           phase: rand(),
           note: "",
+          // Tasteful bands centred on the tuned PATTERN_FIXED values.
+          personality: {
+            angle: band(rand(), 0, 30),
+            size: band(rand(), 26, 38),
+            strokeWidth: band(rand(), 1.2, 2.2),
+            staggerSize: band(rand(), 0.14, 0.36),
+            staggerAngle: band(rand(), 50, 130),
+            staggerSpacing: band(rand(), 10, 22),
+          },
         } satisfies CardConfig,
       ];
     }),
@@ -115,10 +151,13 @@ export const PATTERN_FIXED = {
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-/** Resolve the three sliders + fixed constants into the pattern's real params. */
+/** Resolve the three sliders + fixed constants into the pattern's real params.
+ *  The per-card personality (seed time) overrides the matching fixed values;
+ *  a shared-link config carries none and keeps the tuned defaults. */
 export function patternParams(config: CardConfig) {
   return {
     ...PATTERN_FIXED,
+    ...config.personality,
     shape: config.shape,
     filled: config.filled,
     spacing: lerp(SPACING_MIN, SPACING_MAX, config.spacing),
@@ -181,6 +220,16 @@ export function sanitizeNote(raw: string): string {
 
 const SHAPES: PatternShape[] = ["circle", "rect", "triangle"];
 
+// Personality order in the compact `pr` param. Keep in sync with the parser.
+const PERSONALITY_KEYS = [
+  "angle",
+  "size",
+  "strokeWidth",
+  "staggerSize",
+  "staggerAngle",
+  "staggerSpacing",
+] as const;
+
 export function cardConfigToParams(config: CardConfig): URLSearchParams {
   const p = new URLSearchParams();
   p.set("c", config.baseColor);
@@ -190,7 +239,30 @@ export function cardConfigToParams(config: CardConfig): URLSearchParams {
   p.set("fq", config.frequency.toFixed(3));
   p.set("ph", config.phase.toFixed(3));
   if (config.note) p.set("n", config.note);
+  // Serialize personality so a shared card looks identical to the sender's,
+  // not a defaults fallback. One compact param: six numbers, fixed order.
+  if (config.personality) {
+    p.set(
+      "pr",
+      PERSONALITY_KEYS.map((k) => config.personality![k].toFixed(2)).join(","),
+    );
+  }
   return p;
+}
+
+function personalityFromParam(raw: string | null): CardPersonality | undefined {
+  if (!raw) return undefined;
+  const n = raw.split(",").map(Number);
+  if (n.length !== PERSONALITY_KEYS.length || n.some((v) => !Number.isFinite(v)))
+    return undefined;
+  return {
+    angle: n[0],
+    size: n[1],
+    strokeWidth: n[2],
+    staggerSize: n[3],
+    staggerAngle: n[4],
+    staggerSpacing: n[5],
+  };
 }
 
 export function cardConfigFromParams(params: URLSearchParams): CardConfig | null {
@@ -209,5 +281,6 @@ export function cardConfigFromParams(params: URLSearchParams): CardConfig | null
     frequency: clamp01(Number(params.get("fq") ?? DEFAULT_FREQUENCY)),
     phase: clamp01(Number(params.get("ph") ?? DEFAULT_PHASE)),
     note: sanitizeNote(params.get("n") ?? ""),
+    personality: personalityFromParam(params.get("pr")),
   };
 }
