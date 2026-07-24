@@ -11,6 +11,7 @@ import { Customize } from "./steps/Customize";
 import { Welcome } from "./steps/Welcome";
 import { ActionBar } from "./ui/ActionBar";
 import { StepIndicator, type Step } from "./ui/StepIndicator";
+import { PlaygroundLink } from "./ui/PlaygroundLink";
 import { ThemeToggle } from "./ui/ThemeToggle";
 
 // Playground is dev tooling — lazy so dialkit + its pages stay out of the
@@ -74,7 +75,10 @@ function MainFlow() {
       <header className="app-header">
         <StepIndicator current={step} />
       </header>
-      <ThemeToggle />
+      <div className="corner-controls">
+        <PlaygroundLink />
+        <ThemeToggle />
+      </div>
       <main className="step-stage">
         <AnimatePresence mode="wait" initial={false}>
           {step === "welcome" && (

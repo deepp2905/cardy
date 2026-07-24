@@ -22,7 +22,7 @@ export function ThemeToggle() {
 
   return (
     <motion.button
-      className="theme-toggle"
+      className="corner-btn"
       aria-label={`Switch to ${next} mode`}
       onClick={() => setTheme(next)}
       whileTap={{ scale: 0.96 }}

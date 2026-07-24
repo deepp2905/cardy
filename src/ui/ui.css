@@ -120,13 +120,20 @@
 
 /* theme toggle */
 
-/* Matches the back button: same square-circle geometry, same neutral fill.
-   Aligned to the header's 24px inset rather than its own arbitrary offset. */
-.theme-toggle {
+/* Fixed corner controls, laid out as a row so buttons can be added without
+   recomputing offsets. Aligned to the header's 24px inset. */
+.corner-controls {
   position: fixed;
   top: 24px;
   right: 24px;
   z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Matches the back button: same square-circle geometry, same neutral fill. */
+.corner-btn {
   width: var(--control-h);
   height: var(--control-h);
   display: grid;
@@ -142,13 +149,27 @@
     background-color 0.2s ease;
 }
 
-.theme-toggle:hover {
+.corner-btn:hover {
   background: var(--color-5);
 }
 
-.theme-toggle:focus-visible {
+.corner-btn:focus-visible {
   outline: 2px solid var(--color-9);
   outline-offset: 2px;
+}
+
+.corner-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Two 60px buttons plus the gap overlap the centred step indicator below
+   ~480px. The playground is a dev affordance, so it yields on small
+   screens; the hash route still works if typed. */
+@media (max-width: 480px) {
+  .corner-controls .playground-link {
+    display: none;
+  }
 }
 
 /* 24px in a 60px button — a touch smaller than the CTA arrows' 30px, since

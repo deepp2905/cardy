@@ -19,7 +19,9 @@ export default function Playground() {
 
   return (
     <div className="playground">
-      <ThemeToggle />
+      <div className="corner-controls">
+        <ThemeToggle />
+      </div>
       <nav className="pg-nav" aria-label="Playground pages">
         <span className="pg-brand">cardy · playground</span>
         <div className="pg-tabs">
