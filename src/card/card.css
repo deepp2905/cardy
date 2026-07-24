@@ -123,6 +123,8 @@
   font-family: var(--font-mono);
   font-size: 3.1cqw;
   font-weight: 400;
+  /* Engraving is always uppercase on the card, whatever case was typed. */
+  text-transform: uppercase;
   letter-spacing: 0.12em;
   line-height: 1;
   color: var(--ink-muted);

@@ -1,10 +1,23 @@
+/* Control panel: note field above the two sliders, pinned to the bottom of
+   the step. 20px between groups against 6px label-to-control, so each label
+   binds to the control below it. */
+.dial-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
 /* slider — replaces the knob dials. Neutral ramp only; the cards remain
    the sole source of colour in the app. */
 
+/* Label sits tight to its own control (6px) while groups are separated by
+   20px — a >3:1 ratio, so each label reads as belonging to the control
+   BELOW it rather than floating between two. */
 .slider-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
 }
 
@@ -19,10 +32,9 @@
 .slider-track {
   position: relative;
   width: 100%;
-  height: 44px;
-  border-radius: 999px;
+  height: var(--control-h);
+  border-radius: var(--radius-pill);
   background: var(--color-3);
-  box-shadow: inset 0 0 0 1px var(--color-6);
   overflow: hidden;
   cursor: pointer;
   user-select: none;
@@ -49,8 +61,8 @@
 
 .slider-thumb {
   position: absolute;
-  top: 9px;
-  height: 26px;
+  top: 11px;
+  height: 30px;
   width: 4px;
   /* Sit just inside the fill's leading edge, clamped so the pill stays
      within the track at both extremes. */
@@ -105,7 +117,7 @@
 .note-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
 }
 
@@ -121,21 +133,23 @@
   position: relative;
 }
 
+/* Fill only at rest — matches the sliders and buttons. The ring appears on
+   focus, which is the one place a border earns its keep. */
 .note-input {
   width: 100%;
+  height: var(--control-h);
   font: inherit;
-  font-size: var(--text-md);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  /* 16px is the floor — anything smaller makes iOS Safari zoom the page on
+     focus. Type in whatever case you like; the card engraves it uppercase. */
+  font-size: var(--text-base);
+  letter-spacing: 0.01em;
   color: var(--color-12);
-  background: var(--color-1);
+  background: var(--color-3);
   border: none;
-  border-radius: 12px;
-  padding: 12px 52px 12px 14px;
-  box-shadow:
-    inset 0 0 0 1px var(--color-6),
-    0 1px 2px oklch(0 0 0 / 0.04);
-  transition: box-shadow 0.2s ease;
+  border-radius: var(--radius-pill);
+  padding: 0 52px 0 20px;
+  box-shadow: none;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .note-input::placeholder {
@@ -143,21 +157,18 @@
 }
 
 .note-input:hover {
-  box-shadow:
-    inset 0 0 0 1px var(--color-8),
-    0 1px 2px oklch(0 0 0 / 0.04);
+  background: var(--color-4);
 }
 
 .note-input:focus-visible {
   outline: none;
-  box-shadow:
-    inset 0 0 0 1px var(--color-10),
-    0 0 0 3px var(--color-4);
+  background: var(--color-3);
+  box-shadow: inset 0 0 0 1.5px var(--color-10);
 }
 
 .note-count {
   position: absolute;
-  right: 14px;
+  right: 20px;
   top: 50%;
   transform: translateY(-50%);
   font-size: var(--text-xs);

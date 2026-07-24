@@ -113,10 +113,13 @@ export function inkFor(baseColor: string): {
 }
 
 export const NOTE_MAX = 24;
-export const NOTE_CHARSET = /[^A-Z0-9 .,!♥]/g;
+// Case is preserved as typed — the card uppercases on render (engraving is
+// a property of the card, not of the input). The charset therefore has to
+// admit both cases.
+export const NOTE_CHARSET = /[^A-Za-z0-9 .,!♥]/g;
 
 export function sanitizeNote(raw: string): string {
-  return raw.toUpperCase().replace(NOTE_CHARSET, "").slice(0, NOTE_MAX);
+  return raw.replace(NOTE_CHARSET, "").slice(0, NOTE_MAX);
 }
 
 // --- URL serialization (applied on confirm; PLAN.md §3) ---

@@ -1,6 +1,7 @@
-import { useId, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
-import { snappy, sliderStretch } from "../lib/motionConfig";
+import { snappy, snappyOptions, sliderStretch } from "../lib/motionConfig";
+import { usePrefersReducedMotion } from "../lib/reducedMotion";
 import "./controls.css";
 
 // Ported from an earlier project of the author's. The rubberband here is safe
@@ -21,8 +22,21 @@ const STRETCH_PIVOT_PX = 120;
 
 export function Slider({ value, onChange, label, disabled }: SliderProps) {
   const id = useId();
-  const pct = value * 100;
   const trackRef = useRef<HTMLDivElement>(null);
+  const reduce = usePrefersReducedMotion();
+
+  // The rendered position is a spring, so swapping the bound config (sliding
+  // the carousel to another card) glides to the new value instead of jumping
+  // — the retarget IS the micro-moment (PLAN.md Phase C). While the user is
+  // dragging it must stay 1:1, so the spring is jumped, not set.
+  const dragging = useRef(false);
+  const display = useSpring(value, snappyOptions);
+  useEffect(() => {
+    if (dragging.current || reduce) display.jump(value);
+    else display.set(value);
+  }, [display, value, reduce]);
+
+  const pctValue = useTransform(display, (v) => `${v * 100}%`);
 
   const [hovered, setHovered] = useState(false);
   // Brief ease-in when the track is clicked without dragging; cleared on the
@@ -70,6 +84,7 @@ export function Slider({ value, onChange, label, disabled }: SliderProps) {
   };
 
   const release = () => {
+    dragging.current = false;
     overshoot.set(0);
     if (!dragStarted.current) {
       animTimeout.current = setTimeout(() => setAnimating(false), 220);
@@ -89,7 +104,7 @@ export function Slider({ value, onChange, label, disabled }: SliderProps) {
         // motion accepts MotionValues here; CSSProperties doesn't model that.
         style={
           {
-            "--pct": `${pct}%`,
+            "--pct": pctValue,
             scaleX: trackScaleX,
             transformOrigin: trackOrigin,
           } as unknown as CSSProperties
@@ -101,9 +116,10 @@ export function Slider({ value, onChange, label, disabled }: SliderProps) {
           aria-hidden="true"
           // Height, not scaleY: transform-scaling a fixed-px radius squashes
           // it flat on the scaled axis and the pill stops being round.
+          // Centred in the 52px track at both sizes.
           animate={{
-            height: hovered ? 26 : 26 / 1.5,
-            top: hovered ? 9 : 9 + (26 - 26 / 1.5) / 2,
+            height: hovered ? 30 : 30 / 1.5,
+            top: hovered ? 11 : 11 + (30 - 30 / 1.5) / 2,
           }}
           transition={{ ...snappy, damping: 24 }}
         />
@@ -121,6 +137,7 @@ export function Slider({ value, onChange, label, disabled }: SliderProps) {
           onPointerDown={(e) => {
             if (disabled) return;
             dragStarted.current = false;
+            dragging.current = true;
             setAnimating(true);
             if (animTimeout.current) clearTimeout(animTimeout.current);
             // Capture so a drag started anywhere on the track keeps following

@@ -20,7 +20,7 @@ export function NoteField({ value, onChange }: NoteFieldProps) {
           className="note-input"
           type="text"
           value={value}
-          placeholder="FOR COFFEE ONLY"
+          placeholder="For coffee only"
           maxLength={NOTE_MAX}
           autoComplete="off"
           spellCheck={false}
