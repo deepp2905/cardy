@@ -3,7 +3,8 @@ import { SLOT_TOP, mm } from "./geometry";
 import type { SequenceValues } from "./useWrapSequence";
 
 /**
- * "Drag down to post", between the envelope and the slot. Fades out on first
+ * The post affordance, between the envelope and the slot. A downward chevron
+ * that bobs on a sine curve — pure "drag me down", no copy. Fades out on first
  * pointerdown and never returns.
  *
  * Under reduced motion the drag is replaced entirely by a button (PLAN.md §7) —
@@ -37,17 +38,27 @@ export function PostHint({
       style={{ opacity: v.hintOpacity, top: mm(SLOT_TOP - 22) }}
       aria-hidden="true"
     >
-      <span>Drag down to post</span>
-      <svg viewBox="0 0 24 24" className="post-hint-arrow">
+      {/* A sine bob: the ease-in-out on a symmetric 0 → peak → 0 keyframe set is
+          the smoothed sine of a pendulum, so the chevron eases in at the top of
+          its travel and again at the bottom — the "slow at the extremes" that
+          reads as a gentle, breathing pull downward rather than a mechanical
+          slide. */}
+      <motion.svg
+        viewBox="0 0 24 24"
+        className="post-hint-chevron"
+        initial={{ y: 0 }}
+        animate={{ y: [0, 9, 0] }}
+        transition={{ duration: 1.4, ease: "easeInOut", repeat: Infinity }}
+      >
         <path
-          d="M12 5v14m-6-6 6 6 6-6"
+          d="M5 9l7 7 7-7"
           fill="none"
           stroke="currentColor"
-          strokeWidth="1.75"
+          strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-      </svg>
+      </motion.svg>
     </motion.div>
   );
 }
