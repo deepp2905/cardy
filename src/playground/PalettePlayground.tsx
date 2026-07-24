@@ -3,31 +3,33 @@ import { PALETTE, oklchString, parseOklch } from "../card/cardConfig";
 import { CopyButton } from "./CopyButton";
 
 type Range = [number, number, number, number];
-type LCHDials = { l: Range; c: Range; h: Range };
 
-// Seed dialkit groups from the current palette so l/c/h open where they are.
-const PALETTE_DIALS: Record<string, LCHDials> = Object.fromEntries(
-  PALETTE.map((entry) => {
-    const { l, c, h } = parseOklch(entry.color);
-    return [
-      entry.name,
-      {
-        l: [l, 0, 1, 0.005] as Range,
-        c: [c, 0, 0.4, 0.005] as Range,
-        h: [h, 0, 360, 1] as Range,
-      } satisfies LCHDials,
-    ];
-  }),
+// The palette is normalised: one lightness and one chroma shared by every
+// colour, with only the hue varying per entry. So the dials are a single
+// `l` + `c` under Shared, and one hue slider per colour under Hues.
+const seed = parseOklch(PALETTE[0].color);
+
+const HUE_DIALS: Record<string, Range> = Object.fromEntries(
+  PALETTE.map((entry) => [
+    entry.name,
+    [parseOklch(entry.color).h, 0, 360, 1] as Range,
+  ]),
 );
 
 export function PalettePlayground() {
-  const p = useDialKit("Palette", PALETTE_DIALS) as Record<
-    string,
-    { l: number; c: number; h: number }
-  >;
+  const p = useDialKit("Palette", {
+    shared: {
+      l: [seed.l, 0, 1, 0.005] as Range,
+      c: [seed.c, 0, 0.4, 0.005] as Range,
+    },
+    hues: HUE_DIALS,
+  }) as {
+    shared: { l: number; c: number };
+    hues: Record<string, number>;
+  };
 
   const colorFor = (name: string) =>
-    oklchString(p[name].l, p[name].c, p[name].h);
+    oklchString(p.shared.l, p.shared.c, p.hues[name]);
 
   const copyText = () => {
     const rows = PALETTE.map(
