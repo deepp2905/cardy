@@ -30,6 +30,26 @@
   margin-bottom: 8px;
 }
 
+.variant-error {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  margin: auto;
+  border-radius: 14px;
+  background: var(--color-3);
+  color: var(--color-12);
+  font-size: var(--text-sm);
+  max-width: 100%;
+}
+
+.variant-error code {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-11);
+  overflow-wrap: anywhere;
+}
+
 .explore-stage {
   flex: 1;
   min-height: 0;
@@ -96,9 +116,13 @@
 
 /* --- shared scrollers --- */
 
+/* Positioned so slides' offsetLeft/offsetTop are measured from the scroller
+   itself — useCentreIndex's maths depends on it (same trap as the real
+   carousel). */
 .v-scroll,
 .v-coverflow,
 .v-wings {
+  position: relative;
   display: flex;
   align-items: center;
   overflow-x: auto;
@@ -114,6 +138,7 @@
 .v-wallet,
 .v-apple,
 .v-tiers {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;

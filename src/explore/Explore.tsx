@@ -4,6 +4,7 @@ import "dialkit/styles.css";
 import { DevNav } from "../playground/DevNav";
 import { ThemeToggle } from "../ui/ThemeToggle";
 import { ExploreShell } from "./ExploreShell";
+import { VariantBoundary } from "./VariantBoundary";
 import { VariantSwitcher, type VariantMeta } from "./VariantSwitcher";
 import { AppleWalletVariant } from "./variants/AppleWalletVariant";
 import { CoverflowVariant } from "./variants/CoverflowVariant";
@@ -82,7 +83,11 @@ export default function Explore() {
 
       {/* Keyed so switching variants remounts: each mounts its own dialkit
           panel, and only the mounted one's panel is registered. */}
-      <ExploreShell key={active.id}>{active.render()}</ExploreShell>
+      <ExploreShell key={active.id}>
+        <VariantBoundary variantName={active.name}>
+          {active.render()}
+        </VariantBoundary>
+      </ExploreShell>
 
       <DialRoot />
     </div>

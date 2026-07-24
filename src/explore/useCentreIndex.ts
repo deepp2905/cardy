@@ -17,7 +17,12 @@ export function useCentreIndex(axis: "x" | "y" = "x") {
     if (!el) return;
 
     const measure = () => {
-      const slides = el.querySelectorAll<HTMLElement>("[data-slide], > *");
+      // `:scope` is required for a child combinator here — a bare "> *" is
+      // not a valid standalone selector and throws.
+      const tagged = el.querySelectorAll<HTMLElement>("[data-slide]");
+      const slides = tagged.length
+        ? tagged
+        : el.querySelectorAll<HTMLElement>(":scope > *");
       if (!slides.length) return;
       const centre =
         axis === "x"
