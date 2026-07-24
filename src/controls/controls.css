@@ -58,7 +58,12 @@
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--color-11);
+  /* The fill slides left-to-right over the label, so a fixed colour goes
+     dark-on-dark once covered. `difference` inverts the text per-pixel against
+     whatever is behind it: near-black over the light track, near-white over
+     the dark fill — legible across the whole travel, in either theme. */
+  color: #fff;
+  mix-blend-mode: difference;
   white-space: nowrap;
   pointer-events: none;
   z-index: 2; /* above the fill (1), below the range input (3) */

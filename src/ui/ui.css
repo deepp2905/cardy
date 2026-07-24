@@ -109,6 +109,12 @@
   display: block;
 }
 
+/* Terminal CTAs (e.g. "Start over") show their label as text in place of the
+   forward arrow. Inherits the button's colour + weight; just resets leading. */
+.btn-next-label {
+  line-height: 1;
+}
+
 .btn-primary:hover {
   background: color-mix(in oklch, var(--color-12) 90%, black);
   box-shadow: 0 3px 10px -2px rgba(0, 0, 0, 0.25);

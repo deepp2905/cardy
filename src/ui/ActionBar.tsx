@@ -62,6 +62,10 @@ export function ActionBar({
           whileTap={{ scale: 0.96 }}
           transition={snappy}
         >
+          {/* Steps 1-3 are arrow-only CTAs (label is aria-only). A terminal
+              action like "Start over" has no forward arrow, so show its
+              label as visible text instead of rendering an empty pill. */}
+          {!showArrow && <span className="btn-next-label">{nextLabel}</span>}
           {showArrow && (
             <motion.svg
               className="cta-arrow"
