@@ -12,15 +12,20 @@ export const CARD_ASPECT = 85.6 / 53.98; // ISO/IEC 7810 ID-1
 
 export type PaletteEntry = { name: string; color: string };
 
+// Locked to one lightness (0.64) and chroma (0.18) so every card reads as
+// equally bright and equally saturated — only hue varies. That's what OKLCH
+// buys: a consistent family, evenly spaced ~45° around the wheel. graphite
+// was the dark grey outlier; normalising made it a near-duplicate of cobalt,
+// so it was re-hued into the amber→jade gap (a lime) to keep 8 distinct.
 export const PALETTE: PaletteEntry[] = [
-  { name: "cobalt", color: "oklch(0.62 0.19 250)" },
-  { name: "violet", color: "oklch(0.62 0.19 300)" },
-  { name: "magenta", color: "oklch(0.62 0.17 350)" },
-  { name: "coral", color: "oklch(0.65 0.18 25)" },
-  { name: "amber", color: "oklch(0.70 0.16 85)" },
-  { name: "jade", color: "oklch(0.66 0.17 150)" },
-  { name: "teal", color: "oklch(0.64 0.15 200)" },
-  { name: "graphite", color: "oklch(0.30 0.03 260)" },
+  { name: "cobalt", color: "oklch(0.64 0.18 250)" },
+  { name: "violet", color: "oklch(0.64 0.18 300)" },
+  { name: "magenta", color: "oklch(0.64 0.18 350)" },
+  { name: "coral", color: "oklch(0.64 0.18 25)" },
+  { name: "amber", color: "oklch(0.64 0.18 85)" },
+  { name: "lime", color: "oklch(0.64 0.18 115)" },
+  { name: "jade", color: "oklch(0.64 0.18 150)" },
+  { name: "teal", color: "oklch(0.64 0.18 200)" },
 ];
 
 // One shared starting point for every card: the strip reads as a single
