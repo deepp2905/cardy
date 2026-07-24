@@ -49,8 +49,9 @@
 
   /* Card render width. Lives here, not on .carousel, because the confirm
      step needs the same figure — the card is one object travelling through
-     the flow and must not resize between steps. */
-  --slide-w: min(319px, 76dvw);
+     the flow and must not resize between steps. 372px is the column's
+     content width (420 less its 24px padding). */
+  --slide-w: min(372px, 88dvw);
 
   /* type scale — every size in the app comes from these steps */
   --text-xs: 12px; /* uppercase labels, counters */
