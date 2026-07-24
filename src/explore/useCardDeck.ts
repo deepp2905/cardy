@@ -54,6 +54,8 @@ export function useCardDeck(
   // Ref mirrors state so handlers read the live value without re-subscribing.
   const value = useRef(initial);
   const raf = useRef<number | null>(null);
+  // Set inside the effect; lets a card click spring the deck to its index.
+  const settleTo = useRef<(i: number) => void>(() => {});
 
   useEffect(() => {
     const el = ref.current;
@@ -81,11 +83,12 @@ export function useCardDeck(
     // Spring to the nearest whole card on release — integrated each frame so
     // the motion has real spring character (a slight settle) rather than a
     // fixed-duration tween, without the overshoot of an under-damped bounce.
-    const settle = () => {
+    const settle = (target?: number) => {
       stopSettle();
       // Clamp the target: a rubberbanded overshoot (e.g. -0.7) rounds to an
-      // index outside the deck, so snap to the real end card instead.
-      const to = clamp(Math.round(value.current));
+      // index outside the deck, so snap to the real end card instead. When a
+      // card is clicked, `target` is that card's index.
+      const to = clamp(target ?? Math.round(value.current));
       const damping =
         SETTLE_DAMPING_RATIO * 2 * Math.sqrt(SETTLE_STIFFNESS);
       let velocity = 0;
@@ -137,6 +140,12 @@ export function useCardDeck(
 
     const onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0) return;
+      // Click-to-centre decks: only the active card starts a drag. A press on
+      // any other card is a click (handled by the card's onClick), not a drag.
+      if (el.dataset.clickable === "true") {
+        const onCard = (e.target as HTMLElement).closest(".deck-item");
+        if (onCard && onCard.getAttribute("data-active") !== "true") return;
+      }
       dragging = true;
       stopSettle();
       startPos = axis === "x" ? e.clientX : e.clientY;
@@ -169,6 +178,9 @@ export function useCardDeck(
       commit(Math.round(value.current) + (e.key === fwd ? 1 : -1));
     };
 
+    // Expose the spring so a card click can bring itself to centre.
+    settleTo.current = (i: number) => settle(i);
+
     el.addEventListener("wheel", onWheel, { passive: false });
     el.addEventListener("pointerdown", onPointerDown);
     el.addEventListener("pointermove", onPointerMove);
@@ -191,7 +203,10 @@ export function useCardDeck(
   /** Nearest whole card — use this for `focused`, never `d === 0`. */
   const focusedIndex = Math.round(index);
 
-  return { ref, index, focusedIndex };
+  /** Spring the deck so card `i` becomes the centred one. */
+  const goTo = (i: number) => settleTo.current(i);
+
+  return { ref, index, focusedIndex, goTo };
 }
 
 /**

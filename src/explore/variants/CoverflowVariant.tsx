@@ -18,7 +18,7 @@ export function CoverflowVariant() {
     perspective: [1200, 400, 3000, 50],
   });
 
-  const { ref, index, focusedIndex } = useCardDeck("x", COUNT, 2);
+  const { ref, index, focusedIndex, goTo } = useCardDeck("x", COUNT, 2);
   const pitch = p.cardWidth * p.spread;
 
   return (
@@ -26,6 +26,7 @@ export function CoverflowVariant() {
       className="v-deck"
       ref={ref}
       tabIndex={0}
+      data-clickable="true"
       style={
         {
           perspective: `${p.perspective}px`,
@@ -36,6 +37,7 @@ export function CoverflowVariant() {
       {Array.from({ length: COUNT }, (_, i) => {
         const d = i - index;
         const away = Math.abs(d);
+        const active = i === focusedIndex;
         // Rotation saturates at one card out so distant cards sit parallel
         // rather than continuing to spin.
         const turn = -Math.sign(d) * Math.min(1, away) * p.rotateY;
@@ -43,6 +45,10 @@ export function CoverflowVariant() {
           <div
             key={i}
             className="deck-item"
+            data-active={active}
+            onClick={() => {
+              if (!active) goTo(i);
+            }}
             style={{
               transform: [
                 `translateX(${d * pitch}px)`,
@@ -55,7 +61,7 @@ export function CoverflowVariant() {
           >
             <MockCard
               depth={Math.min(1, away * p.fade)}
-              focused={i === focusedIndex}
+              focused={active}
               index={i}
             />
           </div>

@@ -15,7 +15,7 @@ export function ScrollVariant() {
     arc: [80, 0, 80, 2],
   });
 
-  const { ref, index, focusedIndex } = useCardDeck("x", COUNT, 2);
+  const { ref, index, focusedIndex, goTo } = useCardDeck("x", COUNT, 2);
 
   // Lay cards edge-to-edge with a CONSTANT gap. Fixed centre-to-centre spacing
   // left uneven gaps once cards were scaled — a big card eats into the gap, a
@@ -48,6 +48,7 @@ export function ScrollVariant() {
       className="v-deck"
       ref={ref}
       tabIndex={0}
+      data-clickable="true"
       style={{ "--card-w": `${p.cardWidth}px` } as CSSProperties}
     >
       {Array.from({ length: COUNT }, (_, i) => {
@@ -56,10 +57,15 @@ export function ScrollVariant() {
         const eased = 1 - (1 - t) * (1 - t);
         const scale = scaleAt(i);
         const x = centres[i] - originX;
+        const active = i === focusedIndex;
         return (
           <div
             key={i}
             className="deck-item"
+            data-active={active}
+            onClick={() => {
+              if (!active) goTo(i);
+            }}
             style={{
               transform: `translateX(${x}px) translateY(${eased * p.arc}px) scale(${scale})`,
               zIndex: COUNT - Math.round(Math.abs(d)),
@@ -67,7 +73,7 @@ export function ScrollVariant() {
           >
             {/* depth 0: colour never shifts with position — size and arc
                 carry the recession instead. */}
-            <MockCard depth={0} focused={i === focusedIndex} index={i} />
+            <MockCard depth={0} focused={active} index={i} />
           </div>
         );
       })}

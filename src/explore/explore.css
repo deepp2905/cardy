@@ -219,6 +219,26 @@
   pointer-events: none;
 }
 
+/* Click-to-centre decks (scroll, coverflow): the active card owns the drag
+   (grab); the others are clickable (pointer) to bring themselves to centre.
+   The deck itself no longer shows grab, since the active card covers it. */
+.v-deck[data-clickable="true"] {
+  cursor: default;
+}
+
+.v-deck[data-clickable="true"] .deck-item {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.v-deck[data-clickable="true"] .deck-item[data-active="true"] {
+  cursor: grab;
+}
+
+.v-deck[data-clickable="true"]:active .deck-item[data-active="true"] {
+  cursor: grabbing;
+}
+
 /* Cards animate to their computed transform; during a drag the index changes
    every frame so the transition is imperceptible, but on release and on
    keyboard nav it does the easing. */
