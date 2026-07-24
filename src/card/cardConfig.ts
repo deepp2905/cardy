@@ -20,14 +20,14 @@ export type PaletteEntry = { name: string; color: string };
 // Ordered by hue, ascending around the wheel, so the carousel and the
 // playground swatches run as a continuous spectrum.
 export const PALETTE: PaletteEntry[] = [
-  { name: "coral", color: "oklch(0.68 0.22 25)" },
-  { name: "amber", color: "oklch(0.68 0.22 85)" },
-  { name: "lime", color: "oklch(0.68 0.22 115)" },
-  { name: "jade", color: "oklch(0.68 0.22 150)" },
-  { name: "teal", color: "oklch(0.68 0.22 200)" },
-  { name: "cobalt", color: "oklch(0.68 0.22 250)" },
-  { name: "violet", color: "oklch(0.68 0.22 300)" },
-  { name: "magenta", color: "oklch(0.68 0.22 350)" },
+  { name: "coral", color: "oklch(0.68 0.24 25)" },
+  { name: "amber", color: "oklch(0.68 0.24 85)" },
+  { name: "lime", color: "oklch(0.68 0.24 115)" },
+  { name: "jade", color: "oklch(0.68 0.24 150)" },
+  { name: "teal", color: "oklch(0.68 0.24 200)" },
+  { name: "cobalt", color: "oklch(0.68 0.24 250)" },
+  { name: "violet", color: "oklch(0.68 0.24 300)" },
+  { name: "magenta", color: "oklch(0.68 0.24 350)" },
 ];
 
 // One shared starting point for every card: the strip reads as a single
