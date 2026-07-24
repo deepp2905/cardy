@@ -35,7 +35,8 @@ export function Segmented<T extends string>({
   const groupId = useId();
   return (
     <div className="segmented-field">
-      <span className="segmented-label">{label}</span>
+      {/* No visible label: the group is named for a11y via aria-label on the
+          track. Shape reads from its glyphs, Fill from its two words. */}
       <div
         className="segmented-track"
         data-icon-only={iconOnly}

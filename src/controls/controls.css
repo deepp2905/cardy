@@ -41,12 +41,27 @@
   width: 100%;
 }
 
+/* Label now sits inside the track, pinned to the left edge with the same 20px
+   inset as the note input. Above the fill, below the thumb; never interactive.
+   Full-height flex box so vertical centring lives in layout, not in transform
+   — motion writes scaleX on this element's transform to counter the track's
+   overshoot stretch, so a transform-based centre would be clobbered. */
 .slider-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
   font-size: var(--text-xs);
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-11);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2; /* above the fill (1), below the range input (3) */
 }
 
 .slider-track {
@@ -147,16 +162,7 @@
 .segmented-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
   width: 100%;
-}
-
-.segmented-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--color-11);
 }
 
 .segmented-track {

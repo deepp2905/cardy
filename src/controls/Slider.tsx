@@ -109,9 +109,6 @@ export function Slider({ value, onChange, label, disabled }: SliderProps) {
 
   return (
     <div className="slider-field">
-      <label className="slider-label" htmlFor={id}>
-        {label}
-      </label>
       <motion.div
         ref={trackRef}
         className={`slider-track${animating ? " is-animating" : ""}`}
@@ -127,6 +124,21 @@ export function Slider({ value, onChange, label, disabled }: SliderProps) {
         }
       >
         <div className="slider-fill" />
+        {/* Label lives inside the track now, pinned left. Counter-scaled so the
+            track's overshoot stretch doesn't smear the text, and non-interactive
+            so it never intercepts a drag. */}
+        <motion.span
+          className="slider-label"
+          aria-hidden="true"
+          style={{
+            scaleX: useTransform(trackScaleX, (s) => 1 / s),
+            // Text is left-pinned, so cancel the stretch from the left edge —
+            // regardless of which way the track itself is anchored.
+            transformOrigin: "0% 50%",
+          }}
+        >
+          {label}
+        </motion.span>
         <motion.div
           className="slider-thumb"
           aria-hidden="true"
