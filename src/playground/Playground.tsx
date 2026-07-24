@@ -1,7 +1,7 @@
 import { DialRoot } from "dialkit";
 import "dialkit/styles.css";
 import { ThemeToggle } from "../ui/ThemeToggle";
-import { CardPlayground } from "./CardPlayground";
+import { CardExplorer } from "./cardvariants/CardExplorer";
 import { DevNav } from "./DevNav";
 import { DEV_TABS } from "./devTabs";
 import { PalettePlayground } from "./PalettePlayground";
@@ -21,7 +21,7 @@ export default function Playground() {
       <DevNav />
 
       <main className="pg-main">
-        {page === "card" && <CardPlayground />}
+        {page === "card" && <CardExplorer />}
         {page === "palette" && <PalettePlayground />}
         {page === "type" && <TypePlayground />}
         {page === "index" && (

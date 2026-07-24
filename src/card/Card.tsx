@@ -75,7 +75,7 @@ export function Card({
   );
 }
 
-function ChipMark() {
+export function ChipMark() {
   // Unique gradient id — many cards render at once, ids must not collide.
   const id = useId();
   return (
@@ -108,7 +108,7 @@ function ChipMark() {
   );
 }
 
-function ContactlessMark() {
+export function ContactlessMark() {
   return (
     <svg className="card-contactless" viewBox="0 0 24 24" aria-hidden="true">
       <g
@@ -127,7 +127,7 @@ function ContactlessMark() {
 }
 
 // Generic overlapping circles — deliberately NOT a real network mark.
-function NetworkMark() {
+export function NetworkMark() {
   return (
     <svg className="card-network" viewBox="0 0 38 24" aria-hidden="true">
       <circle cx="13" cy="12" r="11" fill="currentColor" opacity="0.55" />

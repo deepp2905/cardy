@@ -1,0 +1,70 @@
+/* Explorer layout */
+.cv-explorer {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.cv-stage {
+  width: 100%;
+  max-width: 420px;
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.cv-card-wrap {
+  width: 100%;
+}
+
+/* Art-direction variant backgrounds. Each fills the card surface behind the
+   shared chrome. All use the card's container-query context (cqw). */
+
+/* v2 flat minimal */
+.cv-flat {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, var(--top), var(--bottom));
+}
+
+.cv-flat-rule {
+  position: absolute;
+  left: 6.2cqw;
+  right: 6.2cqw;
+  height: 1px;
+  background: var(--ink, #fff);
+  transform: translateY(-50%);
+}
+
+/* v3 geometric — a hard diagonal split into two tones */
+.cv-geo {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    var(--angle),
+    var(--a) 0 var(--split),
+    var(--b) var(--split) 100%
+  );
+  overflow: hidden;
+}
+
+.cv-geo-block {
+  position: absolute;
+  right: 12cqw;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  border-radius: 2cqw;
+  opacity: 0.9;
+  mix-blend-mode: overlay;
+}
+
+/* v4 engraved */
+.cv-engraved {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}

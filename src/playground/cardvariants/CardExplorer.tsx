@@ -1,0 +1,79 @@
+import { useState, type ReactElement } from "react";
+import { useDialKit } from "dialkit";
+import { oklchString } from "../../card/cardConfig";
+import { VariantBoundary } from "../../explore/VariantBoundary";
+import {
+  CardVariantSwitcher,
+  type CardVariantMeta,
+} from "./CardVariantSwitcher";
+import { ShaderWaveVariant } from "./ShaderWaveVariant";
+import { FlatMinimalVariant } from "./FlatMinimalVariant";
+import { GeometricVariant } from "./GeometricVariant";
+import { EngravedVariant } from "./EngravedVariant";
+import "./cardvariants.css";
+
+// Explore art-direction treatments of the card face. One shared colour drives
+// every variant so you compare directions on the same colour; each variant
+// mounts its own dialkit for its art, and only the active one shows.
+
+type Variant = CardVariantMeta & {
+  render: (baseColor: string) => ReactElement;
+};
+
+const VARIANTS: Variant[] = [
+  {
+    id: "shader",
+    name: "Shader + wave",
+    note: "The current shipping face",
+    render: (c) => <ShaderWaveVariant baseColor={c} />,
+  },
+  {
+    id: "flat",
+    name: "Flat minimal",
+    note: "Solid fill, one hairline",
+    render: (c) => <FlatMinimalVariant baseColor={c} />,
+  },
+  {
+    id: "geometric",
+    name: "Geometric",
+    note: "Hard diagonal split",
+    render: (c) => <GeometricVariant baseColor={c} />,
+  },
+  {
+    id: "engraved",
+    name: "Engraved",
+    note: "Guilloché line field",
+    render: (c) => <EngravedVariant baseColor={c} />,
+  },
+];
+
+export function CardExplorer() {
+  const [activeId, setActiveId] = useState(VARIANTS[0].id);
+  const active = VARIANTS.find((v) => v.id === activeId) ?? VARIANTS[0];
+
+  // Shared colour, one panel, drives whichever variant is active.
+  const col = useDialKit("Colour", {
+    l: [0.68, 0, 1, 0.005],
+    c: [0.22, 0, 0.4, 0.005],
+    h: [250, 0, 360, 1],
+  });
+  const baseColor = oklchString(col.l, col.c, col.h);
+
+  return (
+    <div className="cv-explorer">
+      <CardVariantSwitcher
+        title="Card ideas"
+        variants={VARIANTS}
+        activeId={activeId}
+        onSelect={setActiveId}
+      />
+      <div className="cv-stage">
+        {/* Keyed so switching variants remounts and only the active variant's
+            art dialkit is registered. */}
+        <VariantBoundary key={active.id} variantName={active.name}>
+          <div className="cv-card-wrap">{active.render(baseColor)}</div>
+        </VariantBoundary>
+      </div>
+    </div>
+  );
+}
