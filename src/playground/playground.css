@@ -64,21 +64,19 @@
     0 6px 20px -12px oklch(0 0 0 / 0.5);
 }
 
-/* Dark-black active pill — a FIXED near-black in both themes (not the themed
-   --color-12, which flips to near-white in dark mode), so the selected tab
-   always reads as a solid black chip. A hairline ring lifts it off the track
-   in dark mode where pill and track are both dark. */
+/* Active pill uses the primary-CTA fill (--color-12 / --color-1 ink) — the same
+   ink the app's primary buttons carry, so the selected tab reads as filled
+   without the fixed pure-black feeling too heavy. */
 .pg-nav-menu .segmented-indicator,
 .cv-switcher .segmented-indicator,
 .explore-switcher .segmented-indicator {
-  background: oklch(0.18 0 0);
-  box-shadow: 0 0 0 1px oklch(1 0 0 / 0.08);
+  background: var(--color-12);
 }
 
 .pg-nav-menu .segmented-option[data-active="true"],
 .cv-switcher .segmented-option[data-active="true"],
 .explore-switcher .segmented-option[data-active="true"] {
-  color: oklch(0.98 0 0);
+  color: var(--color-1);
 }
 
 /* --- floating variant switcher (Card + Carousel routes) ---
@@ -125,11 +123,11 @@
   background: var(--color-3);
 }
 
-/* On: the same fixed near-black chip as the active segmented pill. */
+/* On: the same primary-CTA fill as the active segmented pill. */
 .variant-seg-toggle[data-on="true"] {
-  color: oklch(0.98 0 0);
-  background: oklch(0.18 0 0);
-  box-shadow: 0 0 0 1px oklch(1 0 0 / 0.08);
+  color: var(--color-1);
+  background: var(--color-12);
+  box-shadow: none;
 }
 
 .pg-main {
