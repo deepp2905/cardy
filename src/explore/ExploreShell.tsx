@@ -16,29 +16,27 @@ export function ExploreShell({ children }: { children: ReactNode }) {
       <main className="explore-stage">{children}</main>
 
       <div className="explore-controls" aria-hidden="true">
-        <div className="slider-field">
-          <span className="slider-label">Engraving</span>
+        <div className="explore-field">
+          <span className="explore-label">Engraving</span>
           <div className="explore-input">For coffee only</div>
         </div>
         <DummySlider label="Character" pct={62} />
         <DummySlider label="Intensity" pct={38} />
-        <div className="action-bar">
-          <div className="back-slot">
-            <div className="btn btn-back">
-              <svg className="cta-arrow" viewBox="0 0 24 24">
-                <path
-                  d="M20 12H5m6-6-6 6 6 6"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
+        <div className="explore-actions">
+          <div className="explore-btn explore-btn-back">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M20 12H5m6-6-6 6 6 6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </div>
-          <div className="btn btn-primary btn-next">
-            <svg className="cta-arrow" viewBox="0 0 24 24">
+          <div className="explore-btn explore-btn-next">
+            <svg viewBox="0 0 24 24">
               <path
                 d="M4 12h15m-6-6 6 6-6 6"
                 fill="none"
@@ -55,16 +53,15 @@ export function ExploreShell({ children }: { children: ReactNode }) {
   );
 }
 
+// Label lives INSIDE the track (pinned left), exactly like the real Slider —
+// so it never stacks above or overlaps the track.
 function DummySlider({ label, pct }: { label: string; pct: number }) {
   return (
-    <div className="slider-field">
-      <span className="slider-label">{label}</span>
-      <div className="slider-track">
-        <div className="slider-fill" style={{ width: `${pct}%` }} />
-        <div
-          className="slider-thumb"
-          style={{ left: `calc(${pct}% - 10px)`, height: 34, top: 13 }}
-        />
+    <div className="explore-field">
+      <div className="explore-track">
+        <div className="explore-fill" style={{ width: `${pct}%` }} />
+        <span className="explore-slider-label">{label}</span>
+        <div className="explore-thumb" style={{ left: `calc(${pct}% - 2px)` }} />
       </div>
     </div>
   );

@@ -71,6 +71,26 @@
   pointer-events: none;
 }
 
+/* --- mock controls ---
+   Self-contained copies of the app's control look (the app's controls.css/
+   ui.css aren't imported on this route). Inert: present for geometry only. */
+
+.explore-field {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* engraving label sits above its input, like the real note field */
+.explore-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-11);
+  margin-bottom: 6px;
+}
+
 .explore-input {
   height: var(--control-h);
   display: flex;
@@ -80,6 +100,87 @@
   background: var(--color-3);
   color: var(--color-9);
   font-size: var(--text-base);
+}
+
+/* slider: label pinned INSIDE the track (like the real Slider), so it never
+   overlaps or stacks above the track. */
+.explore-track {
+  position: relative;
+  width: 100%;
+  height: var(--control-h);
+  border-radius: var(--radius-pill);
+  background: var(--color-3);
+  overflow: hidden;
+}
+
+.explore-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--slider-fill);
+  z-index: 1;
+}
+
+.explore-slider-label {
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-11);
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.explore-thumb {
+  position: absolute;
+  top: 13px;
+  height: 34px;
+  width: 4px;
+  border-radius: 999px;
+  background: oklch(0.9 0 0);
+  opacity: 0.9;
+  z-index: 2;
+}
+
+/* action row: square back button + flexing next, side by side (the real bar
+   nests these in a row; here they're direct children of a flex row). */
+.explore-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding-top: 20px;
+}
+
+.explore-btn {
+  height: var(--control-h);
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-pill);
+}
+
+.explore-btn svg {
+  width: 30px;
+  height: 30px;
+  display: block;
+}
+
+.explore-btn-back {
+  flex-shrink: 0;
+  width: var(--control-h);
+  color: var(--color-12);
+  background: var(--color-4);
+}
+
+.explore-btn-next {
+  flex: 1;
+  color: var(--color-1);
+  background: var(--color-12);
 }
 
 /* --- mock card --- */
