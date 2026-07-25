@@ -35,7 +35,6 @@ export function DevNav() {
           </a>
         ))}
       </div>
-      <span className="pg-brand">playground</span>
     </nav>
   );
 }

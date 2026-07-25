@@ -4,36 +4,25 @@
   flex-direction: column;
 }
 
-/* Three zones: exit-to-app on the left, tabs centred, brand on the right.
-   A 1fr / auto / 1fr grid centres the tabs on the nav's true centre regardless
-   of how wide the side zones are. */
+/* Exit-to-app sits in the flow on the left; the tabs are absolutely centred
+   on the VIEWPORT (not the nav's content box), so the left button never shifts
+   them off centre. */
 .pg-nav {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  position: relative;
+  display: flex;
   align-items: center;
-  gap: 20px;
-  /* right padding clears the fixed theme toggle (40px + 16px inset, plus a
-     gap so the brand never tucks under it) */
-  padding: 16px 76px 16px 20px;
+  min-height: 60px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--color-5);
-}
-
-.pg-brand {
-  font-size: var(--text-sm);
-  font-weight: 550;
-  letter-spacing: 0.04em;
-  color: var(--color-11);
-  /* right zone */
-  justify-self: end;
-  text-align: right;
 }
 
 .pg-tabs {
   display: flex;
   gap: 6px;
   align-items: center;
-  /* centre zone */
-  justify-self: center;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .pg-tab {
@@ -59,10 +48,9 @@
   background: var(--color-12);
 }
 
-/* exit-to-app — left zone, icon + label */
+/* exit-to-app — left, icon + label */
 .pg-tab-exit {
   color: var(--color-10);
-  justify-self: start;
   display: inline-flex;
   align-items: center;
   gap: 6px;
