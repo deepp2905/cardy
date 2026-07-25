@@ -166,13 +166,16 @@
   gap: 40px;
 }
 
-/* Darken the stage behind this page only, so the specimen reads as ink on a
-   quiet ground rather than competing with the app chrome. */
+/* Quiet the stage behind this page a step past the app ground, so the specimen
+   reads as ink on a calm surface. --color-1 follows the theme (near-black in
+   dark, near-white in light), so this tracks the toggle rather than pinning
+   one mode. */
 .pg-main:has(.pg-type) {
-  background: oklch(0.16 0 0);
+  background: var(--color-1);
 }
 
-/* app display + subtitle — mirrors steps.css .welcome-copy */
+/* app display + subtitle — mirrors steps.css .welcome-copy, using the themed
+   ink tokens so both light and dark read correctly. */
 .pg-type-welcome {
   display: flex;
   flex-direction: column;
@@ -182,12 +185,12 @@
 }
 
 .pg-type-welcome h1 {
-  color: oklch(0.97 0 0);
+  color: var(--color-12);
   text-wrap: balance;
 }
 
 .pg-type-welcome p {
-  color: oklch(0.72 0 0);
+  color: var(--color-11);
   max-width: 30ch;
   text-wrap: balance;
 }
