@@ -1,7 +1,6 @@
 import { motion, type MotionValue, type Variants } from "motion/react";
 import { CardCarousel } from "../carousel/CardCarousel";
 import type { CardConfig } from "../card/cardConfig";
-import { HeroSlot } from "../card/HeroSlot";
 import { DialPanel } from "../controls/DialPanel";
 import { crossfade, ENTER_STAGGER } from "../lib/motionConfig";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
@@ -56,10 +55,8 @@ export function Customize({
       animate="show"
     >
       <motion.div className="customize-carousel" variants={item}>
-        {/* Invisible spacer at the deck's card centre — the persistent hero
-            reads it and sits exactly here, so the settled deck card and the
-            hero coincide and the centre-slot swap is invisible. */}
-        <HeroSlot className="customize-hero-slot" owner="deck" onMeasure={onHeroSlot} />
+        {/* The hero anchor now lives INSIDE the deck (CardCarousel) so it shares
+            the cards' exact centring — see onHeroSlot there. */}
         <CardCarousel
           configs={configs}
           ids={ids}
@@ -68,6 +65,7 @@ export function Customize({
           note={note}
           deckOpacity={deckOpacity}
           onActiveChange={onActiveChange}
+          onHeroSlot={onHeroSlot}
         />
       </motion.div>
       <motion.div className="customize-panel" variants={item}>

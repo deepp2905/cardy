@@ -1,4 +1,4 @@
-import { memo, useEffect, useState, type CSSProperties } from "react";
+import { memo, useEffect, useRef, useState, type CSSProperties } from "react";
 import { animate, motion, useTransform, type MotionValue } from "motion/react";
 import { Card } from "../card/Card";
 import type { CardConfig } from "../card/cardConfig";
@@ -58,6 +58,11 @@ type CardCarouselProps = {
    *  this; HeroCard reads it. A MotionValue so the per-frame index changes never
    *  cause a React render here. */
   deckOpacity: MotionValue<number>;
+  /** Report the deck's exact card centre so the persistent hero sits on it. The
+   *  slot is rendered as a grid item INSIDE the deck, so it shares the identical
+   *  centring the deck cards use — no few-px offset from measuring a different
+   *  box. */
+  onHeroSlot: (owner: "deck" | "rest", point: { x: number; y: number }) => void;
 };
 
 export function CardCarousel({
@@ -68,6 +73,7 @@ export function CardCarousel({
   note,
   onActiveChange,
   deckOpacity,
+  onHeroSlot,
 }: CardCarouselProps) {
   const reduce = usePrefersReducedMotion();
   const count = ids.length;
@@ -118,6 +124,50 @@ export function CardCarousel({
 
   // The deck's active centre card shows the inverse of the hero.
   const deckCardOpacity = useTransform(deckOpacity, (v) => 1 - v);
+
+  // Report the ACTIVE deck card's real viewport centre as the hero target, so
+  // the flat hero lands exactly on the deck card (measuring the live element
+  // beats any spacer that approximates it — that left a few-px vertical snap on
+  // settle). Re-measured whenever the settled card changes or the deck resizes.
+  const activeItemRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!settled) return;
+    let raf = 0;
+    let lastY = NaN;
+    let stableFrames = 0;
+    // Poll the active card's centre each frame until it stops moving (the step's
+    // enter animation and the deck's own settle both push it around for a few
+    // frames after `settled` flips). Report only the RESTING position, so the
+    // hero can't inherit a mid-animation offset — that was the vertical snap.
+    const tick = () => {
+      const el = activeItemRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      if (r.width === 0) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      // Round to whole pixels: a fractional fixed-position with a box-shadow
+      // anti-aliases into a faint light seam on one edge. Integer coords remove it.
+      const cy = Math.round(r.top + r.height / 2);
+      onHeroSlot("deck", { x: Math.round(r.left + r.width / 2), y: cy });
+      // Two consecutive frames within 0.5px = at rest; stop polling.
+      if (Math.abs(cy - lastY) < 0.5) {
+        if (++stableFrames >= 2) return;
+      } else {
+        stableFrames = 0;
+      }
+      lastY = cy;
+      raf = requestAnimationFrame(tick);
+    };
+    tick();
+    window.addEventListener("resize", tick);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", tick);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settled, focusedIndex, cardW]);
 
   // Follow an external selection (parent sets activeId): spring the deck to it,
   // unless it's already the settled card.
@@ -190,6 +240,7 @@ export function CardCarousel({
         return (
           <div
             key={id}
+            ref={active ? activeItemRef : undefined}
             className="deck-item"
             data-active={active}
             role="radio"

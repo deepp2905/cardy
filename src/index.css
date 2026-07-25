@@ -129,6 +129,17 @@ body {
   flex-direction: column;
 }
 
+/* During a mode="sync" swap the outgoing and incoming .step-shell are mounted
+   at once. Overlap them (absolute-fill the stage) instead of stacking down the
+   flex column — otherwise the entering step is pushed below the leaving one, and
+   anything it measures (the hero's rest slot) reads a position it will leave
+   once the old step unmounts. Absolute fill puts the incoming step at its FINAL
+   position immediately, so the slot measures the true rest centre. */
+.step-stage > .step-shell {
+  position: absolute;
+  inset: 0;
+}
+
 .step-body {
   flex: 1;
   display: flex;
@@ -147,6 +158,8 @@ body {
   width: 100%;
   display: flex;
   flex-direction: column;
+  /* Anchor for the absolutely-filled .step-shell children (overlap on swap). */
+  position: relative;
 }
 
 .action-bar-fixed {

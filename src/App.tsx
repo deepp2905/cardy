@@ -192,11 +192,13 @@ function MainFlow() {
         <ThemeToggle />
       </div>
       <main className="step-stage">
-        {/* The step bodies swap here; the hero card below is a SIBLING that
-            never unmounts. mode="wait" is fine now — no element has to be
-            simultaneously mounted in two steps, because the one element that
-            crossed the boundary (the card) no longer lives inside these panels. */}
-        <AnimatePresence mode="wait" initial={false}>
+        {/* mode="sync", not "wait": the entering step mounts immediately, so its
+            HeroSlot measures the new target on the SAME beat the outgoing step's
+            content starts fading. That makes the hero glide to centre WHILE the
+            surrounding cards fade, rather than waiting for the old step to finish
+            leaving first (which read as fade-then-move). The card itself is a
+            persistent sibling, so overlapping panels never fight over it. */}
+        <AnimatePresence mode="sync" initial={false}>
           {step === "welcome" && (
             <StepShell key="welcome">
               <Welcome firstName={person.first} />

@@ -28,7 +28,11 @@
   width: 100%;
 }
 
+/* No extra shadow here: the card's own .card-surface already casts --card-shadow,
+   identical to the deck's cards. Adding --oncard-shadow on the outer frame gave
+   the hero a SECOND, larger shadow, whose edge showed as a faint light seam
+   tracing the corner when the hero sat over the (identically-shadowed) deck card.
+   One shadow = hero and deck card are pixel-identical = no seam. */
 .hero-card .card-frame {
   width: 100%;
-  box-shadow: var(--oncard-shadow, 0 4px 12px -6px oklch(0 0 0 / 0.14));
 }
