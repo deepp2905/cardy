@@ -8,28 +8,19 @@
   flex-direction: column;
 }
 
-/* Mirrors .column from the app so the layouts get the real available space. */
-/* Fills what's left under the dev nav rather than claiming the whole
-   viewport, which would push the page into a scroll by the nav's height. */
+/* Centres the variant stage in the space under the dev nav. Just the stage now
+   — the old step indicator + mock controls were removed. Top padding clears
+   the header row; bottom clears the fixed variant menu. */
 .explore-column {
   max-width: 420px;
   width: 100%;
   flex: 1;
   min-height: 0;
   margin: 0 auto;
-  /* top clears the header row; bottom clears the fixed variant control */
   padding: 24px 24px 96px;
   display: flex;
   flex-direction: column;
-}
-
-/* In the app this is fixed to the viewport; here it sits under the dev nav,
-   so it flows with the column instead of overlapping it. */
-.explore .app-header {
-  position: static;
-  transform: none;
-  align-self: center;
-  margin-bottom: 8px;
+  justify-content: center;
 }
 
 .variant-error {
@@ -62,86 +53,6 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-}
-
-.explore-controls {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  opacity: 0.55; /* inert — present for geometry, not interaction */
-  pointer-events: none;
-}
-
-/* --- mock controls (LOW-FIDELITY) ---
-   No text or icons — just filled blocks at the real control sizes, so the eye
-   reads arrangement like the grey wireframe cards. Self-contained (the app's
-   controls.css/ui.css aren't imported on this route). Inert: geometry only. */
-
-.explore-field {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.explore-input {
-  height: var(--control-h);
-  border-radius: var(--radius-pill);
-  background: var(--color-3);
-}
-
-.explore-track {
-  position: relative;
-  width: 100%;
-  height: var(--control-h);
-  border-radius: var(--radius-pill);
-  background: var(--color-3);
-  overflow: hidden;
-}
-
-.explore-fill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  background: var(--slider-fill);
-  z-index: 1;
-}
-
-.explore-thumb {
-  position: absolute;
-  top: 13px;
-  height: 34px;
-  width: 4px;
-  border-radius: 999px;
-  background: oklch(0.9 0 0);
-  opacity: 0.9;
-  z-index: 2;
-}
-
-/* action row: square back button + flexing next, side by side. */
-.explore-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding-top: 20px;
-}
-
-.explore-btn {
-  height: var(--control-h);
-  border-radius: var(--radius-pill);
-}
-
-.explore-btn-back {
-  flex-shrink: 0;
-  width: var(--control-h);
-  color: var(--color-12);
-  background: var(--color-4);
-}
-
-.explore-btn-next {
-  flex: 1;
-  color: var(--color-1);
-  background: var(--color-12);
 }
 
 /* --- mock card --- */
