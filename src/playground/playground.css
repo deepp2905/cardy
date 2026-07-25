@@ -1,9 +1,19 @@
-.playground {
+/* Dev shell: holds the persistent DevNav + corner controls above the swapping
+   Explore / Playground body, so the header survives the route swap (its
+   Segmented pill keeps animating). Positioning context for the floating
+   variant switchers, which anchor to it rather than to the swapping page. */
+.dev-shell {
+  position: relative;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  /* positioning context for the floating variant segmented control */
-  position: relative;
+}
+
+.playground {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Exit-to-app on the left, route menu (Segmented) centred on the VIEWPORT so
@@ -40,6 +50,37 @@
   align-items: center;
 }
 
+/* --- playground menu look ---
+   The Segmented control in the playground reads as a MENU, not a form control:
+   a prominent track and a dark-black active pill (vs the app's mid-grey slider
+   fill). Scoped to the playground menus so the app's real Shape/Fill segmented
+   controls keep their own language. */
+.pg-nav-menu .segmented-track,
+.cv-switcher .segmented-track,
+.explore-switcher .segmented-track {
+  background: var(--color-2);
+  box-shadow:
+    inset 0 0 0 1px var(--color-5),
+    0 6px 20px -12px oklch(0 0 0 / 0.5);
+}
+
+/* Dark-black active pill — a FIXED near-black in both themes (not the themed
+   --color-12, which flips to near-white in dark mode), so the selected tab
+   always reads as a solid black chip. A hairline ring lifts it off the track
+   in dark mode where pill and track are both dark. */
+.pg-nav-menu .segmented-indicator,
+.cv-switcher .segmented-indicator,
+.explore-switcher .segmented-indicator {
+  background: oklch(0.18 0 0);
+  box-shadow: 0 0 0 1px oklch(1 0 0 / 0.08);
+}
+
+.pg-nav-menu .segmented-option[data-active="true"],
+.cv-switcher .segmented-option[data-active="true"],
+.explore-switcher .segmented-option[data-active="true"] {
+  color: oklch(0.98 0 0);
+}
+
 /* --- floating variant switcher (Card + Carousel routes) ---
    The app's Segmented control, floated just below the dev header and centred.
    A max-width keeps it a compact bar rather than a stretched form control.
@@ -72,7 +113,8 @@
   padding: 0 20px;
   border-radius: var(--radius-pill);
   color: var(--color-11);
-  background: var(--color-3);
+  background: var(--color-2);
+  box-shadow: inset 0 0 0 1px var(--color-5);
   transition:
     color 0.18s ease,
     background-color 0.18s ease;
@@ -80,12 +122,14 @@
 
 .variant-seg-toggle:hover {
   color: var(--color-12);
-  background: var(--color-4);
+  background: var(--color-3);
 }
 
+/* On: the same fixed near-black chip as the active segmented pill. */
 .variant-seg-toggle[data-on="true"] {
-  color: var(--segmented-on-fill);
-  background: var(--slider-fill);
+  color: oklch(0.98 0 0);
+  background: oklch(0.18 0 0);
+  box-shadow: 0 0 0 1px oklch(1 0 0 / 0.08);
 }
 
 .pg-main {
@@ -200,10 +244,12 @@
 }
 
 /* Quiet the stage behind this page a step past the app ground, so the specimen
-   reads as ink on a calm surface. --color-1 follows the theme (near-black in
-   dark, near-white in light), so this tracks the toggle rather than pinning
-   one mode. */
-.pg-main:has(.pg-type) {
+   reads as ink on a calm surface. Applied to the whole playground (not just
+   .pg-main) so the header shares the same ground — scoping it to .pg-main left
+   the nav on a different background, reading as a grey band across the header.
+   --color-1 follows the theme (near-black in dark, near-white in light), so
+   this tracks the toggle rather than pinning one mode. */
+.dev-shell:has(.pg-type) {
   background: var(--color-1);
 }
 

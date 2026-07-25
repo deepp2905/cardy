@@ -2,11 +2,10 @@
    card colour, so the arrangement is what you judge. */
 
 .explore {
-  min-height: 100dvh;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  /* positioning context for the floating variant segmented control */
-  position: relative;
 }
 
 /* Mirrors .column from the app so the layouts get the real available space. */

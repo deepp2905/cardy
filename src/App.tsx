@@ -5,6 +5,7 @@ import { seedConfigs } from "./card/cardConfig";
 import { crossfade } from "./lib/motionConfig";
 import { parsePerson } from "./lib/personalization";
 import { usePrefersReducedMotion } from "./lib/reducedMotion";
+import { DevNav } from "./playground/DevNav";
 import { useHashRoute } from "./playground/useHashRoute";
 import { Confirm } from "./steps/Confirm";
 import { Customize } from "./steps/Customize";
@@ -27,13 +28,22 @@ export default function App() {
   const isPlay = route.startsWith("/play");
 
   if (isExplore || isPlay) {
-    // One Suspense boundary for both dev routes, with a real fallback —
-    // `null` left the page blank while the chunk loaded, which looked like
-    // a broken route when navigating between them.
+    // DevNav + corner controls are mounted HERE, above the Explore/Playground
+    // split, so they persist across the swap between /explore and /play/*.
+    // That keeps the header Segmented's layout pill animating even when the
+    // route menu crosses that boundary (previously each page mounted its own
+    // DevNav, so the pill reset instead of gliding). Only the page body is
+    // lazy — DevNav is dev-only and tiny.
     return (
-      <Suspense fallback={<RouteFallback />}>
-        {isExplore ? <Explore /> : <Playground />}
-      </Suspense>
+      <div className="dev-shell">
+        <div className="corner-controls">
+          <ThemeToggle />
+        </div>
+        <DevNav />
+        <Suspense fallback={<RouteFallback />}>
+          {isExplore ? <Explore /> : <Playground />}
+        </Suspense>
+      </div>
     );
   }
   return <MainFlow />;

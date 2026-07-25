@@ -2,8 +2,6 @@ import { useState } from "react";
 import { DialRoot } from "dialkit";
 import "dialkit/styles.css";
 import { Segmented } from "../controls/Segmented";
-import { DevNav } from "../playground/DevNav";
-import { ThemeToggle } from "../ui/ThemeToggle";
 import { ExploreShell } from "./ExploreShell";
 import { VariantBoundary } from "./VariantBoundary";
 
@@ -70,11 +68,6 @@ export default function Explore() {
 
   return (
     <div className="explore" data-colorful={colorful}>
-      <div className="corner-controls">
-        <ThemeToggle />
-      </div>
-      <DevNav />
-
       <div className="explore-switcher">
         <Segmented
           label="Carousel variant"
