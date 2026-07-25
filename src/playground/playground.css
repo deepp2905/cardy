@@ -158,8 +158,39 @@
   font-size: var(--text-xs);
 }
 
-/* type specimen — the real card, in grayscale, so every type role is tweaked
-   exactly where it sits on the shipped card. */
+/* type specimen — every role in its original context: the app's display +
+   subtitle, and the card's mono roles on the real card (pattern hidden,
+   grayscale). A darker page keeps the eye on the type. */
+
+.pg-type {
+  gap: 40px;
+}
+
+/* Darken the stage behind this page only, so the specimen reads as ink on a
+   quiet ground rather than competing with the app chrome. */
+.pg-main:has(.pg-type) {
+  background: oklch(0.16 0 0);
+}
+
+/* app display + subtitle — mirrors steps.css .welcome-copy */
+.pg-type-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.pg-type-welcome h1 {
+  color: oklch(0.97 0 0);
+  text-wrap: balance;
+}
+
+.pg-type-welcome p {
+  color: oklch(0.72 0 0);
+  max-width: 30ch;
+  text-wrap: balance;
+}
 
 .pg-type-card {
   /* Desaturate to neutral: the specimen is about type, not colour, and
