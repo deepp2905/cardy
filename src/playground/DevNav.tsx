@@ -10,7 +10,19 @@ export function DevNav() {
 
   return (
     <nav className="pg-nav" aria-label="Dev pages">
-      <span className="pg-brand">cardy · playground</span>
+      <a href="#/" className="pg-tab pg-tab-exit">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M20 12H5m6-6-6 6 6 6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        App
+      </a>
       <div className="pg-tabs">
         {DEV_TABS.map((t) => (
           <a
@@ -22,10 +34,8 @@ export function DevNav() {
             {t.label}
           </a>
         ))}
-        <a href="#/" className="pg-tab pg-tab-exit">
-          ← App
-        </a>
       </div>
+      <span className="pg-brand">playground</span>
     </nav>
   );
 }
