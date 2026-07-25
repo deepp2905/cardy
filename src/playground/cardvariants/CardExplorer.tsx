@@ -1,11 +1,8 @@
 import { useState, type ReactElement } from "react";
 import { useDialKit } from "dialkit";
 import { oklchString } from "../../card/cardConfig";
+import { Segmented } from "../../controls/Segmented";
 import { VariantBoundary } from "../../explore/VariantBoundary";
-import {
-  CardVariantSwitcher,
-  type CardVariantMeta,
-} from "./CardVariantSwitcher";
 import { ShaderWaveVariant } from "./ShaderWaveVariant";
 import { FlatMinimalVariant } from "./FlatMinimalVariant";
 import { EngravedVariant } from "./EngravedVariant";
@@ -16,7 +13,10 @@ import "./cardvariants.css";
 // every variant so you compare directions on the same colour; each variant
 // mounts its own dialkit for its art, and only the active one shows.
 
-type Variant = CardVariantMeta & {
+type Variant = {
+  id: string;
+  name: string;
+  note: string;
   render: (baseColor: string) => ReactElement;
 };
 
@@ -61,12 +61,14 @@ export function CardExplorer() {
 
   return (
     <div className="cv-explorer">
-      <CardVariantSwitcher
-        title="Card ideas"
-        variants={VARIANTS}
-        activeId={activeId}
-        onSelect={setActiveId}
-      />
+      <div className="cv-switcher">
+        <Segmented
+          label="Card variant"
+          value={activeId}
+          options={VARIANTS.map((v) => ({ value: v.id, label: v.name }))}
+          onChange={setActiveId}
+        />
+      </div>
       <div className="cv-stage">
         {/* Keyed so switching variants remounts and only the active variant's
             art dialkit is registered. */}

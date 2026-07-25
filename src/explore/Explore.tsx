@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { DialRoot } from "dialkit";
 import "dialkit/styles.css";
+import { Segmented } from "../controls/Segmented";
 import { DevNav } from "../playground/DevNav";
 import { ThemeToggle } from "../ui/ThemeToggle";
 import { ExploreShell } from "./ExploreShell";
 import { VariantBoundary } from "./VariantBoundary";
-import { VariantSwitcher, type VariantMeta } from "./VariantSwitcher";
+
+type VariantMeta = { id: string; name: string; note: string };
 import { AppleWalletVariant } from "./variants/AppleWalletVariant";
 import { CoverflowVariant } from "./variants/CoverflowVariant";
 import { ExplodedVariant } from "./variants/ExplodedVariant";
@@ -73,13 +75,23 @@ export default function Explore() {
       </div>
       <DevNav />
 
-      <VariantSwitcher
-        variants={VARIANTS}
-        activeId={activeId}
-        onSelect={setActiveId}
-        colorful={colorful}
-        onColorfulChange={setColorful}
-      />
+      <div className="explore-switcher">
+        <Segmented
+          label="Carousel variant"
+          value={activeId}
+          options={VARIANTS.map((v) => ({ value: v.id, label: v.name }))}
+          onChange={setActiveId}
+        />
+        <button
+          type="button"
+          className="variant-seg-toggle"
+          data-on={colorful}
+          aria-pressed={colorful}
+          onClick={() => setColorful(!colorful)}
+        >
+          Colour
+        </button>
+      </div>
 
       {/* Keyed so switching variants remounts: each mounts its own dialkit
           panel, and only the mounted one's panel is registered. */}
