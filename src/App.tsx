@@ -1,5 +1,14 @@
-import { lazy, Suspense, useMemo, useState, type ReactNode } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { AnimatePresence, motion, useMotionValue } from "motion/react";
+import { HeroCard, type HeroPhase } from "./card/HeroCard";
 import type { CardConfig } from "./card/cardConfig";
 import { seedConfigs } from "./card/cardConfig";
 import { crossfade } from "./lib/motionConfig";
@@ -76,6 +85,37 @@ function MainFlow() {
   const [atEpilogue, setAtEpilogue] = useState(false);
   const [walletAdded, setWalletAdded] = useState(false);
 
+  // --- Persistent hero card ------------------------------------------------
+  // One card node lives here, above the step AnimatePresence, and never
+  // unmounts. The steps only report WHERE it should sit (via HeroSlot spacers)
+  // and, within a step, how visible it is. This is what kills the pop: there is
+  // no second card and no layout hand-off, so nothing is ever measured or
+  // remounted across a step change.
+  const [heroTarget, setHeroTarget] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+  // deckOpacity: carousel drives it (1 mid-drag, 0 settled) so the hero yields
+  // to the live deck card while dragging. restOpacity: the wrap sequence drives
+  // it so the hero hands off to the in-sheet card. Both are MotionValues so the
+  // per-frame writes never render React.
+  // deckOpacity starts at 1: the deck is settled on arrival, so the hero owns
+  // the centre slot until the first drag drops it.
+  const deckOpacity = useMotionValue(1);
+  const restOpacity = useMotionValue(1);
+  // Stable callback: HeroSlot depends on it in an effect, so a fresh identity
+  // each render would re-run the measurement effect every render. Only accept a
+  // report from the slot that owns the CURRENT hero phase — a slot that is
+  // mid-unmount during a step swap (mode="wait" exits the old step as the new
+  // one enters) must not overwrite the incoming step's target. heroPhaseRef
+  // holds the live phase so this callback stays identity-stable.
+  const heroPhaseRef = useRef<HeroPhase>("hidden");
+  const onHeroSlot = useCallback(
+    (owner: "deck" | "rest", p: { x: number; y: number }) => {
+      if (owner === heroPhaseRef.current) setHeroTarget(p);
+    },
+    [],
+  );
+
   const restart = () => {
     setWrapStarted(false);
     setAtEpilogue(false);
@@ -85,6 +125,19 @@ function MainFlow() {
   // `/first-last` read once — the app never mutates the URL, so this holds
   // for the whole journey (PLAN.md Phase P).
   const person = useMemo(() => parsePerson(), []);
+
+  // Which position/visibility the hero holds. Welcome hides it; customize is the
+  // deck slot; confirm is the rest slot. On the epilogue the card is gone (it's
+  // been posted), so hide it there too.
+  const heroPhase: HeroPhase =
+    step === "customize"
+      ? "deck"
+      : step === "confirm" && !atEpilogue
+        ? "rest"
+        : "hidden";
+  // Mirror the live phase for onHeroSlot's owner check (see above). Written
+  // during render so it's current before any child effect fires this commit.
+  heroPhaseRef.current = heroPhase;
 
   const patchConfig = (id: string, patch: Partial<CardConfig>) => {
     setConfigs((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
@@ -139,12 +192,11 @@ function MainFlow() {
         <ThemeToggle />
       </div>
       <main className="step-stage">
-        {/* popLayout, not "wait": the wrap step's hero card shares a layoutId
-            with the customize deck's active card, so both must be mounted
-            across the swap for Motion to glide the one element between them
-            instead of crossfading two. popLayout takes the exiting step out of
-            flow so it doesn't shove the entering one while they overlap. */}
-        <AnimatePresence mode="popLayout" initial={false}>
+        {/* The step bodies swap here; the hero card below is a SIBLING that
+            never unmounts. mode="wait" is fine now — no element has to be
+            simultaneously mounted in two steps, because the one element that
+            crossed the boundary (the card) no longer lives inside these panels. */}
+        <AnimatePresence mode="wait" initial={false}>
           {step === "welcome" && (
             <StepShell key="welcome">
               <Welcome firstName={person.first} />
@@ -158,9 +210,11 @@ function MainFlow() {
                 activeId={activeId}
                 cardName={person.cardName}
                 note={note}
+                deckOpacity={deckOpacity}
                 onActiveChange={setActiveId}
                 onNoteChange={setNote}
                 onPatch={patchConfig}
+                onHeroSlot={onHeroSlot}
               />
             </StepShell>
           )}
@@ -172,11 +226,24 @@ function MainFlow() {
                 firstName={person.first}
                 started={wrapStarted}
                 walletAdded={walletAdded}
+                restOpacity={restOpacity}
                 onEpilogueChange={setAtEpilogue}
+                onHeroSlot={onHeroSlot}
               />
             </StepShell>
           )}
         </AnimatePresence>
+
+        {/* One card, all three steps. Positioned by the active step's slot,
+            visibility by the step + the two hand-off MotionValues. */}
+        <HeroCard
+          config={{ ...configs[activeId], note }}
+          name={person.cardName}
+          phase={heroPhase}
+          target={heroTarget}
+          deckOpacity={deckOpacity}
+          restOpacity={restOpacity}
+        />
       </main>
       <div className="action-bar-fixed">
         <ActionBar

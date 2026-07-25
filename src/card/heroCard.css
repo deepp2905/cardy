@@ -1,0 +1,34 @@
+/* The persistent hero card. position:fixed so its motion x/y are VIEWPORT
+   coordinates — it anchors to exactly the point the active step's HeroSlot
+   reports, no matter whether that slot lives in the 420px column or the
+   full-bleed deck. .hero-card-fade shifts the card back by half its own size so
+   its centre lands on that point. Sized to --slide-w so it never resizes between
+   steps; only the centre point (and opacity) changes. */
+.hero-card {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--slide-w);
+  /* Above the step bodies (deck, confirm stage) but below the fixed chrome
+     (header/controls at z:10) — the card never visually overlaps them anyway
+     (it's centred; they're top/bottom), but this keeps the order honest. */
+  z-index: 5;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Centre the card on the point the motion x/y placed the origin at. */
+.hero-card-fade {
+  width: 100%;
+  transform: translate(-50%, -50%);
+  will-change: opacity;
+}
+
+.hero-card-inner {
+  width: 100%;
+}
+
+.hero-card .card-frame {
+  width: 100%;
+  box-shadow: var(--oncard-shadow, 0 4px 12px -6px oklch(0 0 0 / 0.14));
+}

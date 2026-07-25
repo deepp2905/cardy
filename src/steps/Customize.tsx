@@ -1,6 +1,7 @@
-import { motion, type Variants } from "motion/react";
+import { motion, type MotionValue, type Variants } from "motion/react";
 import { CardCarousel } from "../carousel/CardCarousel";
 import type { CardConfig } from "../card/cardConfig";
+import { HeroSlot } from "../card/HeroSlot";
 import { DialPanel } from "../controls/DialPanel";
 import { crossfade, ENTER_STAGGER } from "../lib/motionConfig";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
@@ -13,9 +14,13 @@ type CustomizeProps = {
   cardName: string;
   /** Shared across every card — see App. */
   note: string;
+  /** Carousel writes it (drag vs settled); the persistent hero reads it. */
+  deckOpacity: MotionValue<number>;
   onActiveChange: (id: string) => void;
   onNoteChange: (note: string) => void;
   onPatch: (id: string, patch: Partial<CardConfig>) => void;
+  /** Report the deck's card centre so the hero can sit exactly on it. */
+  onHeroSlot: (owner: "deck" | "rest", point: { x: number; y: number }) => void;
 };
 
 // Body only — the CTAs live in the persistent action bar (App).
@@ -25,9 +30,11 @@ export function Customize({
   activeId,
   cardName,
   note,
+  deckOpacity,
   onActiveChange,
   onNoteChange,
   onPatch,
+  onHeroSlot,
 }: CustomizeProps) {
   const reduce = usePrefersReducedMotion();
   const active = configs[activeId];
@@ -49,12 +56,17 @@ export function Customize({
       animate="show"
     >
       <motion.div className="customize-carousel" variants={item}>
+        {/* Invisible spacer at the deck's card centre — the persistent hero
+            reads it and sits exactly here, so the settled deck card and the
+            hero coincide and the centre-slot swap is invisible. */}
+        <HeroSlot className="customize-hero-slot" owner="deck" onMeasure={onHeroSlot} />
         <CardCarousel
           configs={configs}
           ids={ids}
           activeId={activeId}
           cardName={cardName}
           note={note}
+          deckOpacity={deckOpacity}
           onActiveChange={onActiveChange}
         />
       </motion.div>

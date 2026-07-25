@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, type MotionValue } from "motion/react";
 import { Card } from "../card/Card";
 import { type CardConfig } from "../card/cardConfig";
-import { CARD_HERO_LAYOUT_ID, cardHeroLayout } from "../lib/motionConfig";
+import { HeroSlot } from "../card/HeroSlot";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
 import { CarrierSheet } from "../confirm/CarrierSheet";
 import { Envelope } from "../confirm/Envelope";
@@ -35,7 +35,9 @@ export function Confirm({
   firstName,
   started,
   walletAdded,
+  restOpacity,
   onEpilogueChange,
+  onHeroSlot,
 }: {
   config: CardConfig;
   name: string;
@@ -43,8 +45,13 @@ export function Confirm({
   started: boolean;
   /** App owns the wallet CTA (it lives in the ActionBar now); this is its state. */
   walletAdded: boolean;
+  /** The persistent hero's rest opacity — the wrap sequence drives it so the
+   *  hero hands off to the in-sheet card. Owned by App, lives across steps. */
+  restOpacity: MotionValue<number>;
   /** Report epilogue visibility up so App can swap the ActionBar to it. */
   onEpilogueChange: (shown: boolean) => void;
+  /** Report the rest-card centre so the persistent hero sits exactly on it. */
+  onHeroSlot: (owner: "deck" | "rest", point: { x: number; y: number }) => void;
 }) {
   const reduce = usePrefersReducedMotion();
   const stageRef = useRef<HTMLDivElement>(null);
@@ -69,6 +76,7 @@ export function Confirm({
     slideW,
     started,
     reduce,
+    restOpacity,
   });
 
   const { dragProps, dragScale, dragTilt, vanish, runPost } = usePostDrag({
@@ -140,22 +148,18 @@ export function Confirm({
 
       {!showEpilogue && (
         <motion.div className="wrap-scene" style={{ y: values.nudgeY }}>
-          {/* Standalone hero at rest — full opacity, outside the fading sheet.
-              Carries the shared layoutId so it IS the card that flew in from
-              the customize deck (no crossfade). Sized directly to --slide-w
-              (the deck's hero width) rather than via `scale`, so its layout
-              box matches the deck card's box and the flight is a clean
-              translate, not a translate-plus-resize. The Card is width-driven
-              (container query), so no scale transform is needed. */}
+          {/* The at-rest card is the PERSISTENT hero (mounted in App), not a
+              local node — so there is no hand-off and nothing to measure across
+              the customize->confirm swap. This invisible slot only reports where
+              the hero should sit; the hero springs its transform to it. Its
+              opacity is driven by the wrap sequence via the shared restOpacity
+              MotionValue, which crossfades it to the in-sheet card. */}
           {restCardVisible && (
-            <motion.div
-              className="card-holder card-holder--rest"
-              layoutId={CARD_HERO_LAYOUT_ID}
-              transition={cardHeroLayout}
-              style={{ opacity: values.restCardOpacity }}
-            >
-              <Card config={config} name={name} />
-            </motion.div>
+            <HeroSlot
+              className="card-holder--rest"
+              owner="rest"
+              onMeasure={onHeroSlot}
+            />
           )}
 
           <CarrierSheet v={values}>

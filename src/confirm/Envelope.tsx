@@ -38,6 +38,15 @@ export function Envelope({
     ([a, b]: number[]) => a * b,
   );
 
+  // The ground shadow is a sibling of the envelope (so the envelope can flip
+  // above it without dragging it along), which means it does NOT inherit the
+  // envelope's own opacity. Gate it by envOpacity * vanish too, or it shows at
+  // rest as a blob with nothing casting it (the envelope is still invisible then).
+  const shadowOpacity = useTransform(
+    [v.shadowOpacity, v.envOpacity, vanish],
+    ([s, a, b]: number[]) => s * a * b,
+  );
+
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -49,7 +58,7 @@ export function Envelope({
     <>
       <motion.div
         className="env-shadow"
-        style={{ opacity: v.shadowOpacity, scaleX: v.shadowScaleX, y: v.envY }}
+        style={{ opacity: shadowOpacity, scaleX: v.shadowScaleX, y: v.envY }}
         aria-hidden="true"
       />
       <motion.div

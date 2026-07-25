@@ -1,9 +1,8 @@
 import { memo, useEffect, useState, type CSSProperties } from "react";
-import { motion } from "motion/react";
+import { animate, motion, useTransform, type MotionValue } from "motion/react";
 import { Card } from "../card/Card";
 import type { CardConfig } from "../card/cardConfig";
 import { PALETTE } from "../card/cardConfig";
-import { CARD_HERO_LAYOUT_ID, cardHeroLayout } from "../lib/motionConfig";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
 import { useCardDeck } from "./useCardDeck";
 import "./carousel.css";
@@ -54,6 +53,11 @@ type CardCarouselProps = {
   /** Shared engraving — merged into every card's config at render. */
   note: string;
   onActiveChange: (id: string) => void;
+  /** 1 while the deck is mid-drag (its own centre card shows), 0 when settled
+   *  (the persistent hero shows in the centre slot instead). The carousel drives
+   *  this; HeroCard reads it. A MotionValue so the per-frame index changes never
+   *  cause a React render here. */
+  deckOpacity: MotionValue<number>;
 };
 
 export function CardCarousel({
@@ -63,6 +67,7 @@ export function CardCarousel({
   cardName,
   note,
   onActiveChange,
+  deckOpacity,
 }: CardCarouselProps) {
   const reduce = usePrefersReducedMotion();
   const count = ids.length;
@@ -89,6 +94,30 @@ export function CardCarousel({
     if (next && next !== activeId) onActiveChange(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusedIndex]);
+
+  // Hand the centre slot between the deck's live card (mid-drag) and the
+  // persistent hero (settled). deckOpacity is the HERO's opacity: 1 when settled
+  // (the flat hero owns the centre), 0 mid-drag (the deck's own live card, which
+  // can do the coverflow tilt the flat hero can't, owns it).
+  //
+  // Both the hero and the deck's centre card read this SAME MotionValue — the
+  // deck card gets the inverse (deckCardOpacity below) — and we CROSSFADE it
+  // rather than hard-set. That's the fix for the settle flicker: a hard 0/1 flip
+  // split across two render pipelines (React style on the deck card, MotionValue
+  // on the hero) left a frame where both or neither showed, reading as a
+  // flash/double. One animated value, applied by Motion to both in the same
+  // frames, with a brief overlap where both are partially visible — and since
+  // they're pixel-aligned, that overlap is invisible.
+  const settled = Number.isInteger(index);
+  useEffect(() => {
+    animate(deckOpacity, settled ? 1 : 0, {
+      duration: 0.12,
+      ease: [0.32, 0.72, 0, 1],
+    });
+  }, [settled, deckOpacity]);
+
+  // The deck's active centre card shows the inverse of the hero.
+  const deckCardOpacity = useTransform(deckOpacity, (v) => 1 - v);
 
   // Follow an external selection (parent sets activeId): spring the deck to it,
   // unless it's already the settled card.
@@ -153,15 +182,11 @@ export function CardCarousel({
         const scale = reduce
           ? 1
           : 1 - Math.min(away, SCALE_DEPTH) * SCALE_STEP;
-        // The active, settled card carries the shared layoutId so it flies into
-        // the wrap step as the same element (no crossfade). It rides an INNER
-        // wrapper — the outer .deck-item owns the coverflow transform, and
-        // Motion's layout projection needs an element whose transform it fully
-        // controls. At focus the wrapper is centred (outer transform ~identity),
-        // so the id maps to a card sitting at screen centre. Only when settled
-        // (index is whole) so mid-drag no card claims it.
-        const settled = Number.isInteger(index);
-        const isHero = active && settled;
+        // The active centre card crossfades with the persistent hero on the
+        // shared deckOpacity (its inverse). Non-active cards are always opaque.
+        // Transform (per-frame from `index`) stays on the plain outer .deck-item;
+        // opacity rides an inner motion node so Motion never touches the
+        // transform string.
         return (
           <div
             key={id}
@@ -180,9 +205,7 @@ export function CardCarousel({
           >
             <motion.div
               className="deck-card-inner"
-              {...(isHero
-                ? { layoutId: CARD_HERO_LAYOUT_ID, transition: cardHeroLayout }
-                : {})}
+              style={active ? { opacity: deckCardOpacity } : undefined}
             >
               <DeckCard config={configs[id]} note={note} name={cardName} />
             </motion.div>

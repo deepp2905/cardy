@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { animate, useMotionValue, useTransform } from "motion/react";
+import {
+  animate,
+  useMotionValue,
+  useTransform,
+  type MotionValue,
+} from "motion/react";
 import {
   arrive,
   crossfade,
@@ -59,11 +64,16 @@ export function useWrapSequence({
   slideW,
   started,
   reduce,
+  restOpacity,
 }: {
   mmPx: number;
   slideW: number;
   started: boolean;
   reduce: boolean;
+  /** The persistent hero's rest opacity, owned by App. The sequence fades it to
+   *  0 as the in-sheet card takes over — an opacity crossfade between two nodes
+   *  at the same position and size, so no pop. */
+  restOpacity: MotionValue<number>;
 }) {
   const [phase, setPhase] = useState<Phase>("rest");
 
@@ -73,10 +83,9 @@ export function useWrapSequence({
   const cardPx = CARD.w * mmPx;
   const restScale = cardPx > 0 ? slideW / cardPx : 1;
   const cardScale = useMotionValue(1);
-  // The resting card lives OUTSIDE the sheet (the sheet fades in from 0, and a
-  // child can't out-fade a faded ancestor), so it's the hero on step entry.
-  // It hands off to the in-sheet card as the sheet fades in.
-  const restCardOpacity = useMotionValue(1);
+  // The resting card is the persistent hero (App-owned restOpacity). It hands
+  // off to the in-sheet card as the sheet fades in — both at the same position
+  // and size, so the crossfade can't pop.
 
   // --- Sheet ---------------------------------------------------------------
   const sheetOpacity = useMotionValue(0);
@@ -144,7 +153,6 @@ export function useWrapSequence({
   const values = useMemo(
     () => ({
       cardScale,
-      restCardOpacity,
       sheetOpacity,
       sheetScale,
       sheetY,
@@ -207,7 +215,7 @@ export function useWrapSequence({
       sealScale.set(1);
       sealRot.set(0);
       animate(cardScale, restScale, t);
-      animate(restCardOpacity, 0, t);
+      animate(restOpacity, 0, t);
       animate(sheetOpacity, 0, t);
       animate(envOpacity, 1, t);
       animate(slotOpacity, 1, t);
@@ -220,7 +228,7 @@ export function useWrapSequence({
     at(BEAT.sheet, () => {
       // Hand the hero card off from the standalone rest copy to the one on the
       // sheet: the sheet fades in as the rest card fades out, same beat.
-      animate(restCardOpacity, 0, crossfade);
+      animate(restOpacity, 0, crossfade);
       animate(sheetOpacity, 1, crossfade);
       animate(sheetScale, 1, wrap);
       animate(cardScale, 1, arrive);
@@ -286,7 +294,7 @@ export function useWrapSequence({
     clear();
     setPhase("rest");
     cardScale.set(restScale);
-    restCardOpacity.set(1);
+    restOpacity.set(1);
     sheetOpacity.set(0);
     sheetScale.set(0.97);
     sheetY.set(0);

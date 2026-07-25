@@ -15,7 +15,19 @@
   flex: 1;
   display: flex;
   align-items: center;
+  justify-content: center;
   min-height: 0;
+  position: relative;
+}
+
+/* The hero anchor: overlaid on the deck centre without taking layout space, so
+   it measures the deck card's exact centre and the persistent hero lands on it.
+   Invisible (HeroSlot sets visibility:hidden). */
+.customize-hero-slot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 /* Spacing above comes from .step-body's 24px gap; the action bar below
