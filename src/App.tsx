@@ -49,9 +49,9 @@ function MainFlow() {
   const [configs, setConfigs] = useState<Record<string, CardConfig>>(
     seedConfigs,
   );
-  // Start on the first card (cobalt); the strip's padding lets the first and
+  // Start on the third card; the strip's padding lets the first and
   // last cards both reach dead centre, so the deck reads start-to-end.
-  const [activeId, setActiveId] = useState<string>(ids[0]);
+  const [activeId, setActiveId] = useState<string>(ids[2] ?? ids[0]);
   // The engraving is a property of the order, not of a colourway — it stays
   // put as you browse. Only the slider values are per-card.
   const [note, setNote] = useState("");
