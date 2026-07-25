@@ -158,35 +158,153 @@
   font-size: var(--text-xs);
 }
 
-/* type specimen */
+/* type specimen — lo-fi wireframes that place each role in context */
 
-.pg-specimen {
+.pg-type {
+  gap: 22px;
+}
+
+/* generic greyed placeholder for the non-type marks (chip, network, nav) */
+.pg-wire-block {
+  display: block;
+  background: var(--color-6);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* --- card wireframe: mirrors card.css layout, in cqw so the type sits
+   exactly where it does on the real card --- */
+.pg-wire-card {
+  width: 100%;
+  container-type: inline-size;
+  aspect-ratio: 85.6 / 53.98;
+  border-radius: 3.715cqw;
+  padding: 5.6cqw 6.2cqw;
   display: flex;
   flex-direction: column;
+  position: relative;
+  background: var(--color-3);
+  box-shadow: inset 0 0 0 1px var(--color-6);
+  color: var(--color-12);
+  overflow: hidden;
+}
+
+.pg-wire-card-top {
+  display: flex;
   align-items: flex-start;
-  gap: 20px;
-  width: 100%;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.pg-wire-wordmark {
+  font-family: var(--font-sans);
+  line-height: 1;
+  color: var(--color-11);
+}
+
+.pg-wire-contactless {
+  width: 6cqw;
+  height: 6cqw;
+  border-radius: 50%;
+}
+
+.pg-wire-chip {
+  width: 12.4cqw;
+  height: 9.5cqw;
+  border-radius: 1.4cqw;
+  position: absolute;
+  top: 50%;
+  left: 6.2cqw;
+  transform: translateY(-50%);
+}
+
+.pg-wire-card-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.pg-wire-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6cqw;
+  min-width: 0;
+}
+
+.pg-wire-name {
+  font-family: var(--font-mono);
+  line-height: 1;
   color: var(--color-12);
 }
 
-.pg-specimen h1 {
+.pg-wire-note {
+  font-family: var(--font-mono);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--color-10);
+}
+
+.pg-wire-network {
+  width: 11cqw;
+  height: 6.9cqw;
+  border-radius: 3.45cqw;
+}
+
+/* --- screen wireframe: headline / body / label as app chrome --- */
+.pg-wire-screen {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--color-5);
+  background: var(--color-2);
+  color: var(--color-12);
+}
+
+.pg-wire-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.pg-wire-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+}
+
+.pg-wire-pill {
+  width: 84px;
+  height: 12px;
+  border-radius: var(--radius-pill);
+}
+
+.pg-wire-label {
+  text-transform: uppercase;
+  color: var(--color-10);
+}
+
+.pg-wire-screen h1 {
   color: var(--color-12);
   text-wrap: balance;
 }
 
-.pg-specimen p {
+.pg-wire-screen p {
   color: var(--color-11);
+  max-width: 34ch;
 }
 
-.pg-specimen-label {
-  text-transform: uppercase;
-  color: var(--color-11);
-}
-
-.pg-specimen-mono {
-  font-family: var(--font-mono);
-  font-size: 20px;
-  color: var(--color-12);
+.pg-wire-cta {
+  width: 128px;
+  height: 40px;
+  border-radius: 12px;
+  margin-top: 4px;
 }
 
 /* index */

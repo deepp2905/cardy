@@ -1,8 +1,12 @@
 import { useDialKit } from "dialkit";
 import { CopyButton } from "./CopyButton";
 
-// Live specimen for the type scale + role styles. Specimen elements read
-// dial values via inline style, so nothing here touches :root.
+// Live specimen for the type scale + role styles. Rather than list every role
+// in a stack, each is shown where it actually lives: the card roles (wordmark,
+// name, note) sit inside a lo-fi card wireframe at their real cqw positions,
+// and the app-chrome roles (headline, body, label) sit inside a screen mock.
+// Tweaking a dial moves the real text in context. Specimen elements read dial
+// values via inline style, so nothing here touches :root.
 export function TypePlayground() {
   const p = useDialKit("Type scale", {
     sizes: {
@@ -26,11 +30,19 @@ export function TypePlayground() {
       weight: [550, 200, 700, 10],
       tracking: [0.14, 0, 0.3, 0.005],
     },
+    // --- card roles: sized in cqw, previewed inside a card wireframe ---
+    wordmark: {
+      size: [6.4, 4, 9, 0.1],
+      weight: [650, 200, 700, 10],
+      tracking: [0.01, -0.04, 0.1, 0.005],
+    },
     cardName: {
-      weight: [500, 200, 700, 10],
-      tracking: [0.08, 0, 0.3, 0.005],
+      size: [4.4, 3, 7, 0.1],
+      weight: [590, 200, 700, 10],
+      tracking: [0.05, 0, 0.3, 0.005],
     },
     cardNote: {
+      size: [3.1, 2, 5, 0.1],
       weight: [400, 200, 700, 10],
       tracking: [0.12, 0, 0.3, 0.005],
     },
@@ -47,13 +59,74 @@ export function TypePlayground() {
       `/* headline */ font-weight: ${p.headline.weight}; letter-spacing: ${p.headline.tracking.toFixed(3)}em; line-height: ${p.headline.leading.toFixed(2)};`,
       `/* body */ font-weight: ${p.body.weight}; letter-spacing: ${p.body.tracking.toFixed(3)}em; line-height: ${p.body.leading.toFixed(2)};`,
       `/* label (uppercase) */ font-weight: ${p.label.weight}; letter-spacing: ${p.label.tracking.toFixed(3)}em;`,
-      `/* card name (mono) */ font-weight: ${p.cardName.weight}; letter-spacing: ${p.cardName.tracking.toFixed(3)}em;`,
-      `/* card note (mono) */ font-weight: ${p.cardNote.weight}; letter-spacing: ${p.cardNote.tracking.toFixed(3)}em;`,
+      ``,
+      `/* --- card.css (cqw units) --- */`,
+      `.card-wordmark { font-size: ${p.wordmark.size.toFixed(1)}cqw; font-weight: ${p.wordmark.weight}; letter-spacing: ${p.wordmark.tracking.toFixed(3)}em; }`,
+      `.card-name { font-size: ${p.cardName.size.toFixed(1)}cqw; font-weight: ${p.cardName.weight}; letter-spacing: ${p.cardName.tracking.toFixed(3)}em; }`,
+      `.card-note { font-size: ${p.cardNote.size.toFixed(1)}cqw; font-weight: ${p.cardNote.weight}; letter-spacing: ${p.cardNote.tracking.toFixed(3)}em; }`,
     ].join("\n");
 
   return (
-    <div className="pg-page">
-      <div className="pg-specimen">
+    <div className="pg-page pg-type">
+      {/* Card wireframe — the three mono roles at their real cqw positions. */}
+      <div className="pg-wire-card" aria-label="Card typography in context">
+        <div className="pg-wire-card-top">
+          <span
+            className="pg-wire-wordmark"
+            style={{
+              fontSize: `${p.wordmark.size}cqw`,
+              fontWeight: p.wordmark.weight,
+              letterSpacing: `${p.wordmark.tracking}em`,
+            }}
+          >
+            cardy
+          </span>
+          <span className="pg-wire-block pg-wire-contactless" />
+        </div>
+        <span className="pg-wire-block pg-wire-chip" />
+        <div className="pg-wire-card-bottom">
+          <div className="pg-wire-identity">
+            <span
+              className="pg-wire-name"
+              style={{
+                fontSize: `${p.cardName.size}cqw`,
+                fontWeight: p.cardName.weight,
+                letterSpacing: `${p.cardName.tracking}em`,
+              }}
+            >
+              ALEX RIVERA
+            </span>
+            <span
+              className="pg-wire-note"
+              style={{
+                fontSize: `${p.cardNote.size}cqw`,
+                fontWeight: p.cardNote.weight,
+                letterSpacing: `${p.cardNote.tracking}em`,
+              }}
+            >
+              FOR COFFEE ONLY
+            </span>
+          </div>
+          <span className="pg-wire-block pg-wire-network" />
+        </div>
+      </div>
+
+      {/* Screen wireframe — headline / body / label as app chrome. */}
+      <div className="pg-wire-screen" aria-label="App typography in context">
+        <div className="pg-wire-nav">
+          <span className="pg-wire-block pg-wire-dot" />
+          <span className="pg-wire-block pg-wire-pill" />
+        </div>
+        <span
+          className="pg-wire-label"
+          style={{
+            fontSize: `${p.sizes.xs}px`,
+            fontWeight: p.label.weight,
+            letterSpacing: `${p.label.tracking}em`,
+          }}
+        >
+          Step one
+        </span>
         <h1
           style={{
             fontSize: `${p.sizes.display}px`,
@@ -70,42 +143,14 @@ export function TypePlayground() {
             fontWeight: p.body.weight,
             letterSpacing: `${p.body.tracking}em`,
             lineHeight: p.body.leading,
-            maxWidth: "34ch",
           }}
         >
           Let&rsquo;s get you a card that&rsquo;s tailored to you — your color,
           your wave, your words.
         </p>
-        <span
-          className="pg-specimen-label"
-          style={{
-            fontSize: `${p.sizes.xs}px`,
-            fontWeight: p.label.weight,
-            letterSpacing: `${p.label.tracking}em`,
-          }}
-        >
-          Character
-        </span>
-        <span
-          className="pg-specimen-mono"
-          style={{
-            fontWeight: p.cardName.weight,
-            letterSpacing: `${p.cardName.tracking}em`,
-          }}
-        >
-          ALEX RIVERA
-        </span>
-        <span
-          className="pg-specimen-mono"
-          style={{
-            fontWeight: p.cardNote.weight,
-            letterSpacing: `${p.cardNote.tracking}em`,
-            opacity: 0.7,
-          }}
-        >
-          FOR COFFEE ONLY
-        </span>
+        <span className="pg-wire-block pg-wire-cta" />
       </div>
+
       <CopyButton getText={copyText} label="Copy type tokens" />
     </div>
   );
