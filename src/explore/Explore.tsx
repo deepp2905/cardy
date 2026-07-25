@@ -63,7 +63,7 @@ const VARIANTS: (VariantMeta & { render: () => React.ReactElement })[] = [
 ];
 
 export default function Explore() {
-  const [activeId, setActiveId] = useState(VARIANTS[0].id);
+  const [activeId, setActiveId] = useState("coverflow");
   const [colorful, setColorful] = useState(true);
   const active = VARIANTS.find((v) => v.id === activeId) ?? VARIANTS[0];
 
@@ -98,7 +98,7 @@ export default function Explore() {
       </ExploreShell>
 
       {/* bottom-RIGHT here: the variant menu owns bottom-left on this page. */}
-      <DialRoot position="bottom-right" defaultOpen={false} />
+      <DialRoot position="bottom-right" defaultOpen={true} />
     </div>
   );
 }

@@ -49,7 +49,7 @@ const VARIANTS: Variant[] = [
 ];
 
 export function CardExplorer() {
-  const [activeId, setActiveId] = useState(VARIANTS[0].id);
+  const [activeId, setActiveId] = useState("pattern");
   const active = VARIANTS.find((v) => v.id === activeId) ?? VARIANTS[0];
 
   // Shared colour, one panel, drives whichever variant is active.

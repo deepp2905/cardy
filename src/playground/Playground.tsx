@@ -35,7 +35,7 @@ export default function Playground() {
         )}
       </main>
 
-      <DialRoot position="bottom-right" defaultOpen={false} />
+      <DialRoot position="bottom-right" defaultOpen={true} />
     </div>
   );
 }
