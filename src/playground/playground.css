@@ -6,62 +6,38 @@
   position: relative;
 }
 
-/* Exit-to-app sits in the flow on the left; the tabs are absolutely centred
-   on the VIEWPORT (not the nav's content box), so the left button never shifts
-   them off centre. */
+/* Exit-to-app on the left, route menu (Segmented) centred on the VIEWPORT so
+   the left button never shifts it off centre. Items are inset 24px from the top
+   — the same inset as the fixed corner theme toggle — so the whole header row
+   (back button · menu · toggle) shares one baseline and reads as one system. */
 .pg-nav {
   position: relative;
   display: flex;
   align-items: center;
-  min-height: 60px;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--color-5);
+  padding: 24px;
+  /* right padding clears the fixed corner controls (toggle at 24px inset) */
+  padding-right: calc(var(--control-h) + 40px);
 }
 
-.pg-tabs {
-  display: flex;
-  gap: 6px;
-  align-items: center;
+/* Exit-to-app button — reuses .corner-btn geometry/fill so it's a mirror image
+   of the theme toggle across the header. */
+.pg-exit {
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.pg-exit svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Route menu — centred on the viewport, independent of the side buttons. */
+.pg-nav-menu {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-}
-
-.pg-tab {
-  font-size: var(--text-sm);
-  font-weight: 550;
-  color: var(--color-11);
-  text-decoration: none;
-  white-space: nowrap;
-  padding: 7px 14px;
-  border-radius: var(--radius-pill);
-  transition:
-    color 0.18s ease,
-    background-color 0.18s ease;
-}
-
-.pg-tab:hover {
-  color: var(--color-12);
-  background: var(--color-4);
-}
-
-.pg-tab[aria-current="page"] {
-  color: var(--color-1);
-  background: var(--color-12);
-}
-
-/* exit-to-app — left, icon + label */
-.pg-tab-exit {
-  color: var(--color-10);
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
-}
-
-.pg-tab-exit svg {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
 }
 
 /* --- floating variant switcher (Card + Carousel routes) ---
@@ -71,21 +47,15 @@
 .cv-switcher,
 .explore-switcher {
   position: absolute;
-  top: 74px;
+  /* below the header row (24px inset + 60px button + gap) */
+  top: 100px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
   display: flex;
   align-items: center;
   gap: 8px;
-  width: min(560px, calc(100% - 48px));
-}
-
-/* The Segmented field is full-width by default; in this floating row it takes
-   the free space beside the colour toggle. */
-.cv-switcher .segmented-field,
-.explore-switcher .segmented-field {
-  flex: 1;
+  max-width: calc(100% - 48px);
 }
 
 /* colour on/off pill sitting beside the segmented control (Carousel route),

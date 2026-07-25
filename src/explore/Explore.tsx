@@ -81,6 +81,7 @@ export default function Explore() {
           value={activeId}
           options={VARIANTS.map((v) => ({ value: v.id, label: v.name }))}
           onChange={setActiveId}
+          fitContent
         />
         <button
           type="button"

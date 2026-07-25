@@ -18,8 +18,8 @@
   flex: 1;
   min-height: 0;
   margin: 0 auto;
-  /* extra top padding clears the floating variant segmented control */
-  padding: 64px 24px 36px;
+  /* extra top padding clears the header row + floating variant control */
+  padding: 88px 24px 36px;
   display: flex;
   flex-direction: column;
 }

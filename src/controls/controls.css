@@ -207,6 +207,21 @@
   grid-auto-columns: calc(var(--control-h) - 8px);
 }
 
+/* Fit-content: hug each label instead of equal 1fr columns, so the track is
+   only as wide as its options need. The field stops filling its parent too. */
+.segmented-field[data-fit="true"] {
+  width: auto;
+}
+
+.segmented-track[data-fit="true"] {
+  grid-auto-columns: auto;
+}
+
+.segmented-track[data-fit="true"] .segmented-content {
+  padding-inline: 8px;
+  white-space: nowrap;
+}
+
 .segmented-option {
   position: relative;
   display: flex;

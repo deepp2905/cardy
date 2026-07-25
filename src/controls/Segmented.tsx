@@ -22,6 +22,9 @@ type SegmentedProps<T extends string> = {
   onChange: (value: T) => void;
   /** Show the glyph alone; the label survives only as the a11y name. */
   iconOnly?: boolean;
+  /** Hug the option labels instead of stretching them to equal columns.
+   *  Equal-fill columns feel cramped when the labels differ a lot in length. */
+  fitContent?: boolean;
 };
 
 export function Segmented<T extends string>({
@@ -30,16 +33,18 @@ export function Segmented<T extends string>({
   options,
   onChange,
   iconOnly = false,
+  fitContent = false,
 }: SegmentedProps<T>) {
   // Unique group so multiple Segmented controls don't share one layout pill.
   const groupId = useId();
   return (
-    <div className="segmented-field">
+    <div className="segmented-field" data-fit={fitContent}>
       {/* No visible label: the group is named for a11y via aria-label on the
           track. Shape reads from its glyphs, Fill from its two words. */}
       <div
         className="segmented-track"
         data-icon-only={iconOnly}
+        data-fit={fitContent}
         role="radiogroup"
         aria-label={label}
       >

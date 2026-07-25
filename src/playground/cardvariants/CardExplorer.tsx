@@ -67,6 +67,7 @@ export function CardExplorer() {
           value={activeId}
           options={VARIANTS.map((v) => ({ value: v.id, label: v.name }))}
           onChange={setActiveId}
+          fitContent
         />
       </div>
       <div className="cv-stage">
