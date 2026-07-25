@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { motion } from "motion/react";
+import { motion, type Transition } from "motion/react";
 import { snappy } from "../lib/motionConfig";
 import "./controls.css";
 
@@ -25,6 +25,8 @@ type SegmentedProps<T extends string> = {
   /** Hug the option labels instead of stretching them to equal columns.
    *  Equal-fill columns feel cramped when the labels differ a lot in length. */
   fitContent?: boolean;
+  /** Override the indicator glide transition (defaults to `snappy`). */
+  transition?: Transition;
 };
 
 export function Segmented<T extends string>({
@@ -34,6 +36,7 @@ export function Segmented<T extends string>({
   onChange,
   iconOnly = false,
   fitContent = false,
+  transition = snappy,
 }: SegmentedProps<T>) {
   // Unique group so multiple Segmented controls don't share one layout pill.
   const groupId = useId();
@@ -66,7 +69,7 @@ export function Segmented<T extends string>({
                 <motion.span
                   layoutId={`seg-${groupId}`}
                   className="segmented-indicator"
-                  transition={snappy}
+                  transition={transition}
                 />
               )}
               <span className="segmented-content">

@@ -2,9 +2,11 @@ import type { ReactNode } from "react";
 import { StepIndicator } from "../ui/StepIndicator";
 import "./explore.css";
 
-// Reproduces Step 2's chrome — step indicator, note field, two sliders, the
-// action bar — so each layout idea is judged in the space it would really
-// have. None of these controls do anything; they are here for the geometry.
+// Reproduces Step 2's chrome — note field, two sliders, the action bar — so
+// each layout idea is judged in the space it would really have. Deliberately
+// LOW-FIDELITY: no text or icons, just filled blocks at the real sizes, so the
+// eye reads ARRANGEMENT (like the grey wireframe cards), not the controls.
+// None of these do anything; they are here for the geometry.
 
 export function ExploreShell({ children }: { children: ReactNode }) {
   return (
@@ -17,50 +19,25 @@ export function ExploreShell({ children }: { children: ReactNode }) {
 
       <div className="explore-controls" aria-hidden="true">
         <div className="explore-field">
-          <span className="explore-label">Engraving</span>
-          <div className="explore-input">For coffee only</div>
+          <div className="explore-input" />
         </div>
-        <DummySlider label="Character" pct={62} />
-        <DummySlider label="Intensity" pct={38} />
+        <DummySlider pct={62} />
+        <DummySlider pct={38} />
         <div className="explore-actions">
-          <div className="explore-btn explore-btn-back">
-            <svg viewBox="0 0 24 24">
-              <path
-                d="M20 12H5m6-6-6 6 6 6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.75"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-          <div className="explore-btn explore-btn-next">
-            <svg viewBox="0 0 24 24">
-              <path
-                d="M4 12h15m-6-6 6 6-6 6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.75"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
+          <div className="explore-btn explore-btn-back" />
+          <div className="explore-btn explore-btn-next" />
         </div>
       </div>
     </div>
   );
 }
 
-// Label lives INSIDE the track (pinned left), exactly like the real Slider —
-// so it never stacks above or overlaps the track.
-function DummySlider({ label, pct }: { label: string; pct: number }) {
+// Plain filled track + fill + thumb — no label, low-fidelity like the cards.
+function DummySlider({ pct }: { pct: number }) {
   return (
     <div className="explore-field">
       <div className="explore-track">
         <div className="explore-fill" style={{ width: `${pct}%` }} />
-        <span className="explore-slider-label">{label}</span>
         <div className="explore-thumb" style={{ left: `calc(${pct}% - 2px)` }} />
       </div>
     </div>

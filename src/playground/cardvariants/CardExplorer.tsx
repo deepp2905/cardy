@@ -2,6 +2,7 @@ import { useState, type ReactElement } from "react";
 import { useDialKit } from "dialkit";
 import { oklchString } from "../../card/cardConfig";
 import { Segmented } from "../../controls/Segmented";
+import { snappyCalm } from "../../lib/motionConfig";
 import { VariantBoundary } from "../../explore/VariantBoundary";
 import { ShaderWaveVariant } from "./ShaderWaveVariant";
 import { FlatMinimalVariant } from "./FlatMinimalVariant";
@@ -68,6 +69,7 @@ export function CardExplorer() {
           options={VARIANTS.map((v) => ({ value: v.id, label: v.name }))}
           onChange={setActiveId}
           fitContent
+          transition={snappyCalm}
         />
       </div>
       <div className="cv-stage">

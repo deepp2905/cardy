@@ -1,4 +1,5 @@
 import { Segmented } from "../controls/Segmented";
+import { snappyCalm } from "../lib/motionConfig";
 import { DEV_TABS } from "./devTabs";
 import { useHashRoute } from "./useHashRoute";
 import "./playground.css";
@@ -41,6 +42,7 @@ export function DevNav() {
             window.location.hash = `#${path}`;
           }}
           fitContent
+          transition={snappyCalm}
         />
       </div>
     </nav>

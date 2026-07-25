@@ -79,14 +79,13 @@
 }
 
 /* --- floating variant switcher (Card + Carousel routes) ---
-   The app's Segmented control, floated just below the dev header and centred.
-   A max-width keeps it a compact bar rather than a stretched form control.
-   Replaces the old draggable switcher panel. */
+   The app's Segmented control, floated at the BOTTOM of the viewport and
+   centred. Its bottom inset (24px) mirrors the header menu's top inset, so the
+   two menus are symmetric top/bottom. Replaces the old draggable switcher. */
 .cv-switcher,
 .explore-switcher {
-  position: absolute;
-  /* below the header row (24px inset + 60px button + gap) */
-  top: 100px;
+  position: fixed;
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
@@ -133,6 +132,12 @@
   display: grid;
   place-items: center;
   padding: 40px 24px 64px;
+}
+
+/* When the bottom variant switcher is present (Card route), reserve room so the
+   centred card never sits under it. */
+.pg-main:has(.cv-switcher) {
+  padding-bottom: 108px;
 }
 
 .pg-page {

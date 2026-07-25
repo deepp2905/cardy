@@ -2,6 +2,7 @@ import { useState } from "react";
 import { DialRoot } from "dialkit";
 import "dialkit/styles.css";
 import { Segmented } from "../controls/Segmented";
+import { snappyCalm } from "../lib/motionConfig";
 import { ExploreShell } from "./ExploreShell";
 import { VariantBoundary } from "./VariantBoundary";
 
@@ -75,6 +76,7 @@ export default function Explore() {
           options={VARIANTS.map((v) => ({ value: v.id, label: v.name }))}
           onChange={setActiveId}
           fitContent
+          transition={snappyCalm}
         />
         <button
           type="button"

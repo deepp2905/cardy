@@ -13,6 +13,15 @@ export const snappy: Transition = {
   ...snappyOptions,
 };
 
+// Like `snappy` but near-critically damped — glides to rest with almost no
+// overshoot. For pill/tab retargets where a bounce reads as sloppy rather than
+// lively (e.g. the playground's menu segmented controls).
+export const snappyCalm: Transition = {
+  type: "spring",
+  stiffness: 420,
+  damping: 42,
+};
+
 // Step indicator travelling more than one segment (e.g. confirm -> welcome
 // via "Start over"). Same damping ratio as `snappy` so the character is
 // identical — only faster. 4x stiffness halves the settle time, which on a
