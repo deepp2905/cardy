@@ -26,7 +26,6 @@ export type CardConfig = {
   filled: boolean; // segmented control (filled vs outline)
   spacing: number; // 0..1 → grid pitch, SPACING_MIN..SPACING_MAX
   frequency: number; // 0..1 → radial wavelength, FREQ_MIN..FREQ_MAX
-  phase: number; // 0..1 → wave offset, 0..2π
   note: string; // "" | max 24 chars
   /** Seed-time flavour; absent on shared links (falls back to PATTERN_FIXED). */
   personality?: CardPersonality;
@@ -56,10 +55,13 @@ export const PALETTE: PaletteEntry[] = [
 // as the neutral centre of the randomised bands below.
 export const DEFAULT_SHAPE: PatternShape = "circle";
 export const DEFAULT_FILLED = false;
-// Spacing starts at 64 (SPACING_MIN); the slider only ever adds sparseness.
+// Spacing starts at 20 (SPACING_MIN); the slider only ever adds sparseness.
 export const DEFAULT_SPACING = 0;
 export const DEFAULT_FREQUENCY = 0.32; // ≈140px wavelength, the tuned default
-export const DEFAULT_PHASE = 0;
+
+/** Wave offset, radians. Was a third slider; now pinned — the offset only slid
+ *  the ripple without changing the pattern's character, so it earned no dial. */
+export const FIXED_PHASE = 0;
 
 // Deterministic per-card PRNG. Seeding from the card index (rather than
 // Math.random) keeps each colourway's pattern stable across reloads — the
@@ -79,13 +81,16 @@ const SHAPES_ALL: PatternShape[] = ["circle", "rect", "triangle"];
 /** Random value in [min, max] from a 0..1 source. */
 const band = (r: number, min: number, max: number) => min + r * (max - min);
 
-// Each colourway also gets its own pattern, so the strip reads as eight
+// Each colourway also gets its own pattern, so the strip reads as nine
 // distinct designs rather than one design recoloured. Bands are deliberately
 // wide — the slider mappings clamp to safe ranges, so even the extremes stay
 // legible — and every card is still a valid starting point the user can tune.
 //
-// The three sliders (spacing/frequency/phase) mostly change density and offset
-// of ONE motif, which is why cards rhymed too closely. The bulk of the variance
+// Shape and fill are the exception: those are dealt round-robin by index so the
+// set is guaranteed balanced (see below). Everything else is seeded random.
+//
+// The two sliders (spacing/frequency) mostly change density and scale of ONE
+// motif, which is why cards rhymed too closely. The bulk of the variance
 // comes from the seed-time `personality`: grid angle, mark weight, and how hard
 // the radial wave twists/pulses/shoves each cell — the levers that actually
 // change a pattern's character. The dials stay untouched.
@@ -93,19 +98,28 @@ export function seedConfigs(): Record<string, CardConfig> {
   return Object.fromEntries(
     PALETTE.map((p, i) => {
       const rand = mulberry32(i * 2654435761 + 0x9e37);
+      // Burn the two draws that shape/fill used to consume, so spacing,
+      // frequency and personality keep the values they already had rather
+      // than each shifting two steps down the stream.
+      rand();
+      rand();
       return [
         `card-${i}`,
         {
           id: `card-${i}`,
           baseColor: p.color,
-          shape: SHAPES_ALL[Math.floor(rand() * SHAPES_ALL.length)],
-          filled: rand() < 0.5,
+          // Shape and fill are DEALT, not rolled: cycling by index guarantees
+          // the strip shows all three shapes and both fills in even proportion
+          // (3/3/3 shapes; 5/4 fills — the closest split nine allows) and covers
+          // every shape×fill pairing. Random draws clumped instead, leaving a
+          // strip that could show four triangles and one square.
+          shape: SHAPES_ALL[i % SHAPES_ALL.length],
+          filled: i % 2 === 1,
           // Density is the most visible difference between cards, so spread it
           // near-full: some seed dense and busy, others sparse and airy. Both
           // ends are still legible via the slider mappings' safe clamps.
           spacing: band(rand(), 0, 0.9),
           frequency: band(rand(), 0.05, 0.95),
-          phase: rand(),
           note: "",
           // Bold bands: wide swings around the tuned PATTERN_FIXED values so
           // each card reads as its own design, not a recolour of one motif.
@@ -125,13 +139,13 @@ export function seedConfigs(): Record<string, CardConfig> {
 
 // --- Designed dial mappings (never expose raw params; PLAN.md Phase C) ---
 //
-// The pattern engine has ~13 params; all but three are pinned to tuned
-// constants (see PATTERN_FIXED). The three sliders each map 0..1 into a safe
+// The pattern engine has ~13 params; all but two are pinned to tuned
+// constants (see PATTERN_FIXED). The two sliders each map 0..1 into a safe
 // band so every position on the track looks intentional.
 
 /** Grid pitch in card-space px. Slider runs from the tuned default up. */
-export const SPACING_MIN = 64;
-export const SPACING_MAX = 125;
+export const SPACING_MIN = 25;
+export const SPACING_MAX = 100;
 /** Radial wavelength in px. Lower = tighter rings. */
 export const FREQ_MIN = 40;
 export const FREQ_MAX = 400;
@@ -141,9 +155,9 @@ export const PATTERN_FIXED = {
   strokeWidth: 1.6,
   size: 32,
   angle: 0,
-  staggerSize: 0.24,
-  staggerAngle: 90,
-  staggerSpacing: 16,
+  staggerSize: 0.72,
+  staggerAngle: 60,
+  staggerSpacing: 24,
   /** plus-lighter is fixed off: shapes deepen the card colour (plus-darker). */
   plusLighter: false,
   /** Group opacity by fill mode. Outline is +25% over its original tuned
@@ -155,7 +169,7 @@ export const PATTERN_FIXED = {
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-/** Resolve the three sliders + fixed constants into the pattern's real params.
+/** Resolve the two sliders + fixed constants into the pattern's real params.
  *  The per-card personality (seed time) overrides the matching fixed values;
  *  a shared-link config carries none and keeps the tuned defaults. */
 export function patternParams(config: CardConfig) {
@@ -166,7 +180,7 @@ export function patternParams(config: CardConfig) {
     filled: config.filled,
     spacing: lerp(SPACING_MIN, SPACING_MAX, config.spacing),
     staggerFreq: lerp(FREQ_MIN, FREQ_MAX, config.frequency),
-    phase: config.phase * Math.PI * 2,
+    phase: FIXED_PHASE,
     opacity: config.filled
       ? PATTERN_FIXED.filledOpacity
       : PATTERN_FIXED.outlineOpacity,
@@ -241,7 +255,6 @@ export function cardConfigToParams(config: CardConfig): URLSearchParams {
   p.set("f", config.filled ? "1" : "0");
   p.set("sp", config.spacing.toFixed(3));
   p.set("fq", config.frequency.toFixed(3));
-  p.set("ph", config.phase.toFixed(3));
   if (config.note) p.set("n", config.note);
   // Serialize personality so a shared card looks identical to the sender's,
   // not a defaults fallback. One compact param: six numbers, fixed order.
@@ -283,7 +296,6 @@ export function cardConfigFromParams(params: URLSearchParams): CardConfig | null
     filled: params.get("f") === "1",
     spacing: clamp01(Number(params.get("sp") ?? DEFAULT_SPACING)),
     frequency: clamp01(Number(params.get("fq") ?? DEFAULT_FREQUENCY)),
-    phase: clamp01(Number(params.get("ph") ?? DEFAULT_PHASE)),
     note: sanitizeNote(params.get("n") ?? ""),
     personality: personalityFromParam(params.get("pr")),
   };

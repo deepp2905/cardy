@@ -5,11 +5,10 @@ import { patternParams } from "./cardConfig";
 // The card's background artwork: a grid of small shapes (circle / rect /
 // triangle) that fills the card and bleeds off every edge. Each cell's size,
 // angle and spacing offset are staggered by a RADIAL sine wave from the
-// centre, so some shapes tuck in and others bulge out as you move outward —
-// phase slides the ripple. Ported from the playground PatternVariant; the
-// three sliders (spacing / frequency / phase) and the two segmented controls
-// (shape / fill) come through the config, everything else is a fixed constant
-// resolved by patternParams().
+// centre, so some shapes tuck in and others bulge out as you move outward.
+// Ported from the playground PatternVariant; the two sliders (spacing /
+// frequency) and the two segmented controls (shape / fill) come through the
+// config, everything else is a fixed constant resolved by patternParams().
 
 // Card-space viewBox — matches the ID-1 aspect (856/540 ≈ 85.6/53.98).
 const VIEW_W = 856;

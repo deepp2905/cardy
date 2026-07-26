@@ -90,11 +90,6 @@ export function DialPanel({
         value={config.frequency}
         onChange={(frequency) => onPatch({ frequency })}
       />
-      <Slider
-        label="Phase"
-        value={config.phase}
-        onChange={(phase) => onPatch({ phase })}
-      />
     </div>
   );
 }
