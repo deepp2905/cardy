@@ -401,17 +401,16 @@
   opacity: 0.7;
 }
 
-/* The flap's own layer, a SIBLING of .envelope (see Envelope.tsx). z-index 0
-   puts it under the packet (.sheet, 1), while the envelope body stays above it
-   at 2 — so the descending carrier passes in front of the open flap and behind
-   the pocket, which is what reads as paper going INSIDE. Sized and positioned
-   to match .envelope exactly so the flap hinges on the same edge. */
+/* The flap's own layer, a SIBLING of .envelope (see Envelope.tsx). Its z-index
+   is DRIVEN FROM JS (flapZ) and deliberately not set here: open it sits under
+   the packet (.sheet, 1) so paper slides in front of it; closed it sits above
+   .envelope (2) so it lands on the front of the pocket. Sized and positioned to
+   match .envelope exactly so the flap hinges on the same edge. */
 .env-flap-layer {
   position: absolute;
   width: calc(126 * var(--mm));
   height: calc(70 * var(--mm));
   transform-style: preserve-3d;
-  z-index: 0;
   pointer-events: none;
 }
 

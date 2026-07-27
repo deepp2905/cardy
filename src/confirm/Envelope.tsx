@@ -47,6 +47,15 @@ export function Envelope({
     ([s, a, b]: number[]) => s * a * b,
   );
 
+  // Depth of the flap layer, switched at the halfway point of its swing.
+  // Past -90° it is still folded back behind the envelope's mouth, so it sits
+  // under the packet (0). Once it swings inside that plane it belongs on top
+  // of the pocket (3, above .envelope's 2), which is where a closed flap lives.
+  // A hard switch, not a ramp: z-index is discrete anyway, and -90° is exactly
+  // edge-on, so the change lands on the frame where the flap has no visible
+  // area to pop.
+  const flapZ = useTransform(v.flapRot, (r) => (r < -90 ? 0 : 3));
+
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -101,14 +110,20 @@ export function Envelope({
         </motion.div>
       </motion.div>
 
-      {/* The open flap, rendered OUTSIDE .envelope so it shares a stacking
-          context with the packet. That is the whole point: the packet (.sheet,
-          z-index 1) can then sit ABOVE the flap (0) and BELOW the envelope
+      {/* The flap, rendered OUTSIDE .envelope so it shares a stacking context
+          with the packet. That is the whole point: while it hangs open the
+          packet (.sheet, z-index 1) sits ABOVE the flap and BELOW the envelope
           body (2), which is what reads as paper sliding down into the mouth.
           Nested inside .envelope it could only ever be above or below the
-          entire packet, never between the envelope's own two layers.
-          Carries the same y/flip transforms as the envelope so it travels
-          with it. */}
+          ENTIRE packet, never between the envelope's own two layers.
+
+          It is ONE element for both states — the same triangle rotates from
+          -165° (open, lying back behind the paper) to 0° (closed, lying on the
+          front of the pocket). So its depth has to change with it: a flap that
+          stayed behind would close BEHIND the envelope. zLayer flips as it
+          passes vertical, which is the moment a real flap crosses the plane of
+          the envelope mouth. Carries the same y/flip transforms as the envelope
+          so it travels with it. */}
       <motion.div
         className="env-flap-layer"
         style={{
@@ -117,6 +132,7 @@ export function Envelope({
           rotateY: v.flipRot,
           scale: dragScale,
           rotate: dragTilt,
+          zIndex: flapZ,
         }}
         aria-hidden="true"
       >
