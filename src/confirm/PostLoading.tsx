@@ -10,19 +10,20 @@ import { crossfade } from "../lib/motionConfig";
  * handed to postage. Contextual rather than a single generic "Creating your
  * card" — each line names a real step of making THIS object.
  *
- * `at` is the ms offset the line appears. The last one is deliberately short:
- * it hands straight to the epilogue ("Posted."), so it should still be on
- * screen — not already stale — when the crossfade starts.
+ * `at` is the ms offset the line appears, so the dwells are roughly 1000 /
+ * 1100 / 1000 / 900ms. The last one is deliberately the shortest: it hands
+ * straight to the epilogue ("Posted."), so it should still be on screen — not
+ * already stale — when the crossfade starts.
  */
 const STAGES = [
   { at: 0, text: "Printing your card…" },
-  { at: 900, text: "Pressing the engraving…" },
-  { at: 1900, text: "Sealing the envelope…" },
-  { at: 2800, text: "Handing it to the post…" },
+  { at: 1000, text: "Pressing the engraving…" },
+  { at: 2100, text: "Sealing the envelope…" },
+  { at: 3100, text: "Handing it to the post…" },
 ] as const;
 
 /** Total beat length, exported so Confirm's hand-off timer can't drift from it. */
-export const POST_LOADING_MS = 3600;
+export const POST_LOADING_MS = 4000;
 
 /**
  * Brief "making it" beat between the envelope dropping into the slot and the
