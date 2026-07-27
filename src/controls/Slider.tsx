@@ -69,6 +69,29 @@ export function Slider({ value, onChange, label, disabled }: SliderProps) {
   const dragStarted = useRef(false);
   const animTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Coalesce pointer-driven changes to one per frame. pointermove can outrun
+  // paint (high-Hz mice fire at 500-1000Hz), and every onChange rebuilds the
+  // bound card's pattern — up to ~1,000 SVG cells at the spacing floor. One
+  // commit per frame is all the screen can show anyway. The native input's own
+  // onChange (keyboard) stays direct: those events are discrete.
+  const changeRaf = useRef(0);
+  const pendingValue = useRef(0);
+  const onChangeAtPaint = (v: number) => {
+    pendingValue.current = v;
+    if (changeRaf.current) return;
+    changeRaf.current = requestAnimationFrame(() => {
+      changeRaf.current = 0;
+      onChange(pendingValue.current);
+    });
+  };
+  useEffect(
+    () => () => {
+      cancelAnimationFrame(changeRaf.current);
+      if (animTimeout.current) clearTimeout(animTimeout.current);
+    },
+    [],
+  );
+
   // Signed overshoot: + past the right end, − past the left.
   const overshoot = useMotionValue(0);
   const overshootSpring = useSpring(overshoot, sliderStretch);
@@ -232,7 +255,7 @@ export function Slider({ value, onChange, label, disabled }: SliderProps) {
             // Capture so a drag started anywhere on the track keeps following
             // the pointer — native range inputs only drag from the thumb.
             e.currentTarget.setPointerCapture(e.pointerId);
-            onChange(valueFromClientX(e.clientX));
+            onChangeAtPaint(valueFromClientX(e.clientX));
             updateOvershoot(e.clientX);
           }}
           onPointerMove={(e) => {
@@ -241,7 +264,7 @@ export function Slider({ value, onChange, label, disabled }: SliderProps) {
               dragStarted.current = true;
               setAnimating(false);
             }
-            onChange(valueFromClientX(e.clientX));
+            onChangeAtPaint(valueFromClientX(e.clientX));
             updateOvershoot(e.clientX);
           }}
           onPointerUp={release}

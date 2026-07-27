@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { animate, motion, useMotionValue, type MotionValue } from "motion/react";
 import { Card } from "./Card";
 import type { CardConfig } from "./cardConfig";
@@ -30,7 +30,11 @@ import "./heroCard.css";
  */
 export type HeroPhase = "hidden" | "deck" | "rest";
 
-export function HeroCard({
+// Memoised: App re-renders on every heroTarget report and wrap-phase change,
+// and without the memo each of those rebuilt this card's pattern SVG. All
+// props are stable identities (memoised config, MotionValues, literals)
+// except target/phase, which change rarely.
+export const HeroCard = memo(function HeroCard({
   config,
   name,
   phase,
@@ -134,4 +138,4 @@ export function HeroCard({
       </motion.div>
     </motion.div>
   );
-}
+});

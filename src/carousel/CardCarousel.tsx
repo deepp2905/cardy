@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState, type CSSProperties } from "react";
+import { memo, useEffect, useRef, type CSSProperties } from "react";
 import { motion, useTransform, type MotionValue } from "motion/react";
 import { Card } from "../card/Card";
 import type { CardConfig } from "../card/cardConfig";
@@ -121,6 +121,17 @@ export function CardCarousel({
   // Exact inverse of a value that is only ever 0 or 1 — so this is only ever
   // 1 or 0 too. The two cards are pixel-identical, so the swap is invisible.
   const deckCardOpacity = useTransform(deckOpacity, (v) => 1 - v);
+
+  // Freeze the active card's config while it's hidden. Settled, the active
+  // deck card sits at opacity 0 behind the hero — but slider ticks change its
+  // config identity, so the DeckCard memo missed and the INVISIBLE card
+  // rebuilt its full pattern on every pointermove. Holding the last-visible
+  // config while settled skips that; the frame a drag starts (settled flips
+  // false) it re-renders once with the live config — exactly when it becomes
+  // visible, which is the only moment correctness needs it.
+  const activeConfig = configs[ids[focusedIndex]];
+  const frozenActive = useRef(activeConfig);
+  if (!settled) frozenActive.current = activeConfig;
 
   // Report the ACTIVE deck card's real viewport centre as the hero target, so
   // the flat hero lands exactly on the deck card (measuring the live element
@@ -290,7 +301,13 @@ export function CardCarousel({
               className="deck-card-inner"
               style={active ? { opacity: deckCardOpacity } : undefined}
             >
-              <DeckCard config={configs[id]} note={note} name={cardName} />
+              <DeckCard
+                config={
+                  active && settled ? frozenActive.current : configs[id]
+                }
+                note={note}
+                name={cardName}
+              />
             </motion.div>
           </div>
         );

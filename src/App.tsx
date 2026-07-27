@@ -143,6 +143,15 @@ function MainFlow() {
     setConfigs((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
   };
 
+  // Stable identity for the active card's config + note merge. Inlining the
+  // spread handed HeroCard (and Confirm) a fresh object every App render —
+  // every heroTarget report or phase change rebuilt the hero's pattern SVG.
+  // With this memo + memo(HeroCard), only real config changes re-render it.
+  const activeConfig = useMemo(
+    () => ({ ...configs[activeId], note }),
+    [configs, activeId, note],
+  );
+
   // Navigation is constant chrome — the action bar lives outside the step
   // transitions so the CTAs stay fixed across the journey.
   const nav = {
@@ -223,7 +232,7 @@ function MainFlow() {
           {step === "confirm" && (
             <StepShell key="confirm" solid>
               <Confirm
-                config={{ ...configs[activeId], note }}
+                config={activeConfig}
                 name={person.cardName}
                 firstName={person.first}
                 started={wrapStarted}
@@ -239,7 +248,7 @@ function MainFlow() {
         {/* One card, all three steps. Positioned by the active step's slot,
             visibility by the step + the two hand-off MotionValues. */}
         <HeroCard
-          config={{ ...configs[activeId], note }}
+          config={activeConfig}
           name={person.cardName}
           phase={heroPhase}
           target={heroTarget}

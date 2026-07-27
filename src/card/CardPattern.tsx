@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useMemo } from "react";
 import type { CardConfig } from "./cardConfig";
 import { patternParams } from "./cardConfig";
 
@@ -16,39 +16,55 @@ const VIEW_H = 540;
 
 export function CardPattern({ config }: { config: CardConfig }) {
   const p = patternParams(config);
-  const id = useId();
 
   // plus-lighter is fixed off, so shapes ARE a deepened tint of the card
   // colour drawn normally (the Chromium-safe "implied colour" plus-darker
   // trick) rather than black + a blend that muddies toward grey.
   const stroke = `color-mix(in oklch, ${config.baseColor}, black 55%)`;
 
-  // Overscan the grid so shapes bleed past every edge.
-  const cx = VIEW_W / 2;
-  const cy = VIEW_H / 2;
-  const cols = Math.ceil((VIEW_W + p.size * 2) / p.spacing) + 2;
-  const rows = Math.ceil((VIEW_H + p.size * 2) / p.spacing) + 2;
+  // The cell grid can reach ~1,000 entries at the spacing floor (25px pitch on
+  // an 856x540 viewBox), so it's memoised on the params that actually shape it.
+  // Re-renders from anything else — opacity handoffs, the note, a parent state
+  // touch — reuse the array (and, because the cells are reference-equal, the
+  // shape elements stay cheap to reconcile too).
+  const cells = useMemo(() => {
+    // Overscan the grid so shapes bleed past every edge.
+    const cx = VIEW_W / 2;
+    const cy = VIEW_H / 2;
+    const cols = Math.ceil((VIEW_W + p.size * 2) / p.spacing) + 2;
+    const rows = Math.ceil((VIEW_H + p.size * 2) / p.spacing) + 2;
 
-  const cells: { x: number; y: number; s: number; rot: number }[] = [];
-  for (let r = -Math.floor(rows / 2); r <= Math.floor(rows / 2); r++) {
-    for (let c = -Math.floor(cols / 2); c <= Math.floor(cols / 2); c++) {
-      // Base grid position from centre.
-      let gx = cx + c * p.spacing;
-      let gy = cy + r * p.spacing;
-      const dist = Math.hypot(gx - cx, gy - cy);
-      // One radial wave, sampled at this cell's distance.
-      const wave = Math.sin((dist / p.staggerFreq) * Math.PI * 2 + p.phase);
-      // Spacing stagger pushes the cell along its radial direction.
-      const nx = dist === 0 ? 0 : (gx - cx) / dist;
-      const ny = dist === 0 ? 0 : (gy - cy) / dist;
-      gx += nx * wave * p.staggerSpacing;
-      gy += ny * wave * p.staggerSpacing;
-      // Size and angle staggered by the same wave.
-      const s = Math.max(1, p.size * (1 + wave * p.staggerSize));
-      const rot = p.angle + wave * p.staggerAngle;
-      cells.push({ x: gx, y: gy, s, rot });
+    const out: { x: number; y: number; s: number; rot: number }[] = [];
+    for (let r = -Math.floor(rows / 2); r <= Math.floor(rows / 2); r++) {
+      for (let c = -Math.floor(cols / 2); c <= Math.floor(cols / 2); c++) {
+        // Base grid position from centre.
+        let gx = cx + c * p.spacing;
+        let gy = cy + r * p.spacing;
+        const dist = Math.hypot(gx - cx, gy - cy);
+        // One radial wave, sampled at this cell's distance.
+        const wave = Math.sin((dist / p.staggerFreq) * Math.PI * 2 + p.phase);
+        // Spacing stagger pushes the cell along its radial direction.
+        const nx = dist === 0 ? 0 : (gx - cx) / dist;
+        const ny = dist === 0 ? 0 : (gy - cy) / dist;
+        gx += nx * wave * p.staggerSpacing;
+        gy += ny * wave * p.staggerSpacing;
+        // Size and angle staggered by the same wave.
+        const s = Math.max(1, p.size * (1 + wave * p.staggerSize));
+        const rot = p.angle + wave * p.staggerAngle;
+        out.push({ x: gx, y: gy, s, rot });
+      }
     }
-  }
+    return out;
+  }, [
+    p.spacing,
+    p.size,
+    p.staggerFreq,
+    p.phase,
+    p.staggerSpacing,
+    p.staggerSize,
+    p.staggerAngle,
+    p.angle,
+  ]);
 
   const renderShape = (
     cell: { x: number; y: number; s: number; rot: number },
@@ -92,7 +108,7 @@ export function CardPattern({ config }: { config: CardConfig }) {
     >
       {/* One group carries the opacity so all shapes composite together once
           rather than each blending separately. */}
-      <g style={{ opacity: p.opacity }} strokeLinejoin="round" data-id={id}>
+      <g style={{ opacity: p.opacity }} strokeLinejoin="round">
         {cells.map(renderShape)}
       </g>
     </svg>
