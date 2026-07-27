@@ -10,12 +10,10 @@ import {
 import { post, snappy } from "../lib/motionConfig";
 import {
   DRAG_TOP_GIVE,
-  ENVELOPE,
   POST_COMMIT_MM,
   POST_FLICK_MM,
   POST_FLICK_VELOCITY,
   POST_TRAVEL,
-  SLOT_TOP,
 } from "./geometry";
 import type { Phase, SequenceValues } from "./useWrapSequence";
 
@@ -50,16 +48,13 @@ export function usePostDrag({
   const rawTilt = useTransform(velocity, [-800, 800], [2, -2], { clamp: true });
   const dragTilt = useSpring(rawTilt, snappy);
 
-  // Fade the envelope as it sinks into the slot. It starts disappearing when
-  // it's HALFWAY into the box — its centre level with the slot's top edge
-  // (envY == SLOT_TOP) — and is gone by the time its top edge has submerged
-  // (envY == SLOT_TOP + half its height). So the card visibly dissolves into
-  // the slot rather than vanishing at a seam right at the end of travel.
-  const vanishStart = SLOT_TOP * mmPx;
-  const vanishEnd = (SLOT_TOP + ENVELOPE.h / 2) * mmPx;
-  const vanish = useTransform(v.envY, [vanishStart, vanishEnd], [1, 0], {
-    clamp: true,
-  });
+  // No fade on the way in: .slot-plate is an OPAQUE mask (z-index 5, the stage
+  // colour, extending well below the lip) and the envelope sits under it at
+  // z-index 2, so it is genuinely occluded as it descends. Fading it as well
+  // made a solid object turn to vapour before the slot had swallowed it —
+  // paper going into a letterbox doesn't dissolve, it goes behind the lip.
+  // Kept as a constant 1 so Envelope's opacity/shadow maths is untouched.
+  const vanish = useMotionValue(1);
 
   const runPost = useCallback(() => {
     if (phase !== "idle") return;

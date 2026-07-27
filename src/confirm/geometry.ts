@@ -20,7 +20,12 @@ export const INSERT_TRAVEL = 69;
 export const SLOT_GAP = 40;
 /** Slot lip position — the y at which the envelope disappears. */
 export const SLOT_TOP = ENVELOPE.h / 2 + SLOT_GAP; // +75
-/** How far the envelope travels to be fully swallowed. */
+/** How far the envelope travels to be fully swallowed. Must exceed
+ *  SLOT_TOP + ENVELOPE.h / 2 (= 110mm): envY moves the envelope's CENTRE, so
+ *  that is the point at which its top edge reaches the lip. Nothing fades on
+ *  the way in — the slot plate is the only thing hiding it — so a shorter
+ *  travel leaves a sliver of paper sitting above the slot. 120 keeps 10mm of
+ *  margin. */
 export const POST_TRAVEL = 120;
 
 // --- Scale ---
