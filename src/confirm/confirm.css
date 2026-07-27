@@ -24,9 +24,11 @@
   --seal: oklch(0.26 0.02 70);
   --seal-ink: oklch(0.95 0.01 85);
 
-  /* The slot uses the primary-CTA fill (--color-12), not a near-black hole —
-     a lighter, friendlier grey that matches the action button. */
-  --slot: var(--color-12);
+  /* Mid-grey, matching the slider fill rather than the primary-CTA extreme.
+     --color-12 is the end of the ramp (near-black in light mode, near-white in
+     dark), which made the slot read as a hard graphic shape stamped on the
+     stage. A mid step sits back and reads as a physical aperture. */
+  --slot: var(--slider-fill);
   --slot-rim: transparent;
 
   --sheet-shadow:
@@ -55,10 +57,11 @@
 
   --seal: oklch(0.2 0.02 70);
 
-  /* Match the primary-CTA fill in dark mode too (near-white here). No rim: the
-     old one existed to make a black hole visible on a dark stage, and a light
-     slot doesn't need it. */
-  --slot: var(--color-12);
+  /* Same mid-grey call in dark mode. --slider-fill already steps down here
+     (--color-8 vs --color-9) so the fill doesn't glow against a dark surface,
+     which is exactly the behaviour the slot wants too. No rim: the old one
+     existed to make a black hole visible on a dark stage. */
+  --slot: var(--slider-fill);
   --slot-rim: transparent;
 
   --sheet-shadow:
@@ -521,6 +524,9 @@
    own outer edge, so the pair reads as one continuous rounded slot with no
    seam. Centring lives in the motion transform (MailSlot.tsx: x:-50%) so it
    isn't clobbered by the scaleX/scaleY motion writes to `transform`. */
+/* Width is DRIVEN FROM JS (MailSlot: the arrival and closing animations
+   multiply into one calc in --mm) so the border-radius keeps its true px value
+   as the slot shuts. The value here is only the pre-hydration fallback. */
 .slot-rect {
   position: absolute;
   left: 0;

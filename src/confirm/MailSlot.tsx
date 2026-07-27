@@ -1,4 +1,5 @@
 import { motion, useTransform, type MotionValue } from "motion/react";
+import { SLOT } from "./geometry";
 import type { SequenceValues } from "./useWrapSequence";
 
 /**
@@ -34,11 +35,24 @@ export function MailSlot({
   /** Fades the whole slot away after it has closed. */
   fade: MotionValue<number>;
 }) {
-  // The arrival scaleX (sequence) and the closing scaleX (post) are two
-  // different animations on one axis, so they multiply rather than fight.
-  const scaleX = useTransform(
+  // The aperture's width, as a percentage of its full size. The arrival
+  // (sequence) and the closing (post) are two animations on one axis, so they
+  // multiply rather than fight.
+  //
+  // WIDTH, not scaleX: scaling an element scales its border-radius too, so a
+  // rect squeezed to 4% wide had its horizontal radius squeezed with it and
+  // the round ends flattened into slivers as the slot shut. Animating the
+  // width leaves the radius at its true px value, so the aperture keeps its
+  // pill ends all the way closed. Width animation is not compositor-only, but
+  // this is one small element on a beat with nothing else moving.
+  //
+  // Expressed as a calc() in --mm like every other dimension in this step,
+  // rather than a percentage: the anchor is a full-width box, so a percentage
+  // would resolve against the stage rather than the slot's own size.
+  const width = useTransform(
     [v.slotScaleX, close] as const,
-    ([arrive, shut]: number[]) => arrive * shut,
+    ([arrive, shut]: number[]) =>
+      `calc(${arrive * shut * SLOT.w} * var(--mm))`,
   );
   const opacity = useTransform(
     [v.slotOpacity, fade] as const,
@@ -61,7 +75,7 @@ export function MailSlot({
             // not in CSS. Motion writes scaleX/scaleY straight to `transform`,
             // which would otherwise clobber a CSS `translateX(-50%)` and shove
             // the rect half its width to the right.
-            style={{ x: "-50%", scaleX, scaleY: v.slotSwallow }}
+            style={{ x: "-50%", width, scaleY: v.slotSwallow }}
           />
         </div>
       </motion.div>
@@ -79,7 +93,7 @@ export function MailSlot({
         <div className="slot-anchor">
           <motion.div
             className="slot-rect slot-rect--front"
-            style={{ x: "-50%", scaleX, scaleY: v.slotSwallow, opacity: fade }}
+            style={{ x: "-50%", width, scaleY: v.slotSwallow, opacity: fade }}
           />
           <div className="slot-plate" />
         </div>

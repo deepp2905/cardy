@@ -188,7 +188,7 @@ export function Confirm({
                 screen this is the document's top-level heading. */}
             <h1 className="confirm-copy-title">One of one.</h1>
             <p className="confirm-copy-sub">
-              This exact card doesn&rsquo;t exist anywhere else — the colour, the
+              This exact card doesn&rsquo;t exist anywhere else. The colour, the
               pattern, the whole thing is yours alone.
             </p>
           </motion.div>

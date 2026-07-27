@@ -28,7 +28,7 @@ export function Welcome({ firstName }: { firstName: string }) {
           pattern. "Your words" left when the engraving editor was hidden from
           the panel (NoteField — plumbing kept, input unmounted). */}
       <motion.p variants={item}>
-        Let&rsquo;s get you a card that&rsquo;s tailored to you — your color,
+        Let&rsquo;s get you a card that&rsquo;s tailored to you. Your color,
         your pattern, your style.
       </motion.p>
     </motion.div>
