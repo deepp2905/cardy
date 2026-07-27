@@ -171,11 +171,11 @@ function MainFlow() {
           next: restart,
           nextLabel: "Start over",
           showArrow: false,
-          // Stays in place once used, with its label switched to the state it
-          // produced. Removing it made the bar jump the moment you pressed it,
-          // which reads as the button escaping rather than confirming.
+          // Leaves once the email is sent: the offer has been taken, and the
+          // epilogue heading already confirms it. Only "Start over" remains,
+          // so the screen ends on a single action.
           secondary: walletAdded
-            ? { label: "Resend the email", onClick: () => setWalletAdded(true) }
+            ? undefined
             : { label: "Add the digital card", onClick: () => setWalletAdded(true) },
         }
       : {
