@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   animate,
   useMotionValue,
@@ -41,6 +41,9 @@ export function usePostDrag({
 }) {
   const dragScale = useMotionValue(1);
   const hintDismissed = useRef(false);
+  // The 450ms post-completion timer must not fire into an unmounted tree.
+  const postTimer = useRef(0);
+  useEffect(() => () => clearTimeout(postTimer.current), []);
 
   // Small velocity-derived tilt. The difference between dragging an object and
   // dragging a div.
@@ -67,7 +70,7 @@ export function usePostDrag({
     animate(v.hintOpacity, 0, { duration: 0.15 });
     // No slot "swallow" flex — the envelope sinks straight in without the box
     // squeezing around it.
-    window.setTimeout(onPosted, 450);
+    postTimer.current = window.setTimeout(onPosted, 450);
   }, [phase, setPhase, v, mmPx, dragScale, onPosted]);
 
   const onDragStart = useCallback(() => {

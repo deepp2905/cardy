@@ -65,7 +65,7 @@ export const FIXED_PHASE = 0;
 
 // Deterministic per-card PRNG. Seeding from the card index (rather than
 // Math.random) keeps each colourway's pattern stable across reloads — the
-// same eight cards every visit — which also keeps a demo reproducible.
+// same nine cards every visit — which also keeps a demo reproducible.
 function mulberry32(seed: number): () => number {
   return () => {
     seed |= 0;

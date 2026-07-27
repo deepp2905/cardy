@@ -287,33 +287,53 @@ export function useWrapSequence({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started, reduce, mmPx]);
 
-  // Leaving the step (back button) rewinds everything.
+  // Leaving the step (back button) rewinds everything. Each value is STOPPED
+  // before it's set: clear() only cancels pending beats, and a MotionValue
+  // .set() does not stop an animation already running on it — without the
+  // stop, an in-flight fold/fade keeps writing after the reset and the rewind
+  // silently loses.
   useEffect(() => {
     if (started) return;
     startedRef.current = false;
     clear();
     setPhase("rest");
-    cardScale.set(restScale);
-    restOpacity.set(1);
-    sheetOpacity.set(0);
-    sheetScale.set(0.97);
-    sheetY.set(0);
-    printOpacity.set(0);
-    rotBottom.set(0);
-    rotTop.set(0);
-    envOpacity.set(0);
-    envY.set(0);
-    flapRot.set(-165);
-    sealScale.set(0);
-    sealRot.set(-8);
-    flipRot.set(0);
-    nudgeY.set(0);
-    slotOpacity.set(0);
-    slotScaleX.set(0.9);
-    slotSwallow.set(1);
-    hintOpacity.set(0);
+    const reset = (mv: MotionValue<number>, v: number) => {
+      mv.stop();
+      mv.set(v);
+    };
+    reset(cardScale, restScale);
+    reset(restOpacity, 1);
+    reset(sheetOpacity, 0);
+    reset(sheetScale, 0.97);
+    reset(sheetY, 0);
+    reset(printOpacity, 0);
+    reset(rotBottom, 0);
+    reset(rotTop, 0);
+    reset(envOpacity, 0);
+    reset(envY, 0);
+    reset(flapRot, -165);
+    reset(sealScale, 0);
+    reset(sealRot, -8);
+    reset(flipRot, 0);
+    reset(nudgeY, 0);
+    reset(slotOpacity, 0);
+    reset(slotScaleX, 0.9);
+    reset(slotSwallow, 1);
+    reset(hintOpacity, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started]);
+
+  // restOpacity is App-owned and OUTLIVES this hook. If the component unmounts
+  // while the sheet-beat crossfade is still animating it toward 0, that
+  // animation keeps writing after unmount and the hero is left invisible the
+  // next time the confirm step mounts. Stop it and hand it back at 1.
+  useEffect(
+    () => () => {
+      restOpacity.stop();
+      restOpacity.set(1);
+    },
+    [restOpacity],
+  );
 
   return { phase, setPhase, values, restScale };
 }
