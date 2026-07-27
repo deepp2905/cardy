@@ -184,7 +184,9 @@ export function Confirm({
             exit={{ opacity: 0, y: reduce ? 0 : -6 }}
             transition={crossfade}
           >
-            <h2 className="confirm-copy-title">One of one.</h2>
+            {/* h1: Welcome's headline unmounts with its step, so on this
+                screen this is the document's top-level heading. */}
+            <h1 className="confirm-copy-title">One of one.</h1>
             <p className="confirm-copy-sub">
               This exact card doesn&rsquo;t exist anywhere else — the colour, the
               pattern, the whole thing is yours alone.

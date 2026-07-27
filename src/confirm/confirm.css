@@ -622,7 +622,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: calc(50% + var(--slide-w) / (85.6 / 53.98) / 2 + 28px);
+  bottom: calc(50% + var(--slide-w) / (85.6 / 53.98) / 2 + 36px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -633,13 +633,14 @@
   pointer-events: none;
 }
 
-/* A step below --text-display: this sits in the gap above the card, and the
-   card is the hero here — a full display size competed with it for the eye. */
+/* Display size, matching the welcome headline and the epilogue's "On its way."
+   — the three are the same beat in the journey (a statement about the card,
+   with the card or nothing beside it), so they share one voice. */
 .confirm-copy-title {
-  font-size: var(--text-md);
+  font-size: var(--text-display);
   font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
   color: var(--color-12);
   margin: 0;
 }
