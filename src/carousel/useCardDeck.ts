@@ -160,8 +160,10 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
       const fwd = axis === "x" ? "ArrowRight" : "ArrowDown";
       if (e.key !== back && e.key !== fwd) return;
       e.preventDefault();
-      stopSettle();
-      commit(Math.round(value.current) + (e.key === fwd ? 1 : -1));
+      // Spring, don't hard-set: clicking a card glides it to centre, and the
+      // keyboard deserves the same designed motion. settle() clamps its
+      // target, so holding an arrow at either end just re-settles in place.
+      settle(Math.round(value.current) + (e.key === fwd ? 1 : -1));
     };
 
     // Expose the spring so a card click can bring itself to centre, and so an
