@@ -39,8 +39,17 @@ export type Phase =
   | "posting"
   | "done";
 
-/** Beat times in seconds from the arrow press. */
-const BEAT = {
+/**
+ * Global tempo. Every beat time and every duration in this file is multiplied
+ * by it, so the choreography keeps its proportions and only the pace changes —
+ * one dial instead of thirteen numbers to keep in sync.
+ */
+const TEMPO = 1.25;
+/** Scale a base duration/beat by the global tempo. */
+const slow = (seconds: number) => seconds * TEMPO;
+
+/** Beat times in seconds from the arrow press, before TEMPO. */
+const BEAT_BASE = {
   sheet: 0,
   printing: 0.35,
   fold1: 0.6,
@@ -55,6 +64,10 @@ const BEAT = {
   slot: 4.25,
   hint: 4.4,
 } as const;
+
+const BEAT = Object.fromEntries(
+  Object.entries(BEAT_BASE).map(([k, v]) => [k, slow(v)]),
+) as Record<keyof typeof BEAT_BASE, number>;
 
 /** Reduced-motion path: two crossfades, 0.7s total (PLAN.md §7). */
 const REDUCED = { swap: 0.35 } as const;
@@ -285,7 +298,7 @@ export function useWrapSequence({
       animate(cardScale, 1, arrive);
     });
     at(BEAT.printing, () => {
-      animate(printOpacity, 1, { duration: 0.25, ease: crossfade.ease });
+      animate(printOpacity, 1, { duration: slow(0.25), ease: crossfade.ease });
     });
     at(BEAT.fold1, () => {
       setPhase("folding");
@@ -297,7 +310,7 @@ export function useWrapSequence({
     at(BEAT.envelope, () => {
       setPhase("inserting");
       envY.set(ENVELOPE_ENTER_Y * mmPx);
-      animate(envOpacity, 1, { duration: 0.3, ease: crossfade.ease });
+      animate(envOpacity, 1, { duration: slow(0.3), ease: crossfade.ease });
     });
     at(BEAT.insert, () => {
       animate(sheetY, INSERT_TRAVEL * mmPx, insert);
@@ -308,7 +321,7 @@ export function useWrapSequence({
       // envelope's top edge, then folds from there, so it lands flush instead
       // of a radius low. Short enough (0.16s) to read as part of the same
       // gesture rather than a separate beat.
-      animate(flapLift, 0, { duration: 0.16, ease: crossfade.ease });
+      animate(flapLift, 0, { duration: slow(0.16), ease: crossfade.ease });
       animate(flapRot, 0, fold);
       animate(envY, 0, fold);
       animate(sheetY, 0, fold);
@@ -324,7 +337,7 @@ export function useWrapSequence({
     });
     at(BEAT.hidePacket, () => {
       // Fully occluded by now — stop compositing it.
-      animate(sheetOpacity, 0, { duration: 0.2 });
+      animate(sheetOpacity, 0, { duration: slow(0.2) });
     });
     at(BEAT.flip, () => {
       setPhase("flipping");
@@ -332,11 +345,11 @@ export function useWrapSequence({
     });
     at(BEAT.rest, () => setPhase("idle"));
     at(BEAT.slot, () => {
-      animate(slotOpacity, 1, { duration: 0.4, ease: crossfade.ease });
+      animate(slotOpacity, 1, { duration: slow(0.4), ease: crossfade.ease });
       animate(slotScaleX, 1, wrap);
     });
     at(BEAT.hint, () => {
-      animate(hintOpacity, 1, { duration: 0.3, ease: crossfade.ease });
+      animate(hintOpacity, 1, { duration: slow(0.3), ease: crossfade.ease });
       // Tug the envelope down twice and let it snap back — the gesture the
       // chevron is asking for, performed once so it reads as "this thing
       // moves, and it moves DOWN". Keyframes on one animate() call so the two
@@ -346,7 +359,7 @@ export function useWrapSequence({
         envY,
         [0, TUG_MM * mmPx, 0, TUG_MM * 0.62 * mmPx, 0],
         {
-          duration: 1.5,
+          duration: slow(1.5),
           times: [0, 0.22, 0.46, 0.66, 1],
           ease: "easeInOut",
         },

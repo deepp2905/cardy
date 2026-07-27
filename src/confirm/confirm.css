@@ -554,19 +554,23 @@
   z-index: 6; /* over the envelope — this half carries the masking plate */
 }
 
-/* Anchors both halves to the same origin: the aperture's vertical MIDDLE
-   (SLOT_TOP + half the slot height = 75 + 5mm). Masking from the aperture's
-   top edge made the envelope look like it entered halfway down the hole;
-   splitting at the middle puts the seam where a real letterbox's mouth is.
+/* Anchors both halves to the aperture's vertical MIDDLE. Splitting at the
+   middle (rather than the top edge) puts the seam where a real letterbox's
+   mouth is, so the envelope reads as entering AT the slot rather than halfway
+   down it.
 
-   The box is ZERO-HEIGHT on purpose: it marks the seam LINE. Both halves and
-   the plate position themselves off that line with explicit offsets — nothing
-   here may use a percentage height, since there is no height to take a
-   percentage of. */
+   The offset comes from --slot-mouth, written by MailSlot from the SLOT_MOUTH
+   constant. It used to be hardcoded at 80mm, which silently desynced from the
+   JS clip the moment SLOT_GAP moved the slot — the graphic sat at one line and
+   the mask cut at another.
+
+   The box is ZERO-HEIGHT on purpose: it marks the seam LINE. Both halves
+   position themselves off that line with explicit offsets — nothing here may
+   use a percentage height, since there is no height to take a percentage of. */
 .slot-anchor {
   position: absolute;
   left: 50%;
-  top: calc(50% + 80 * var(--mm));
+  top: calc(50% + var(--slot-mouth));
   width: 100%;
   height: 0;
 }

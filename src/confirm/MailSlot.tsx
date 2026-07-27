@@ -1,5 +1,6 @@
+import type { CSSProperties } from "react";
 import { motion, useTransform, type MotionValue } from "motion/react";
-import { SLOT } from "./geometry";
+import { SLOT, SLOT_MOUTH } from "./geometry";
 import type { SequenceValues } from "./useWrapSequence";
 
 /**
@@ -59,6 +60,13 @@ export function MailSlot({
     ([arrive, out]: number[]) => arrive * out,
   );
 
+  // The seam position, handed to CSS from the one constant that defines it.
+  // Hardcoding this in the stylesheet let the graphic drift away from the JS
+  // clip when SLOT_GAP moved the slot.
+  const anchorVars = {
+    "--slot-mouth": `calc(${SLOT_MOUTH} * var(--mm))`,
+  } as CSSProperties;
+
   return (
     <>
       {/* Back half — below the envelope, so the envelope covers it on entry. */}
@@ -68,7 +76,7 @@ export function MailSlot({
         aria-hidden="true"
       >
         {/* Back half carries no plate, so it can fade wholesale. */}
-        <div className="slot-anchor">
+        <div className="slot-anchor" style={anchorVars}>
           <motion.div
             className="slot-rect slot-rect--back"
             // x:-50% centres the rect; it MUST live in the motion transform,
@@ -90,7 +98,7 @@ export function MailSlot({
         style={{ opacity }}
         aria-hidden="true"
       >
-        <div className="slot-anchor">
+        <div className="slot-anchor" style={anchorVars}>
           <motion.div
             className="slot-rect slot-rect--front"
             style={{ x: "-50%", width, scaleY: v.slotSwallow, opacity: fade }}

@@ -1,5 +1,5 @@
 import { motion, useTransform, type MotionValue } from "motion/react";
-import { SLOT_TOP, mm } from "./geometry";
+import { ENVELOPE, SLOT_TOP, mm } from "./geometry";
 import type { SequenceValues } from "./useWrapSequence";
 
 /**
@@ -31,11 +31,19 @@ export function PostHint({
     ([arrive, out]: number[]) => arrive * out,
   );
 
+  // Halfway down the gap the drag has to cross, rather than a fixed offset
+  // above the slot: SLOT_TOP moved when SLOT_GAP widened, and an offset pinned
+  // to the slot left the chevron stranded below the envelope with a long empty
+  // run beneath it. Centring it in the gap keeps it pointing FROM the envelope
+  // TO the slot at any distance.
+  const restBottom = ENVELOPE.h / 2;
+  const hintY = restBottom + (SLOT_TOP - restBottom) / 2;
+
   if (reduce) {
     return (
       <motion.div
         className="post-hint post-hint--reduced"
-        style={{ opacity, top: `calc(50% + ${mm(SLOT_TOP - 26)})` }}
+        style={{ opacity, top: `calc(50% + ${mm(hintY)})` }}
       >
         <button type="button" className="btn btn-primary btn-mail" onClick={onMail}>
           Mail it
@@ -46,7 +54,7 @@ export function PostHint({
   return (
     <motion.div
       className="post-hint"
-      style={{ opacity: v.hintOpacity, top: `calc(50% + ${mm(SLOT_TOP - 22)})` }}
+      style={{ opacity, top: `calc(50% + ${mm(hintY)})` }}
       aria-hidden="true"
     >
       {/* A sine bob: the ease-in-out on a symmetric 0 → peak → 0 keyframe set is

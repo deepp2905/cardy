@@ -52,16 +52,24 @@ export const cardMove: Transition = {
   mass: 0.9,
 };
 
+// --- Confirm-sequence springs ---
+//
+// These seven (fold, stamp, arrive, wrap, insert, flip, post) run at the wrap
+// sequence's TEMPO, 1.25x slower than their original tuning. A spring is slowed
+// by k/T² and c/T, which holds the damping ratio exactly — so the character
+// (bounce, overshoot, settle shape) is identical and only the pace changes.
+// The original values are noted per spring in case the tempo is reverted.
+
 export const fold: Transition = {
   type: "spring",
-  stiffness: 220,
-  damping: 26,
+  stiffness: 141, // was 220
+  damping: 20.8, // was 26 — ζ 0.876 either way
 };
 
 export const stamp: Transition = {
   type: "spring",
-  stiffness: 500,
-  damping: 15,
+  stiffness: 320, // was 500
+  damping: 12, // was 15 — ζ 0.335, the overshoot the seal beat wants
 };
 
 // Options shape for useSpring() (motion values take no `type` field).
@@ -156,23 +164,23 @@ export const arrowNudge = {
 // Card settling back to sequence scale as the carrier sheet appears behind it.
 export const arrive: Transition = {
   type: "spring",
-  stiffness: 200,
-  damping: 28,
+  stiffness: 128, // was 200
+  damping: 22.4, // was 28 — ζ 0.990 either way
 };
 
 // Carrier sheet fade-and-settle.
 export const wrap: Transition = {
   type: "spring",
-  stiffness: 260,
-  damping: 30,
+  stiffness: 166, // was 260
+  damping: 24, // was 30 — ζ 0.930
 };
 
 // Packet descending into the envelope pocket. mass > 1 so it reads as paper
 // with weight rather than a div changing its y.
 export const insert: Transition = {
   type: "spring",
-  stiffness: 200,
-  damping: 28,
+  stiffness: 128, // was 200
+  damping: 22.4, // was 28 — ζ 0.944
   mass: 1.1,
 };
 
@@ -180,8 +188,8 @@ export const insert: Transition = {
 // the reference animation's signature and must survive tuning.
 export const flip: Transition = {
   type: "spring",
-  stiffness: 180,
-  damping: 22,
+  stiffness: 115, // was 180
+  damping: 17.6, // was 22 — ζ 0.782, keeps the rock at settle
   mass: 1.1,
 };
 
@@ -189,6 +197,6 @@ export const flip: Transition = {
 // spring — never a duration tween (§6 rules).
 export const post: Transition = {
   type: "spring",
-  stiffness: 240,
-  damping: 30,
+  stiffness: 154, // was 240
+  damping: 24, // was 30 — ζ 0.968
 };
