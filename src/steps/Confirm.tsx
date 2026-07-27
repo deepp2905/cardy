@@ -75,7 +75,16 @@ export function Confirm({
     restOpacity,
   });
 
-  const { dragProps, dragScale, dragTilt, vanish, runPost } = usePostDrag({
+  const {
+    dragProps,
+    dragScale,
+    dragTilt,
+    vanish,
+    hintFade,
+    slotClose,
+    slotFade,
+    runPost,
+  } = usePostDrag({
     v: values,
     mmPx,
     phase,
@@ -194,9 +203,14 @@ export function Confirm({
             vanish={vanish}
           />
 
-          <MailSlot v={values} />
+          <MailSlot v={values} close={slotClose} fade={slotFade} />
           {(phase === "idle" || phase === "posting") && (
-            <PostHint v={values} reduce={reduce} onMail={runPost} />
+            <PostHint
+              v={values}
+              reduce={reduce}
+              onMail={runPost}
+              fade={hintFade}
+            />
           )}
         </motion.div>
       )}

@@ -377,7 +377,9 @@ export function SequencePlayground() {
             vanish={one}
           />
 
-          {scene.showSlot && <MailSlot v={values} />}
+          {/* No post gesture on this bench, so the slot never closes: both
+              close/fade are pinned open. */}
+          {scene.showSlot && <MailSlot v={values} close={one} fade={one} />}
         </motion.div>
       </div>
 

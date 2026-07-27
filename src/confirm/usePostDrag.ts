@@ -10,10 +10,12 @@ import {
 import { post, snappy } from "../lib/motionConfig";
 import {
   DRAG_TOP_GIVE,
+  ENVELOPE,
   POST_COMMIT_MM,
   POST_FLICK_MM,
   POST_FLICK_VELOCITY,
   POST_TRAVEL,
+  SLOT_MOUTH,
 } from "./geometry";
 import type { Phase, SequenceValues } from "./useWrapSequence";
 
@@ -56,14 +58,43 @@ export function usePostDrag({
   // Kept as a constant 1 so Envelope's opacity/shadow maths is untouched.
   const vanish = useMotionValue(1);
 
+  // Chevron fade, driven by POSITION rather than by the post trigger: it holds
+  // while the envelope is still travelling toward the slot it points at, and
+  // clears over the stretch where the paper is disappearing behind the lip.
+  // Starts once the envelope's top edge reaches the mouth, done by the time it
+  // is fully swallowed. Multiplied into the sequence's own hintOpacity in
+  // Confirm, so the arrival fade-in still owns the other direction.
+  const hintFadeStart = SLOT_MOUTH * mmPx;
+  const hintFadeEnd = (SLOT_MOUTH + ENVELOPE.h / 2) * mmPx;
+  const hintFade = useTransform(v.envY, [hintFadeStart, hintFadeEnd], [1, 0], {
+    clamp: true,
+  });
+
+  // Slot close-up: once the envelope is in, the aperture narrows to nothing
+  // (width only — the halves keep their height, so it reads as the mouth
+  // closing rather than the slot shrinking away) and the whole thing fades.
+  // Both driven off the same travel so they stay in step with the paper.
+  const closeStart = (SLOT_MOUTH + ENVELOPE.h / 2) * mmPx;
+  const closeEnd = POST_TRAVEL * mmPx;
+  const slotClose = useTransform(v.envY, [closeStart, closeEnd], [1, 0.04], {
+    clamp: true,
+  });
+  const slotFade = useTransform(
+    v.envY,
+    [closeStart, (closeStart + closeEnd) / 2, closeEnd],
+    [1, 1, 0],
+    { clamp: true },
+  );
+
   const runPost = useCallback(() => {
     if (phase !== "idle") return;
     setPhase("posting");
     animate(v.envY, POST_TRAVEL * mmPx, post);
     animate(dragScale, 0.97, post);
-    animate(v.hintOpacity, 0, { duration: 0.15 });
-    // No slot "swallow" flex — the envelope sinks straight in without the box
-    // squeezing around it.
+    // The hint is NOT faded here. It fades when the envelope has actually gone
+    // in (see hintFade below) — dismissing it the moment the post is triggered
+    // took the arrow away while the paper was still visibly travelling toward
+    // the slot it was pointing at.
     postTimer.current = window.setTimeout(onPosted, 450);
   }, [phase, setPhase, v, mmPx, dragScale, onPosted]);
 
@@ -108,5 +139,14 @@ export function usePostDrag({
         }
       : {};
 
-  return { dragProps, dragScale, dragTilt, vanish, runPost };
+  return {
+    dragProps,
+    dragScale,
+    dragTilt,
+    vanish,
+    hintFade,
+    slotClose,
+    slotFade,
+    runPost,
+  };
 }

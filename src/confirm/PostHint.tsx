@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { motion, useTransform, type MotionValue } from "motion/react";
 import { SLOT_TOP, mm } from "./geometry";
 import type { SequenceValues } from "./useWrapSequence";
 
@@ -15,16 +15,27 @@ export function PostHint({
   v,
   reduce,
   onMail,
+  fade,
 }: {
   v: SequenceValues;
   reduce: boolean;
   onMail: () => void;
+  /** 1 until the envelope reaches the slot mouth, → 0 as it is swallowed.
+   *  Multiplied with the sequence's arrival fade-in, so the hint appears on
+   *  the timeline's schedule and leaves on the envelope's position. */
+  fade: MotionValue<number>;
 }) {
+  // Two independent reasons to be hidden; they multiply rather than override.
+  const opacity = useTransform(
+    [v.hintOpacity, fade] as const,
+    ([arrive, out]: number[]) => arrive * out,
+  );
+
   if (reduce) {
     return (
       <motion.div
         className="post-hint post-hint--reduced"
-        style={{ opacity: v.hintOpacity, top: `calc(50% + ${mm(SLOT_TOP - 26)})` }}
+        style={{ opacity, top: `calc(50% + ${mm(SLOT_TOP - 26)})` }}
       >
         <button type="button" className="btn btn-primary btn-mail" onClick={onMail}>
           Mail it
