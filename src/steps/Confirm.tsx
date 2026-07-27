@@ -11,6 +11,7 @@ import { MailSlot } from "../confirm/MailSlot";
 import { PostHint } from "../confirm/PostHint";
 import { usePostDrag } from "../confirm/usePostDrag";
 import { useStageScale } from "../confirm/useStageScale";
+import { useSlideW } from "../lib/useSlideW";
 import { useWrapSequence } from "../confirm/useWrapSequence";
 import "../confirm/confirm.css";
 
@@ -56,20 +57,11 @@ export function Confirm({
   const reduce = usePrefersReducedMotion();
   const stageRef = useRef<HTMLDivElement>(null);
   const mmPx = useStageScale(stageRef);
-  const [slideW, setSlideW] = useState(372);
+  // Resolved --slide-w. The old inline parseFloat read the UNRESOLVED token
+  // stream ("min(372px, 88dvw)") and silently stayed at 372 on phones; the
+  // hook measures a probe so the min() actually resolves.
+  const slideW = useSlideW();
   const [showEpilogue, setShowEpilogue] = useState(false);
-
-  // --slide-w is `min(372px, 88dvw)`; read it rather than duplicating the rule.
-  useEffect(() => {
-    const read = () => {
-      const raw = getComputedStyle(document.documentElement).getPropertyValue("--slide-w");
-      const px = parseFloat(raw);
-      if (!Number.isNaN(px) && px > 0) setSlideW(px);
-    };
-    read();
-    window.addEventListener("resize", read);
-    return () => window.removeEventListener("resize", read);
-  }, []);
 
   const { phase, setPhase, values } = useWrapSequence({
     mmPx,

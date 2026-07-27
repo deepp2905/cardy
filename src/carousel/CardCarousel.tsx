@@ -4,6 +4,7 @@ import { Card } from "../card/Card";
 import type { CardConfig } from "../card/cardConfig";
 import { PALETTE } from "../card/cardConfig";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
+import { useSlideW } from "../lib/useSlideW";
 import { useCardDeck } from "./useCardDeck";
 import "./carousel.css";
 
@@ -39,11 +40,6 @@ const BACK_GAP = 0; // gap between the rotated background cards
 const SCALE_STEP = 0.04; // per-card shrink with depth
 const SCALE_DEPTH = 7; // cards out at which shrink stops
 const PERSPECTIVE = 1200; // px
-
-// Card render width: the column width, clamped to fit narrow viewports. The
-// footprint math below needs a concrete number, so it's measured rather than
-// left to CSS.
-const MAX_CARD_W = 372;
 
 type CardCarouselProps = {
   configs: Record<string, CardConfig>;
@@ -81,18 +77,11 @@ export function CardCarousel({
 
   const { ref, index, focusedIndex, goTo } = useCardDeck("x", count, activePos);
 
-  // Card width, measured from the deck so the footprint math is in real px.
-  const [cardW, setCardW] = useState(MAX_CARD_W);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const measure = () =>
-      setCardW(Math.min(MAX_CARD_W, Math.max(200, el.clientWidth - 32)));
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [ref]);
+  // Card width: the SAME resolved --slide-w the hero and confirm use — one
+  // source of truth. The deck used to measure its own width (full-bleed dvw
+  // minus a margin), which disagreed with --slide-w below ~423px viewport, so
+  // the hero/deck swap visibly changed card size on phones.
+  const cardW = useSlideW();
 
   // Report the centred card up to the parent as the deck settles.
   useEffect(() => {
