@@ -127,9 +127,9 @@ export function seedConfigs(): Record<string, CardConfig> {
             angle: band(rand(), 0, 45),
             size: band(rand(), 20, 44),
             strokeWidth: band(rand(), 1, 3),
-            staggerSize: band(rand(), 0.08, 0.55),
-            staggerAngle: band(rand(), 20, 170),
-            staggerSpacing: band(rand(), 4, 30),
+            staggerSize: band(rand(), 0.08, 0.72),
+            staggerAngle: band(rand(), 20, 90),
+            staggerSpacing: band(rand(), 4, 24),
           },
         } satisfies CardConfig,
       ];
