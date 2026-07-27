@@ -80,7 +80,9 @@ export function Envelope({
           : { "aria-hidden": true })}
         {...dragProps}
       >
-        {/* Back: body + flap + seal. Visible from the fold through the seal. */}
+        {/* Back: the pocket. Visible from the fold through the seal. The flap
+            is NOT here — it renders as a sibling of .envelope below, so the
+            packet can pass between the two. */}
         <motion.div
           className="env-face env-face--back"
           style={{ opacity: v.envBackOpacity }}
@@ -88,15 +90,6 @@ export function Envelope({
           <div className="env-body">
             <div className="env-mouth" />
           </div>
-          <motion.div className="env-flap" style={{ rotateX: v.flapRot }}>
-            <motion.div className="panel-shade" style={{ opacity: v.flapShade }} />
-          </motion.div>
-          <motion.div
-            className="env-seal"
-            style={{ scale: v.sealScale, rotate: v.sealRot }}
-          >
-            <span>cardy</span>
-          </motion.div>
         </motion.div>
 
         {/* Front: the address side, pre-mirrored so it reads correctly at 180°. */}
@@ -105,6 +98,33 @@ export function Envelope({
           style={{ opacity: v.envFrontOpacity }}
         >
           <span className="env-for">For {firstName}</span>
+        </motion.div>
+      </motion.div>
+
+      {/* The open flap, rendered OUTSIDE .envelope so it shares a stacking
+          context with the packet. That is the whole point: the packet (.sheet,
+          z-index 1) can then sit ABOVE the flap (0) and BELOW the envelope
+          body (2), which is what reads as paper sliding down into the mouth.
+          Nested inside .envelope it could only ever be above or below the
+          entire packet, never between the envelope's own two layers.
+          Carries the same y/flip transforms as the envelope so it travels
+          with it. */}
+      <motion.div
+        className="env-flap-layer"
+        style={{
+          opacity,
+          y: v.envY,
+          rotateY: v.flipRot,
+          scale: dragScale,
+          rotate: dragTilt,
+        }}
+        aria-hidden="true"
+      >
+        <motion.div
+          className="env-flap"
+          style={{ rotateX: v.flapRot, opacity: v.envBackOpacity }}
+        >
+          <motion.div className="panel-shade" style={{ opacity: v.flapShade }} />
         </motion.div>
       </motion.div>
     </>

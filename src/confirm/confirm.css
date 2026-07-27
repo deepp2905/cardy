@@ -110,6 +110,11 @@
   filter: drop-shadow(0 calc(6 * var(--mm)) calc(14 * var(--mm)) oklch(0 0 0 / var(--sheet-drop)));
 }
 
+/* The packet sits between the two envelope layers during the insert: above the
+   open flap (so it reads as sliding INTO the mouth) and below the body. Both
+   envelope parts therefore have to be siblings of the sheet in this stacking
+   context rather than nested inside .envelope — see .env-flap--detached. */
+
 .panel {
   position: absolute;
   left: 0;
@@ -316,6 +321,15 @@
   pointer-events: none;
 }
 
+/* Paper grain. An inline SVG feTurbulence — no asset to load, no extra request,
+   and it scales with the element. Fractal noise at a high baseFrequency is
+   fine-grained speckle; blended at low opacity it gives kraft the tooth of a
+   real envelope instead of a flat fill. Shared by every kraft surface via
+   --grain, so the body, the flap and both faces match. */
+:root {
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
 .env-face {
   position: absolute;
   inset: 0;
@@ -324,6 +338,30 @@
   box-shadow:
     inset 0 1px 0 oklch(1 0 0 / 0.12),
     0 1px 3px oklch(0 0 0 / 0.2);
+}
+
+/* The grain sits in a pseudo-element rather than the background shorthand so
+   it composites over the kraft fill with its own blend mode and opacity, and
+   so the element's own background can still be themed independently. */
+.env-face::after,
+.env-body::after,
+.env-flap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: var(--grain);
+  /* soft-light keeps the hue and only perturbs value, so the kraft stays kraft
+     and picks up tooth rather than turning grey. */
+  mix-blend-mode: soft-light;
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+/* The flap is clipped to a triangle; its grain has to be too, or the noise
+   paints the full rectangle back in. */
+.env-flap::after {
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
 
 .env-face--back {
@@ -356,6 +394,20 @@
   opacity: 0.7;
 }
 
+/* The flap's own layer, a SIBLING of .envelope (see Envelope.tsx). z-index 0
+   puts it under the packet (.sheet, 1), while the envelope body stays above it
+   at 2 — so the descending carrier passes in front of the open flap and behind
+   the pocket, which is what reads as paper going INSIDE. Sized and positioned
+   to match .envelope exactly so the flap hinges on the same edge. */
+.env-flap-layer {
+  position: absolute;
+  width: calc(126 * var(--mm));
+  height: calc(70 * var(--mm));
+  transform-style: preserve-3d;
+  z-index: 0;
+  pointer-events: none;
+}
+
 /* Triangular flap hinged on the envelope's top edge. Open sits at -165°, not a
    full 180 — the residual 15° reads as depth, as in the reference. */
 .env-flap {
@@ -368,31 +420,16 @@
   transform-style: preserve-3d;
   background: var(--kraft-flap);
   clip-path: polygon(0 0, 100% 0, 50% 100%);
-  z-index: 3;
 }
 
 .env-flap .panel-shade {
   clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
 
-.env-seal {
-  position: absolute;
-  top: calc(55% - 7 * var(--mm));
-  left: calc(50% - 7 * var(--mm));
-  width: calc(14 * var(--mm));
-  height: calc(14 * var(--mm));
-  border-radius: 50%;
-  background: var(--seal);
-  color: var(--seal-ink);
-  display: grid;
-  place-items: center;
-  font-size: calc(3.6 * var(--mm));
-  font-weight: 650;
-  letter-spacing: 0.01em;
-  z-index: 4;
-  box-shadow: 0 1px 2px oklch(0 0 0 / 0.3);
-  user-select: none;
-}
+/* The wax seal is gone — the envelope closes without a sticker. The `seal`
+   BEAT survives in useWrapSequence (it still drives nudgeY, the little settle
+   bump as the flap lands), so sealScale/sealRot remain as unused outputs
+   rather than being torn out of the timeline. */
 
 .env-for {
   font-size: calc(6 * var(--mm));
