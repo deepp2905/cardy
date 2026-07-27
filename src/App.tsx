@@ -28,6 +28,9 @@ import { ThemeToggle } from "./ui/ThemeToggle";
 // main app chunk.
 const Playground = lazy(() => import("./playground/Playground"));
 const Explore = lazy(() => import("./explore/Explore"));
+// TEMPORARY screenshot route (#/wallpaper). Delete this line, the branch in
+// App(), and src/wallpaper/ to remove it.
+const Wallpaper = lazy(() => import("./wallpaper/Wallpaper"));
 
 const ids = Object.keys(seedConfigs());
 
@@ -35,6 +38,17 @@ export default function App() {
   const route = useHashRoute();
   const isExplore = route.startsWith("/explore");
   const isPlay = route.startsWith("/play");
+
+  // TEMPORARY: bare screenshot route, no chrome of any kind — it returns
+  // before the dev shell so no nav, theme toggle or step indicator can land
+  // in the shot. Delete with src/wallpaper/.
+  if (route.startsWith("/wallpaper")) {
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <Wallpaper />
+      </Suspense>
+    );
+  }
 
   if (isExplore || isPlay) {
     // DevNav + corner controls are mounted HERE, above the Explore/Playground

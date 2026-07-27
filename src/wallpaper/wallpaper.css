@@ -1,0 +1,44 @@
+/* TEMPORARY screenshot route. Delete with the folder. */
+
+/* Fixed, not absolute: this must cover the viewport regardless of whatever
+   layout the app shell would otherwise impose, and never scroll. */
+.wallpaper {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg);
+  display: grid;
+  place-items: center;
+}
+
+/* WIDER and TALLER than the viewport (Wallpaper.tsx adds a card of bleed on
+   each side) and centred by the parent's place-items. Centring an oversized
+   child overflows it symmetrically, so the field is cut mid-card on all four
+   edges instead of ending flush on one. */
+.wallpaper-field {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Rows are independent flex strips rather than grid rows, so each can carry
+   its own horizontal phase offset (marginLeft, set inline). A CSS grid would
+   force every row onto the same column tracks — the rigid lattice this is
+   deliberately avoiding. */
+.wallpaper-row {
+  display: flex;
+  flex-shrink: 0;
+}
+
+/* Card is width-driven (container queries), so the cell fixes the column
+   width and the card fills it. flex-shrink:0 keeps the phase offset from
+   squeezing cards instead of sliding the row. */
+.wallpaper-cell {
+  width: var(--card-w);
+  flex-shrink: 0;
+}
+
+/* Cards are inert here: this route exists to be photographed, and a hover or
+   focus ring would land in the screenshot. */
+.wallpaper .card-frame {
+  pointer-events: none;
+}
