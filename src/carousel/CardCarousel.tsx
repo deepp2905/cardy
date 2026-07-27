@@ -83,12 +83,26 @@ export function CardCarousel({
   // the hero/deck swap visibly changed card size on phones.
   const cardW = useSlideW();
 
-  // Report the centred card up to the parent as the deck settles.
+  // True only at a whole index — i.e. the frame the settle spring commits.
+  // Declared here because both the parent report below and the hero handoff
+  // further down key off it.
+  const settled = Number.isInteger(index);
+
+  // Report the centred card up to the parent, but ONLY once the deck has
+  // settled on it. focusedIndex is Math.round(index), so mid-drag it flips at
+  // the halfway point between two cards, not when a card reaches centre —
+  // reporting on every change repointed the dial panel at a different card
+  // several times per gesture, and jitter around a .5 boundary toggled it back
+  // and forth. Gating on `settled` means the panel updates exactly when a card
+  // lands: no lag on a fast flick (the spring commits once), no churn on a slow
+  // drag. This is the same "truth transfers on settle" contract the hero
+  // handoff below already uses.
   useEffect(() => {
+    if (!settled) return;
     const next = ids[focusedIndex];
     if (next && next !== activeId) onActiveChange(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focusedIndex]);
+  }, [focusedIndex, settled]);
 
   // Hand the centre slot between the deck's live card (mid-drag) and the
   // persistent hero (settled). deckOpacity is the HERO's opacity: 1 when settled
@@ -111,7 +125,6 @@ export function CardCarousel({
   // So the handoff is a hard swap at a single instant: deckOpacity goes 0 or 1
   // with no ramp, and the deck card takes its exact inverse. Exactly one card,
   // and therefore exactly one shadow, is visible in every frame.
-  const settled = Number.isInteger(index);
   useEffect(() => {
     // Set, don't animate: any ramp puts both cards at partial alpha for those
     // frames, which is exactly the shadow artifact described above.
