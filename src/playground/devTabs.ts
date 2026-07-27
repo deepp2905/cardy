@@ -4,6 +4,7 @@ export const DEV_TABS = [
   { path: "/play/palette", label: "Color" },
   { path: "/play/type", label: "Typography" },
   { path: "/play/card", label: "Card" },
+  { path: "/play/sequence", label: "Sequence" },
   // Own route, not a /play page — it has its own chrome and dial panels.
   { path: "/explore", label: "Carousel" },
 ];

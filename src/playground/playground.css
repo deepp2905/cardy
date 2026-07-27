@@ -281,6 +281,30 @@
   filter: grayscale(1) contrast(0.98);
 }
 
+/* sequence bench (/play/sequence) */
+
+/* The confirm stage sizes itself from its own box (useStageScale measures it),
+   so this page hands it a real, generous height instead of the centred
+   auto-height every other playground page uses. Bottom room clears the docked
+   timeline. */
+.seq-page {
+  width: 100%;
+  height: 100%;
+  min-height: min(760px, 78dvh);
+  display: flex;
+  flex-direction: column;
+}
+
+.pg-main:has(.seq-page) {
+  padding: 24px 24px 200px;
+  place-items: stretch;
+}
+
+.seq-stage {
+  flex: 1;
+  min-height: 0;
+}
+
 /* index */
 
 .pg-index {

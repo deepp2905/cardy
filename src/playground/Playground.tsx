@@ -3,6 +3,7 @@ import "dialkit/styles.css";
 import { CardExplorer } from "./cardvariants/CardExplorer";
 import { DEV_TABS } from "./devTabs";
 import { PalettePlayground } from "./PalettePlayground";
+import { SequencePlayground } from "./SequencePlayground";
 import { TypePlayground } from "./TypePlayground";
 import { useHashRoute } from "./useHashRoute";
 import "./playground.css";
@@ -17,6 +18,7 @@ export default function Playground() {
         {page === "card" && <CardExplorer />}
         {page === "palette" && <PalettePlayground />}
         {page === "type" && <TypePlayground />}
+        {page === "sequence" && <SequencePlayground />}
         {page === "index" && (
           <div className="pg-index">
             <h1>Playground</h1>
