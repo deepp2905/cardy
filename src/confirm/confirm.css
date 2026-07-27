@@ -644,11 +644,12 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: calc(50% + var(--slide-w) / (85.6 / 53.98) / 2 + 36px);
+  bottom: calc(50% + var(--slide-w) / (85.6 / 53.98) / 2 + 40px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  /* 14px, matching .welcome-copy's gap — same headline-plus-line pairing. */
+  gap: 14px;
   padding-inline: 24px;
   text-align: center;
   z-index: 4;
@@ -667,14 +668,16 @@
   margin: 0;
 }
 
+/* Same size, weight and colour as the welcome subtitle (steps.css
+   .welcome-copy p): both are a headline plus one supporting line, so they read
+   as the same kind of statement at either end of the flow. */
 .confirm-copy-sub {
-  font-size: var(--text-sm);
-  line-height: 1.5;
-  color: var(--color-10);
+  font-size: var(--text-md);
+  font-weight: 450;
+  line-height: 1.6;
+  color: var(--color-11);
   margin: 0;
-  /* Narrower than the card so the block reads as a caption above it rather
-     than a paragraph spanning the stage. */
-  max-width: min(34ch, var(--slide-w));
+  max-width: 30ch;
   text-wrap: balance;
 }
 
