@@ -101,7 +101,7 @@ export function Confirm({
     const t = window.setTimeout(() => {
       setShowLoading(false);
       setShowEpilogue(true);
-    }, 1800);
+    }, 3600);
     return () => clearTimeout(t);
   }, [showLoading]);
 
