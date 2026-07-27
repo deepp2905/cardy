@@ -1,5 +1,10 @@
 import type { KeyboardEvent } from "react";
-import { motion, useTransform, type MotionValue } from "motion/react";
+import {
+  motion,
+  useMotionValue,
+  useTransform,
+  type MotionValue,
+} from "motion/react";
 import { ENVELOPE, SLOT_MOUTH } from "./geometry";
 import type { SequenceValues } from "./useWrapSequence";
 
@@ -42,6 +47,13 @@ export function Envelope({
     ([a, b]: number[]) => a * b,
   );
 
+  // Stage scale as a MotionValue, not a closure capture: useStageScale returns
+  // 0 on the first render and measures in an effect, while useTransform builds
+  // its mapper once — anything closing over the initial 0 would compute at
+  // scale 0 for the life of the component.
+  const scale = useMotionValue(mmPx);
+  scale.set(mmPx);
+
   // The ground shadow is a sibling of the envelope (so the envelope can flip
   // above it without dragging it along), which means it does NOT inherit the
   // envelope's own opacity. Gate it by envOpacity * vanish too, or it shows at
@@ -51,12 +63,14 @@ export function Envelope({
   // would cross the line first and sit there as a smudge under a slot that has
   // nothing above it. Clipping it would just cut a hard edge into a soft
   // gradient, so it fades over the last few mm of approach instead.
-  const shadowSink = useTransform(
-    v.envY,
-    [(SLOT_MOUTH - ENVELOPE.h / 2 - 12) * mmPx, (SLOT_MOUTH - ENVELOPE.h / 2) * mmPx],
-    [1, 0],
-    { clamp: true },
-  );
+  const shadowSink = useTransform([v.envY, scale], ([y, mm]: number[]) => {
+    if (mm <= 0) return 1;
+    const end = (SLOT_MOUTH - ENVELOPE.h / 2) * mm;
+    const start = end - 12 * mm;
+    if (y <= start) return 1;
+    if (y >= end) return 0;
+    return 1 - (y - start) / (end - start);
+  });
   const shadowOpacity = useTransform(
     [v.shadowOpacity, v.envOpacity, vanish, shadowSink],
     ([s, a, b, sink]: number[]) => s * a * b * sink,
@@ -79,11 +93,15 @@ export function Envelope({
   // clip-path (not an ancestor's overflow: hidden) because the envelope is a
   // `preserve-3d` subtree, which Safari will not clip via an ancestor — see
   // MailSlot's docblock. Clipping the element itself is reliable.
-  const clip = useTransform(v.envY, (y) => {
-    const h = ENVELOPE.h * mmPx;
-    // Distance from the element's top edge down to the fixed mouth line.
-    const cutFromTop = SLOT_MOUTH * mmPx - (y - h / 2);
-    const hidden = Math.min(Math.max(h - cutFromTop, 0), h);
+  //
+  const clip = useTransform([v.envY, scale], ([y, mm]: number[]) => {
+    if (mm <= 0) return "inset(0 0 0 0)";
+    const h = ENVELOPE.h * mm;
+    // The envelope is centred in the stage, so at envY = y its bottom edge sits
+    // at (y + h/2) from stage centre. Hide however much of that has passed the
+    // fixed mouth line.
+    const past = y + h / 2 - SLOT_MOUTH * mm;
+    const hidden = Math.min(Math.max(past, 0), h);
     return `inset(0 0 ${hidden}px 0)`;
   });
 
