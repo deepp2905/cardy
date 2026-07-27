@@ -416,11 +416,11 @@
 }
 
 .slot-layer--back {
-  z-index: 6; /* under the envelope (2) — the inside of the box */
+  z-index: 1; /* under the envelope (2) — the inside of the box */
 }
 
 .slot-layer--front {
-  z-index: 1; /* over the envelope — this half carries the masking plate */
+  z-index: 6; /* over the envelope — this half carries the masking plate */
 }
 
 /* Anchors both halves to the same origin: the aperture's vertical MIDDLE
@@ -432,6 +432,8 @@
   left: 50%;
   top: calc(50% + 80 * var(--mm));
   width: 100%;
+  /* Height stays auto (it collapses — every child is absolutely positioned).
+     Nothing depends on it: the plate states its own height in mm. */
 }
 
 /* Each half is 5mm — half the 10mm aperture — and carries radii only on its
@@ -468,14 +470,17 @@
    envelope on the same vertical axis.
 
    Starts at the seam (the anchor's origin), so everything below the slot's
-   mouth is hidden. */
+   mouth is hidden. Height is stated in mm rather than as a % of the anchor:
+   the envelope parks at POST_TRAVEL (120mm) and is 70mm tall, so its bottom
+   edge reaches 120 + 35 = 155mm — measured from the seam at 80mm that is 75mm
+   of paper to cover. 200mm is generous margin and still cheap. */
 .slot-plate {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
   top: 0;
   width: 300%;
-  height: 200%;
+  height: calc(200 * var(--mm));
   background: var(--color-2);
 }
 
