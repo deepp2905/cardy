@@ -68,14 +68,46 @@ export function SequencePlayground() {
     {
       duration: 5.2,
 
-      // Sheet fades in as the standalone rest card fades out, and the card
-      // settles from its --slide-w rest scale down to sequence scale.
+      // Sheet beat. Three tracks on independent curves, because they are three
+      // different motions in the app and collapsing them onto one shared curve
+      // is visibly wrong: the rest card and the sheet card are DIFFERENT sizes
+      // (--slide-w vs sequence scale), so if the handoff opacity is still
+      // mid-fade while the scale is still travelling, you see both cards at
+      // once, offset and half-transparent. The crossfade must finish while the
+      // scale settle is still running — as it does in useWrapSequence, where
+      // restOpacity rides `crossfade` (0.3s) and cardScale rides `arrive` (a
+      // spring).
       sheet: {
         at: 0,
-        duration: 0.6,
-        from: { restOpacity: 1, sheetOpacity: 0, sheetScale: 0.97, cardScale: 1 },
-        to: { restOpacity: 0, sheetOpacity: 1, sheetScale: 1, cardScale: 0 },
-        transition: { type: "easing", duration: 0.6, ease: [0.32, 0.72, 0, 1] },
+        props: {
+          // Handoff: rest card out / carrier in. Short, and first.
+          restOpacity: {
+            from: 1,
+            to: 0,
+            duration: 0.3,
+            transition: { type: "easing", duration: 0.3, ease: [0.32, 0.72, 0, 1] },
+          },
+          sheetOpacity: {
+            from: 0,
+            to: 1,
+            duration: 0.3,
+            transition: { type: "easing", duration: 0.3, ease: [0.32, 0.72, 0, 1] },
+          },
+          // Settle: outlives the crossfade, so the size change happens on a
+          // card that is already the only one on screen.
+          cardScale: {
+            from: 1,
+            to: 0,
+            duration: 0.6,
+            transition: { type: "spring", stiffness: 200, damping: 30 },
+          },
+          sheetScale: {
+            from: 0.97,
+            to: 1,
+            duration: 0.6,
+            transition: { type: "spring", stiffness: 180, damping: 26 },
+          },
+        },
       },
 
       // Wireframe printing appears on the carrier.
@@ -205,16 +237,21 @@ export function SequencePlayground() {
   const restScale = cardPx > 0 ? slideW / cardPx : 1;
 
   useEffect(() => {
+    // A props clip reports number | string (tracks may carry CSS values); every
+    // track here is numeric, so narrow once at the boundary.
+    const n = (v: number | string) => (typeof v === "number" ? v : Number(v));
+    const sheetTrack = t.sheet.current;
+
     // `current` is the value interpolated at the playhead, so this is exact
     // while scrubbing — not just at clip boundaries.
-    restOpacity.set(t.sheet.current.restOpacity);
+    restOpacity.set(n(sheetTrack.restOpacity));
     // cardScale runs restScale -> 1; the clip carries 1 -> 0 as a lerp factor.
-    cardScale.set(1 + (restScale - 1) * t.sheet.current.cardScale);
+    cardScale.set(1 + (restScale - 1) * n(sheetTrack.cardScale));
     // Packet opacity is the sheet fade in, gated by the later hidePacket fade.
     sheetOpacity.set(
-      t.sheet.current.sheetOpacity * t.hidePacket.current.sheetOpacity2,
+      n(sheetTrack.sheetOpacity) * t.hidePacket.current.sheetOpacity2,
     );
-    sheetScale.set(t.sheet.current.sheetScale);
+    sheetScale.set(n(sheetTrack.sheetScale));
     printOpacity.set(t.printing.current.printOpacity);
     rotBottom.set(t.folds.current.rotBottom);
     rotTop.set(t.folds.current.rotTop);
