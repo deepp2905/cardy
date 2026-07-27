@@ -37,7 +37,16 @@ export default function Playground() {
         )}
       </main>
 
-      <DialRoot position="bottom-right" defaultOpen={true} />
+      {/* productionEnabled: dialkit hides itself in production builds by
+          default (its `isDevDefault` reads import.meta.env.MODE), so DialRoot
+          returned null on the deployed URL and the panels never appeared. The
+          playground is reachable only from #/play and its chunk is lazy, so
+          real visitors to the main flow still never download or see it. */}
+      <DialRoot
+        position="bottom-right"
+        defaultOpen={true}
+        productionEnabled
+      />
     </div>
   );
 }

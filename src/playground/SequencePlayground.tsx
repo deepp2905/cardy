@@ -391,7 +391,10 @@ export function SequencePlayground() {
         </motion.div>
       </div>
 
-      <DialTimeline defaultVisible defaultOpen />
+      {/* productionEnabled for the same reason as DialRoot in Playground.tsx:
+          dialkit's components self-hide in production builds, so the timeline
+          dock was null on the deployed URL. */}
+      <DialTimeline defaultVisible defaultOpen productionEnabled />
     </div>
   );
 }

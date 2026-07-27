@@ -98,7 +98,10 @@ export default function Explore() {
       </ExploreShell>
 
       {/* bottom-RIGHT here: the variant menu owns bottom-left on this page. */}
-      <DialRoot position="bottom-right" defaultOpen={true} />
+      {/* productionEnabled for the same reason as Playground.tsx: dialkit
+          self-hides in production builds, which left the carousel variant
+          dials invisible on the deployed #/explore route. */}
+      <DialRoot position="bottom-right" defaultOpen={true} productionEnabled />
     </div>
   );
 }
