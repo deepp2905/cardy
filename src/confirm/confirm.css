@@ -323,11 +323,16 @@
 
 /* Paper grain. An inline SVG feTurbulence — no asset to load, no extra request,
    and it scales with the element. Fractal noise at a high baseFrequency is
-   fine-grained speckle; blended at low opacity it gives kraft the tooth of a
+   fine-grained speckle; multiplied at low opacity it gives kraft the tooth of a
    real envelope instead of a flat fill. Shared by every kraft surface via
-   --grain, so the body, the flap and both faces match. */
+   --grain, so the body, the flap and both faces match.
+
+   Two dials, and they interact — turn ONE at a time:
+   - the ::after opacity below is overall strength;
+   - feFuncA's slope/intercept is the noise's own contrast (how far the
+     speckle spreads before opacity scales it). */
 :root {
-  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='2.2' intercept='-0.35'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1.4' intercept='-0.15'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 .env-face {
@@ -351,11 +356,12 @@
   inset: 0;
   border-radius: inherit;
   background-image: var(--grain);
-  /* overlay rather than soft-light: soft-light at any opacity stays a haze on
-     a mid-value fill like kraft, so the tooth never really showed. overlay
-     pushes both directions from the midpoint, which is what reads as fibre. */
-  mix-blend-mode: overlay;
-  opacity: 0.85;
+  /* multiply, so the speckle only ever darkens — it reads as fibre shadow in
+     the paper rather than sparkle on top of it. Because every noise pixel
+     subtracts light, the opacity has to sit lower than an overlay blend would
+     need: past ~0.4 the kraft starts going muddy overall instead of textured. */
+  mix-blend-mode: multiply;
+  opacity: 0.32;
   pointer-events: none;
 }
 
