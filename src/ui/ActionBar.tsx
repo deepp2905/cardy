@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { arrowNudge, snappy } from "../lib/motionConfig";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
@@ -5,11 +6,23 @@ import { BackButton } from "./BackButton";
 import "./ui.css";
 
 /**
- * Width the back slot animates to: the square button (--control-h, 60px)
- * plus the 10px margin in ui.css. Motion needs a number here, so this can't
- * read the token directly — keep the two in step.
+ * Width the back slot animates to: the square button (--control-h) plus the
+ * 10px margin in ui.css. Motion needs a number, so the token is read from the
+ * root once at mount; the fallback matches today's 60px so a pre-CSS read
+ * still renders correctly. The 10px margin remains a comment-contract with
+ * .back-slot .btn-back in ui.css.
  */
-const BACK_SLOT_W = 70;
+const BACK_SLOT_W_FALLBACK = 70;
+function useBackSlotW(): number {
+  const [w, setW] = useState(BACK_SLOT_W_FALLBACK);
+  useEffect(() => {
+    const h = parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue("--control-h"),
+    );
+    if (!Number.isNaN(h) && h > 0) setW(h + 10);
+  }, []);
+  return w;
+}
 
 // Persistent bottom action row (lives outside the step transitions so it
 // stays constant across the journey). When the back button appears/leaves,
@@ -36,6 +49,7 @@ export function ActionBar({
   secondary?: { label: string; onClick: () => void };
 }) {
   const reduce = usePrefersReducedMotion();
+  const backSlotW = useBackSlotW();
 
   return (
     <div className="action-bar" data-stacked={secondary ? "true" : undefined}>
@@ -46,7 +60,7 @@ export function ActionBar({
               key="back"
               className="back-slot"
               initial={{ width: 0, opacity: 0 }}
-              animate={{ width: BACK_SLOT_W, opacity: 1 }}
+              animate={{ width: backSlotW, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={reduce ? { duration: 0 } : snappy}
             >

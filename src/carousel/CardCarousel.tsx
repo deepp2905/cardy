@@ -162,9 +162,12 @@ export function CardCarousel({
     // transform) against the item gives exactly that remainder.
     // How much of the step's enter-lift is still applied to the deck, in px.
     // Read off the live transform of the animating ancestor rather than assumed
-    // from a timer, so it is correct whenever we happen to sample.
+    // from a timer, so it is correct whenever we happen to sample. The ancestor
+    // is found by the data-hero-lift-source attribute Customize stamps on its
+    // animating wrapper — an explicit contract, not a class name that could be
+    // innocently renamed (see Customize.tsx).
     const pendingLift = () => {
-      const el = activeItemRef.current?.closest(".customize-carousel");
+      const el = activeItemRef.current?.closest("[data-hero-lift-source]");
       if (!(el instanceof HTMLElement)) return 0;
       const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
       return m.m42; // translateY currently applied
@@ -254,6 +257,11 @@ export function CardCarousel({
       tabIndex={0}
       role="radiogroup"
       aria-label="Choose a card color"
+      aria-orientation="horizontal"
+      // Focus stays on the group (it owns the arrow keys); this tells AT which
+      // radio is current, so arrowing/dragging announces the colour. Without
+      // it a screen reader on the group can't perceive the selection at all.
+      aria-activedescendant={`deck-${ids[focusedIndex]}`}
       style={
         {
           perspective: `${PERSPECTIVE}px`,
@@ -283,6 +291,7 @@ export function CardCarousel({
         return (
           <div
             key={id}
+            id={`deck-${id}`}
             ref={active ? activeItemRef : undefined}
             className="deck-item"
             data-active={active}

@@ -54,7 +54,15 @@ export function Customize({
       initial="hidden"
       animate="show"
     >
-      <motion.div className="customize-carousel" variants={item}>
+      {/* data-hero-lift-source is a CONTRACT with CardCarousel's pendingLift():
+          this node carries the step's enter-lift transform, and the carousel
+          reads it live to subtract the in-flight offset from the hero target.
+          The attribute exists only for that lookup — don't remove it. */}
+      <motion.div
+        className="customize-carousel"
+        data-hero-lift-source
+        variants={item}
+      >
         {/* The hero anchor now lives INSIDE the deck (CardCarousel) so it shares
             the cards' exact centring — see onHeroSlot there. */}
         <CardCarousel
