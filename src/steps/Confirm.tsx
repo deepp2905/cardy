@@ -27,8 +27,7 @@ import "../confirm/confirm.css";
  * was WebGL inside a rotating `preserve-3d` subtree, but only the two OUTER fold
  * panels rotate: the card lives on the static middle panel and is fully occluded
  * by the time anything containing it moves in 3D. So it's unmounted at
- * `inserting` and never rotates while visible. This removes html-to-image from
- * the critical path entirely (it now runs lazily, only for the download).
+ * `inserting` and never rotates while visible — no snapshot library needed.
  */
 export function Confirm({
   config,

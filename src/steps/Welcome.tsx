@@ -24,9 +24,12 @@ export function Welcome({ firstName }: { firstName: string }) {
       animate="show"
     >
       <motion.h1 variants={item}>Welcome, {firstName}</motion.h1>
+      {/* Promises only what the customize step actually offers: colour and
+          pattern. "Your words" left when the engraving editor was hidden from
+          the panel (NoteField — plumbing kept, input unmounted). */}
       <motion.p variants={item}>
         Let&rsquo;s get you a card that&rsquo;s tailored to you — your color,
-        your wave, your words.
+        your pattern, your style.
       </motion.p>
     </motion.div>
   );
