@@ -137,7 +137,13 @@ export function useWrapSequence({
   const bottomBack = useTransform(rotBottom, (r) => (Math.abs(r) > 90 ? 1 : 0));
   const topFront = useTransform(rotTop, (r) => (Math.abs(r) > 90 ? 0 : 1));
   const topBack = useTransform(rotTop, (r) => (Math.abs(r) > 90 ? 1 : 0));
-  const flapShade = useTransform(flapRot, [-165, -90, 0], [0.2, 0.5, 0]);
+  // Flap shading. Peaks edge-on and falls to nothing at both ends: 0.2 open
+  // (the liner is already a darker stock, so it needs little help) and 0 closed
+  // (the outside is the front of the envelope, lit like the pocket beside it).
+  // The peak is well under the fold panels' 0.5 — a flap is thin card catching
+  // light from the mouth, not a sheet turning edge-on to a lamp, and at 0.5 the
+  // closed flap read as a dark wedge stuck to the envelope.
+  const flapShade = useTransform(flapRot, [-165, -90, 0], [0.2, 0.3, 0]);
 
   // --- Derived: flip (PRD §5.5) --------------------------------------------
   const norm = (r: number) => ((r % 360) + 360) % 360;

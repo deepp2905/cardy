@@ -56,6 +56,11 @@ export function Envelope({
   // area to pop.
   const flapZ = useTransform(v.flapRot, (r) => (r < -90 ? 0 : 3));
 
+  // Which face of the flap we're looking at. Past -90° it is folded back and
+  // we see its INSIDE (the darker liner); from -90° to 0° we see the outside,
+  // which is just the front of a closed envelope and should match the pocket.
+  const flapInner = useTransform(v.flapRot, (r) => (r < -90 ? 1 : 0));
+
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -140,6 +145,19 @@ export function Envelope({
           className="env-flap"
           style={{ rotateX: v.flapRot, opacity: v.envBackOpacity }}
         >
+          {/* The INSIDE of the flap (what you see while it hangs open, folded
+              back toward the viewer) is a darker liner — it's the underside of
+              the paper, in shadow from the envelope's own mouth. The OUTSIDE
+              (closed, at 0°) is plain kraft that matches the pocket, because
+              at that point it is simply the front of the envelope.
+
+              Swapped on a threshold rather than by backface-visibility, which
+              is the same call the fold panels make (§5.1) — it is the least
+              reliable thing in Safari's 3D. */}
+          <motion.div
+            className="env-flap-face env-flap-face--inner"
+            style={{ opacity: flapInner }}
+          />
           <motion.div className="panel-shade" style={{ opacity: v.flapShade }} />
         </motion.div>
       </motion.div>

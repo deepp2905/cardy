@@ -350,7 +350,8 @@
    so the element's own background can still be themed independently. */
 .env-face::after,
 .env-body::after,
-.env-flap::after {
+.env-flap::after,
+.env-flap-face--inner::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -365,9 +366,10 @@
   pointer-events: none;
 }
 
-/* The flap is clipped to a triangle; its grain has to be too, or the noise
-   paints the full rectangle back in. */
-.env-flap::after {
+/* The flap and its liner are clipped to a triangle; their grain has to be too,
+   or the noise paints the full rectangle back in. */
+.env-flap::after,
+.env-flap-face--inner::after {
   clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
 
@@ -422,6 +424,9 @@
    detached from the envelope with a notch of background between them. Dropping
    it by exactly the radius puts the hinge where the body's straight edge
    actually begins. */
+/* Base fill is the OUTSIDE of the flap — plain kraft, matching the pocket,
+   because closed at 0° this is simply the front of the envelope. The inner
+   liner is a separate face layered over it (.env-flap-face--inner). */
 .env-flap {
   position: absolute;
   top: calc(1.5 * var(--mm));
@@ -434,6 +439,20 @@
   clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
 
+/* The inner liner — seen only while the flap hangs open, folded back toward
+   the viewer. Darker than the outside: it's the underside of the paper, sitting
+   in the shadow of the envelope's own mouth. Same triangle clip as its parent,
+   or it paints the full rectangle back in. */
+.env-flap-face--inner {
+  position: absolute;
+  inset: 0;
+  background: var(--kraft-inner);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  pointer-events: none;
+}
+
+/* Shading rides ABOVE the liner so it darkens whichever face is showing. Its
+   own clip keeps it inside the triangle. */
 .env-flap .panel-shade {
   clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
