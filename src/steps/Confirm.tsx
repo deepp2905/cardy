@@ -3,6 +3,7 @@ import { AnimatePresence, motion, type MotionValue } from "motion/react";
 import { Card } from "../card/Card";
 import { type CardConfig } from "../card/cardConfig";
 import { HeroSlot } from "../card/HeroSlot";
+import { crossfade } from "../lib/motionConfig";
 import { usePrefersReducedMotion } from "../lib/reducedMotion";
 import { CarrierSheet } from "../confirm/CarrierSheet";
 import { Envelope } from "../confirm/Envelope";
@@ -111,7 +112,11 @@ export function Confirm({
   // changes (see §Conflict surface).
   useEffect(() => {
     const root = document.documentElement;
+    // "playing" hides all chrome for the wrap; "done" keeps the action bar
+    // (it hosts Start over + the wallet CTA) but leaves the step indicator
+    // hidden, since the journey is over.
     if (started && !showEpilogue) root.dataset.sequence = "playing";
+    else if (showEpilogue) root.dataset.sequence = "done";
     else delete root.dataset.sequence;
     return () => {
       delete root.dataset.sequence;
@@ -164,6 +169,29 @@ export function Confirm({
       <p className="sr-only" role="status" aria-live="polite">
         {status}
       </p>
+
+      {/* Rest copy: the beat before the arrow, where the finished card is the
+          only thing on screen. It says what the card IS — one of one — which is
+          the payoff of everything the user just tuned. Leaves the moment the
+          sequence starts, so it never competes with the wrap. */}
+      <AnimatePresence>
+        {!started && !showEpilogue && !showLoading && (
+          <motion.div
+            key="rest-copy"
+            className="confirm-copy"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: reduce ? 0 : -6 }}
+            transition={crossfade}
+          >
+            <h2 className="confirm-copy-title">One of one.</h2>
+            <p className="confirm-copy-sub">
+              This exact card doesn&rsquo;t exist anywhere else — the colour, the
+              pattern, the whole thing is yours alone.
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {!showEpilogue && !showLoading && (
         <motion.div className="wrap-scene" style={{ y: values.nudgeY }}>

@@ -171,8 +171,11 @@ function MainFlow() {
           next: restart,
           nextLabel: "Start over",
           showArrow: false,
+          // Stays in place once used, with its label switched to the state it
+          // produced. Removing it made the bar jump the moment you pressed it,
+          // which reads as the button escaping rather than confirming.
           secondary: walletAdded
-            ? undefined
+            ? { label: "Resend the email", onClick: () => setWalletAdded(true) }
             : { label: "Add the digital card", onClick: () => setWalletAdded(true) },
         }
       : {

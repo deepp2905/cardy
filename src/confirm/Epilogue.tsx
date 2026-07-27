@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { crossfade } from "../lib/motionConfig";
 
 /**
@@ -28,23 +28,40 @@ export function Epilogue({ walletAdded }: { walletAdded: boolean }) {
       animate={{ opacity: 1, y: 0 }}
       transition={crossfade}
     >
-      <h2 className="epilogue-title" ref={headingRef} tabIndex={-1}>
-        On its way.
-      </h2>
-      <p className="epilogue-sub">Your card arrives in about 7 days.</p>
-
-      {walletAdded && (
-        <motion.p
-          className="epilogue-note"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+      {/* The heading follows the last action taken: posting the card, then
+          asking for the digital one. Keyed so the swap crossfades rather than
+          silently substituting the text under the reader's eye. */}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.h2
+          key={walletAdded ? "wallet" : "posted"}
+          className="epilogue-title"
+          ref={headingRef}
+          tabIndex={-1}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
           transition={crossfade}
         >
-          {isTouch
-            ? "Added. Open your wallet to see it."
-            : "We've emailed you a link — open it on your phone."}
+          {walletAdded ? "Email sent." : "On its way."}
+        </motion.h2>
+      </AnimatePresence>
+
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.p
+          key={walletAdded ? "wallet" : "posted"}
+          className="epilogue-sub"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={crossfade}
+        >
+          {walletAdded
+            ? isTouch
+              ? "Open it on this phone to add the card to your wallet."
+              : "Check your inbox, then open the link on your phone."
+            : "Your card arrives in about 7 days."}
         </motion.p>
-      )}
+      </AnimatePresence>
     </motion.div>
   );
 }

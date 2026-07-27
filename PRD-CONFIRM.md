@@ -10,6 +10,36 @@
 
 ---
 
+## STATUS (last updated 2026-07-26)
+
+**Original build spec, kept as the record of intent.** Where it disagrees with
+the code, the code wins. Live divergences:
+
+- **D10 is REVERSED. There is no snapshot.** The sequence animates the live
+  `<Card>`. D10 banned it because of WebGL inside `preserve-3d`, but the card
+  sits on the *static* middle panel — only the two outer fold panels rotate —
+  and it unmounts at `inserting`, before anything containing it moves in 3D.
+  `snapshot.ts`, `html-to-image`, and the "Download your design" CTA (§11, §9
+  secondary) are all gone. Ignore every snapshot reference below.
+- **The wax seal is cut.** §3.4 and beat 5 of §4 no longer render anything; the
+  envelope closes with just the flap. The `seal` BEAT survives in
+  `useWrapSequence` because it also drives `nudgeY`, the settle bump.
+- **The sequence does not start on step entry.** It is armed by the forward
+  arrow, so the finished card gets a rest beat to itself first. Every beat in
+  §4 shifted 0.35s earlier, and `arrive` became a scale settle rather than a
+  layout hand-off.
+- **The rest card is the persistent hero** mounted in `App`, not a local node.
+  Confirm renders an invisible `HeroSlot` that reports where it should sit.
+- **The mail slot is two halves** with the envelope between them, plus a
+  masking plate below the aperture — not the single plate §6.4 describes.
+- **A "creating your card" beat** (`PostLoading`) sits between the post and the
+  epilogue, showing the user's own pattern shape.
+- **The epilogue swaps state**: adding the digital card changes the heading to
+  "Email sent." and the secondary CTA to "Resend the email".
+- Rest copy ("One of one.") now sits above the resting card before the arrow.
+
+---
+
 ## 0. What this is
 
 The user has just designed a card. On "Order this card" the card is snapshotted,

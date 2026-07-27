@@ -1,32 +1,71 @@
-# React + TypeScript + Vite
+# cardy
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A 3-step physical-card customizer for a fictional challenger bank. The thesis:
+letting people invest effort in designing their card creates ownership and
+attachment — the IKEA effect, applied to a piece of plastic that otherwise
+arrives looking like everyone else's.
 
-Currently, two official plugins are available:
+Built as a design-engineering challenge piece: a polished vertical slice, not a
+product. No auth, no backend, no persistence beyond URL params.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## The flow
 
-## React Compiler
+1. **Welcome** — short intro, one CTA. The name comes from the URL path
+   (`/alex-rivera`), so the card is personalised before the user touches
+   anything.
+2. **Customize** — a coverflow deck of nine colourways, each seeded with its own
+   generative pattern. The centred card is live-editable: two sliders (spacing,
+   frequency) and two segmented controls (shape, fill). Every card is a valid
+   starting point, and every slider position is designed to look intentional.
+3. **Confirm** — the finished card is laid on a carrier sheet, folded in thirds,
+   slid into a kraft envelope, sealed and flipped to reveal the address side.
+   The user drags it into a mail slot to post it.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Running it
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev      # vite dev server
+npm run build    # tsc -b && vite build
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## A few decisions worth knowing
+
+**One card, three steps.** The card is a single React node mounted in `App` that
+never unmounts. Steps report *where* it should sit via invisible spacers
+(`HeroSlot`); the card springs its transform to that point. This replaced a
+shared-`layoutId` hand-off, which popped — the measured box was distorted by the
+deck's coverflow transform. With one node there is nothing to measure and
+nothing to hand off.
+
+**The pattern is deterministic.** `seedConfigs()` uses a seeded PRNG keyed on
+card index, so the same nine cards appear every visit and a demo is
+reproducible. Shape and fill are dealt round-robin rather than rolled, so the
+strip always shows all three shapes and both fill modes.
+
+**Raw parameters are never exposed.** The pattern engine has ~13 knobs; all but
+two are pinned to tuned constants. Each slider maps 0..1 into a safe band, so
+there is no position on any track that looks like a mistake.
+
+**The confirm sequence animates the live card**, not a snapshot. Only the outer
+fold panels rotate in 3D, and the card unmounts before anything containing it
+moves — so the Safari `preserve-3d` failure mode the original plan worried about
+never applies.
+
+**Reduced motion is a real path**, not a disable switch. The wrap sequence
+collapses to two crossfades, the deck becomes a flat draggable strip, and the
+drag-to-post gets a button — the terminal action of the flow can never be
+gesture-only.
+
+## Dev tooling
+
+Hash routes, excluded from the main bundle:
+
+- `#/play` — dialkit benches for colour, type, card art, and the wrap sequence
+  (`#/play/sequence` is a scrubbable timeline of the envelope choreography)
+- `#/explore` — carousel mechanic experiments
+
+## Stack
+
+Vite · React 19 · TypeScript · [motion](https://motion.dev) ·
+[dialkit](https://www.npmjs.com/package/dialkit) (dev only)

@@ -78,6 +78,15 @@
   transition: opacity 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
+/* On the epilogue the ACTION BAR comes back (it hosts "Start over" and the
+   wallet CTA) but the step indicator does not: the journey is finished, so a
+   progress bar showing step 3 of 3 is measuring something that already ended. */
+:root[data-sequence="done"] .app-header {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
 /* ---------------------------------------------------------------- stage --- */
 
 .confirm-stage {
@@ -597,6 +606,55 @@
   padding-inline: 28px;
 }
 
+/* --------------------------------------------------------- rest copy --- */
+
+/* Sits above the resting card, in the gap between it and the header.
+   Full-bleed inset with its own flex centring rather than left/transform:
+   .confirm-stage is a grid with place-items:center, so a 50%-plus-transform
+   box fights that centring and lands off-axis. Anchoring to the stage box and
+   centring the CONTENT keeps it on the card's vertical axis at any width.
+
+   Absolute, not a grid child, so it can't push the card off the centre the
+   hero has already sprung to — that position is measured, and reflowing the
+   stage would fight it. The bottom inset clears the card's own half-height
+   (the card is --slide-w wide at a 85.6/53.98 ratio) plus breathing room. */
+.confirm-copy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(50% + var(--slide-w) / (85.6 / 53.98) / 2 + 28px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-inline: 24px;
+  text-align: center;
+  z-index: 4;
+  pointer-events: none;
+}
+
+/* A step below --text-display: this sits in the gap above the card, and the
+   card is the hero here — a full display size competed with it for the eye. */
+.confirm-copy-title {
+  font-size: var(--text-md);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--color-12);
+  margin: 0;
+}
+
+.confirm-copy-sub {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--color-10);
+  margin: 0;
+  /* Narrower than the card so the block reads as a caption above it rather
+     than a paragraph spanning the stage. */
+  max-width: min(34ch, var(--slide-w));
+  text-wrap: balance;
+}
+
 /* ------------------------------------------------- post-loading beat --- */
 
 /* Grid child of .confirm-stage (which centres), like the epilogue. */
@@ -665,14 +723,9 @@
   max-width: 30ch;
 }
 
-/* The wallet confirmation note. The CTAs themselves live in the ActionBar
-   (App.tsx) — the epilogue body is only the message. */
-.epilogue-note {
-  font-size: var(--text-sm);
-  color: var(--color-10);
-  margin: 0;
-  max-width: 32ch;
-}
+/* The old .epilogue-note is gone: the wallet confirmation used to stack as a
+   third line under a fixed heading. The heading and subtitle now swap to the
+   wallet state instead, so the message lives in .epilogue-sub. */
 
 .sr-only {
   position: absolute;
