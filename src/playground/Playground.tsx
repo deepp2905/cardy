@@ -44,7 +44,7 @@ export default function Playground() {
           real visitors to the main flow still never download or see it. */}
       <DialRoot
         position="bottom-right"
-        defaultOpen={true}
+        defaultOpen={false}
         productionEnabled
       />
     </div>

@@ -101,7 +101,7 @@ export default function Explore() {
       {/* productionEnabled for the same reason as Playground.tsx: dialkit
           self-hides in production builds, which left the carousel variant
           dials invisible on the deployed #/explore route. */}
-      <DialRoot position="bottom-right" defaultOpen={true} productionEnabled />
+      <DialRoot position="bottom-right" defaultOpen={false} productionEnabled />
     </div>
   );
 }
