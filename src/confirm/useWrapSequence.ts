@@ -180,20 +180,33 @@ export function useWrapSequence({
   // Packet clip. The sheet is 192mm tall and the envelope only 70mm, so once
   // the packet descends into the pocket its unfolded thirds hang out above and
   // below the envelope. The masking plate used to hide the lower overhang by
-  // accident; with the plate gone the packet has to be clipped to the mouth
-  // explicitly.
+  // accident; with the plate gone the packet has to be clipped explicitly.
   //
-  // Cut at the envelope's own top edge, tracked live: envY moves the envelope,
-  // so the line moves with it. Expressed in the STAGE's coordinates (the
-  // wrapper is stage-sized and static), as a calc in --mm so it needs no px
-  // scale here. Only applies from `inserting` on — before that the sheet is
-  // the whole subject and must not be cut.
+  // The cut is from the BOTTOM, at the envelope's mouth: paper that has passed
+  // below the mouth line is inside the pocket and must not be drawn, while
+  // everything still above the line is the part not yet posted and stays fully
+  // visible. That is what makes the packet appear to slide INTO the envelope.
+  //
+  // This used to cut from the top with `inset(calc(50% + mouth) 0 0 0)`, which
+  // is the exact inverse: it kept what was below the mouth and erased what was
+  // above it. Because the packet starts at stage centre (top -32mm, bottom
+  // +32mm) and the mouth sits at +34mm, the WHOLE packet was above the line the
+  // instant `inserting` began — so it blanked completely for the 375ms before
+  // BEAT.insert, then grew downward out of the mouth as it descended. It read
+  // as the packet emerging FROM the envelope rather than entering it.
+  //
+  // envY is tracked live so the line follows the envelope (they rise together
+  // at BEAT.close). Expressed in the STAGE's coordinates — the wrapper is
+  // stage-sized and static — so `50% + mouth` is the distance from the stage's
+  // top to the mouth, and the bottom inset is the stage's remaining half below
+  // it. Only applies from `inserting` on: before that the sheet is the whole
+  // subject and must not be cut.
   const sheetClip = useTransform([envY, sheetY], ([ey]: number[]) => {
     if (!insertingRef.current) return "inset(0 0 0 0)";
-    // Envelope's top edge, in px from stage centre.
-    const mouth = ey - (ENVELOPE.h / 2) * mmPxRef.current;
-    // Distance from the stage's top to that line.
-    return `inset(calc(50% + ${Math.round(mouth)}px) 0 0 0)`;
+    // Envelope's top edge (the mouth), in px from stage centre.
+    const mouth = Math.round(ey - (ENVELOPE.h / 2) * mmPxRef.current);
+    // Inset from the stage's BOTTOM up to that line.
+    return `inset(0 0 calc(50% - ${mouth}px) 0)`;
   });
 
   // --- Derived: flip (PRD §5.5) --------------------------------------------
