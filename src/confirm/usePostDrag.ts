@@ -99,20 +99,16 @@ export function usePostDrag({
     ([y, go]: number[]) => {
       if (!go) return 1;
       const t = (y - closeStart) / (closeEnd - closeStart);
-      return 1 - Math.min(Math.max(t, 0), 1) * 0.96;
-    },
-  );
-  const slotFade = useTransform(
-    [v.envY, committed] as const,
-    ([y, go]: number[]) => {
-      if (!go) return 1;
-      // Holds through the first half of the close, then fades out.
-      const mid = (closeStart + closeEnd) / 2;
-      if (y <= mid) return 1;
-      const t = (y - mid) / (closeEnd - mid);
+      // All the way to 0, not 0.96: with the opacity fade gone, anything left
+      // over sits on the stage as a visible nub instead of a shut slot.
       return 1 - Math.min(Math.max(t, 0), 1);
     },
   );
+  // No opacity fade on the close: the aperture narrowing to nothing already
+  // reads as the mouth shutting, and fading it at the same time made the slot
+  // dissolve rather than close — two different exits fighting each other. Kept
+  // as a constant 1 so MailSlot's opacity maths is untouched.
+  const slotFade = useMotionValue(1);
 
   const runPost = useCallback(() => {
     if (phase !== "idle") return;

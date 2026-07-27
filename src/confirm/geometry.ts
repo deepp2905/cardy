@@ -21,8 +21,11 @@ export const SLOT = { w: 139, h: 10, r: 5 } as const;
 export const ENVELOPE_ENTER_Y = 69;
 /** Packet's descent into the pocket. Same figure, so the pair ends concentric. */
 export const INSERT_TRAVEL = 69;
-/** Gap between the envelope's bottom edge at rest and the slot's lip. */
-export const SLOT_GAP = 40;
+/** Gap between the envelope's bottom edge at rest and the slot's lip.
+ *  88mm rather than 40: the slot sat close enough to the envelope that the two
+ *  read as one cluster, and the drag had almost no distance to build intent.
+ *  (~128px further down at the typical desktop stage scale.) */
+export const SLOT_GAP = 88;
 /** Slot lip position — the y at which the envelope disappears. */
 export const SLOT_TOP = ENVELOPE.h / 2 + SLOT_GAP; // +75
 /** The aperture's vertical MIDDLE — the seam where the two slot halves meet.
@@ -33,19 +36,31 @@ export const SLOT_TOP = ENVELOPE.h / 2 + SLOT_GAP; // +75
  *  slot close. */
 export const SLOT_MOUTH = SLOT_TOP + SLOT.h / 2; // +80
 /** How far the envelope travels to be fully swallowed. Must exceed
- *  SLOT_TOP + ENVELOPE.h / 2 (= 110mm): envY moves the envelope's CENTRE, so
- *  that is the point at which its top edge reaches the lip. Nothing fades on
- *  the way in — the slot plate is the only thing hiding it — so a shorter
- *  travel leaves a sliver of paper sitting above the slot. 120 keeps 10mm of
- *  margin. */
-export const POST_TRAVEL = 120;
+ *  SLOT_MOUTH + ENVELOPE.h / 2 (= 163mm): envY moves the envelope's CENTRE, so
+ *  that is the point at which its TOP edge finally passes the mouth and the
+ *  clip has eaten the whole element. Nothing fades on the way in, so a shorter
+ *  travel parks a sliver of paper in view above the slot. 175 keeps 12mm of
+ *  margin. Tracks SLOT_GAP: move the slot and this has to follow. */
+export const POST_TRAVEL = 175;
 
 // --- Scale ---
 
 /** The slot is the widest object in the flow, so it sets the horizontal scale. */
 export const SCALE_W_DIVISOR = SLOT.w; // 139
-/** The sheet is the tallest, so it sets the vertical one (+8mm breathing). */
-export const SCALE_H_DIVISOR = SHEET.h + 8; // 200
+/** Vertical scale divisor: the scene has to fit the taller of two things.
+ *
+ *  1. The SHEET (192mm + 8mm breathing), which is the tallest single object.
+ *  2. The reach DOWN to the slot. The slot sits SLOT_MOUTH below centre and the
+ *     scene is centred, so the stage must hold 2 x that plus the slot's own
+ *     height to keep the aperture on screen.
+ *
+ *  (2) only started to bind when SLOT_GAP was widened — at the old 40mm the
+ *  sheet dominated. Without this the slot renders below the fold on most
+ *  desktop stages. */
+export const SCALE_H_DIVISOR = Math.max(
+  SHEET.h + 8,
+  2 * (ENVELOPE.h / 2 + SLOT_GAP + SLOT.h) + 8,
+); // 200 vs 254 at SLOT_GAP 88
 
 // --- Sheet printing (PRD §3.2) ---
 
