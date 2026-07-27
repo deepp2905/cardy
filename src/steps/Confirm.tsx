@@ -10,7 +10,7 @@ import { Envelope } from "../confirm/Envelope";
 import { Epilogue } from "../confirm/Epilogue";
 import { MailSlot } from "../confirm/MailSlot";
 import { PostHint } from "../confirm/PostHint";
-import { PostLoading } from "../confirm/PostLoading";
+import { PostLoading, POST_LOADING_MS } from "../confirm/PostLoading";
 import { usePostDrag } from "../confirm/usePostDrag";
 import { useStageScale } from "../confirm/useStageScale";
 import { useSlideW } from "../lib/useSlideW";
@@ -102,7 +102,9 @@ export function Confirm({
     const t = window.setTimeout(() => {
       setShowLoading(false);
       setShowEpilogue(true);
-    }, 3600);
+      // Length owned by PostLoading, so its stage list and this hand-off can't
+      // drift apart — the last stage must still be on screen when we cut away.
+    }, POST_LOADING_MS);
     return () => clearTimeout(t);
   }, [showLoading]);
 
@@ -149,10 +151,13 @@ export function Confirm({
   const restCardVisible = phase === "rest";
   const sheetCardVisible = started && (phase === "rest" || phase === "folding");
 
+  // While the loading beat runs, PostLoading owns the announcement — it has its
+  // own live region that reads each stage as it arrives. Staying silent here
+  // avoids announcing the same progress from two regions at once.
   const status = showEpilogue
     ? "Posted. Your card arrives in about 7 days."
     : showLoading
-      ? "Creating your card."
+      ? ""
       : phase === "idle"
         ? "Sealed. Drag down or press Enter to post."
         : started

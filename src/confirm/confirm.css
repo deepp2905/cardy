@@ -708,15 +708,27 @@
 
 /* ------------------------------------------------- post-loading beat --- */
 
-/* Grid child of .confirm-stage (which centres), like the epilogue. */
+/* Centred on the VIEWPORT, not on .confirm-stage.
+   The stage is the last child of a flex chain (.column > .step-stage >
+   .step-shell) whose column has asymmetric padding (24px top, 36px bottom) and
+   which still reserves layout boxes for the header and action bar — those are
+   only opacity:0 during the sequence, not removed from flow. So the stage's
+   own centre sits noticeably above the true viewport centre. Everything else
+   in the sequence is positioned relative to the stage and must stay that way,
+   but the loading beat is the only thing on screen while it shows, so it can
+   be fixed to the viewport and be exactly centred there. */
 .post-loading {
-  position: relative;
+  position: fixed;
+  inset: 0;
   z-index: 6;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 22px;
   text-align: center;
+  /* Purely presentational while it fades — never swallow input. */
+  pointer-events: none;
 }
 
 /* Outer node carries the continuous rotation; the svg inside carries the
@@ -735,8 +747,22 @@
   color: var(--color-9);
 }
 
+/* Fixed-height box for the swapping stage labels. Without it the crossfade
+   briefly has both the outgoing and incoming line mounted, and the flex column
+   would grow — nudging the mark above it. A reserved line keeps the mark
+   perfectly still for the whole beat. Relative so the absolutely-stacked lines
+   inside centre on it. */
+.post-loading-status {
+  position: relative;
+  width: 100%;
+  height: calc(var(--text-sm) * 1.4);
+}
+
 .post-loading-text {
+  position: absolute;
+  inset: 0;
   font-size: var(--text-sm);
+  line-height: 1.4;
   color: var(--color-10);
   margin: 0;
 }

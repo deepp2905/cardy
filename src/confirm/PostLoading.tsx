@@ -1,6 +1,28 @@
-import { motion } from "motion/react";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import type { PatternShape } from "../card/cardConfig";
 import { crossfade } from "../lib/motionConfig";
+
+/**
+ * The beat runs for POST_LOADING_MS (Confirm.tsx owns that timer). These four
+ * stages narrate what the user just watched happen, in order: the card is
+ * printed, the engraving goes on, it's sealed into the envelope, and it's
+ * handed to postage. Contextual rather than a single generic "Creating your
+ * card" — each line names a real step of making THIS object.
+ *
+ * `at` is the ms offset the line appears. The last one is deliberately short:
+ * it hands straight to the epilogue ("Posted."), so it should still be on
+ * screen — not already stale — when the crossfade starts.
+ */
+const STAGES = [
+  { at: 0, text: "Printing your card…" },
+  { at: 900, text: "Pressing the engraving…" },
+  { at: 1900, text: "Sealing the envelope…" },
+  { at: 2800, text: "Handing it to the post…" },
+] as const;
+
+/** Total beat length, exported so Confirm's hand-off timer can't drift from it. */
+export const POST_LOADING_MS = 3600;
 
 /**
  * Brief "making it" beat between the envelope dropping into the slot and the
@@ -16,7 +38,9 @@ import { crossfade } from "../lib/motionConfig";
  * nodes so the two transforms never fight over one matrix.
  *
  * Reduced motion: no rotation, no pulse — a gentle opacity breath instead,
- * so the state still reads as "working" without anything moving.
+ * so the state still reads as "working" without anything moving. The stage
+ * text still advances (it's information, not decoration) but loses its
+ * vertical travel and crossfades in place.
  */
 export function PostLoading({
   shape,
@@ -27,6 +51,17 @@ export function PostLoading({
   filled: boolean;
   reduce: boolean;
 }) {
+  // Walk the stage list on its own timers. One timeout per stage rather than
+  // an interval, so a stage can have its own dwell (see STAGES) and a slow
+  // frame can't compound a drift across all four.
+  const [stage, setStage] = useState(0);
+  useEffect(() => {
+    const timers = STAGES.slice(1).map((s, i) =>
+      window.setTimeout(() => setStage(i + 1), s.at),
+    );
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
   // currentColor, set by .post-loading-shape in CSS, so the mark tracks the
   // theme's neutral ink in both light and dark.
   const paint = filled
@@ -66,7 +101,36 @@ export function PostLoading({
           )}
         </motion.svg>
       </motion.div>
-      <p className="post-loading-text">Creating your card&hellip;</p>
+      {/* Each stage line crossfades with a small vertical travel — the outgoing
+          line leaves upward and the incoming arrives from below, so the
+          sequence reads as progress moving forward rather than a word swap.
+          mode="wait" would leave the box empty between lines; the default
+          overlap keeps text on screen continuously, which the reserved-height
+          .post-loading-status box makes safe.
+
+          The live region lives here (not on the whole component) and is
+          aria-atomic, so each new stage is announced as one complete phrase.
+          Confirm.tsx's own status line stops naming this beat — otherwise the
+          same progress is announced twice. */}
+      <div
+        className="post-loading-status"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <AnimatePresence initial={false}>
+          <motion.p
+            key={stage}
+            className="post-loading-text"
+            initial={{ opacity: 0, y: reduce ? 0 : 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: reduce ? 0 : -8 }}
+            transition={crossfade}
+          >
+            {STAGES[stage].text}
+          </motion.p>
+        </AnimatePresence>
+      </div>
     </motion.div>
   );
 }
