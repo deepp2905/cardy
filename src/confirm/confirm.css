@@ -327,7 +327,7 @@
    real envelope instead of a flat fill. Shared by every kraft surface via
    --grain, so the body, the flap and both faces match. */
 :root {
-  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='2.2' intercept='-0.35'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 .env-face {
@@ -351,10 +351,11 @@
   inset: 0;
   border-radius: inherit;
   background-image: var(--grain);
-  /* soft-light keeps the hue and only perturbs value, so the kraft stays kraft
-     and picks up tooth rather than turning grey. */
-  mix-blend-mode: soft-light;
-  opacity: 0.42;
+  /* overlay rather than soft-light: soft-light at any opacity stays a haze on
+     a mid-value fill like kraft, so the tooth never really showed. overlay
+     pushes both directions from the midpoint, which is what reads as fibre. */
+  mix-blend-mode: overlay;
+  opacity: 0.85;
   pointer-events: none;
 }
 
@@ -409,10 +410,16 @@
 }
 
 /* Triangular flap hinged on the envelope's top edge. Open sits at -165°, not a
-   full 180 — the residual 15° reads as depth, as in the reference. */
+   full 180 — the residual 15° reads as depth, as in the reference.
+
+   Hinged 1.5mm down (the envelope's own border-radius): at top: 0 the flap's
+   square corners hang past the body's rounded ones, so the triangle read as
+   detached from the envelope with a notch of background between them. Dropping
+   it by exactly the radius puts the hinge where the body's straight edge
+   actually begins. */
 .env-flap {
   position: absolute;
-  top: 0;
+  top: calc(1.5 * var(--mm));
   left: 0;
   width: 100%;
   height: calc(38.5 * var(--mm));
