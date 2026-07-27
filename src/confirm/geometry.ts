@@ -20,10 +20,12 @@ export const INSERT_TRAVEL = 69;
 export const SLOT_GAP = 40;
 /** Slot lip position — the y at which the envelope disappears. */
 export const SLOT_TOP = ENVELOPE.h / 2 + SLOT_GAP; // +75
-/** The aperture's vertical MIDDLE — where the two slot halves meet and the
- *  masking plate begins. Keep in step with `.slot-anchor`'s top in confirm.css:
- *  masking from SLOT_TOP instead made the envelope read as entering halfway
- *  down the hole rather than at its mouth. */
+/** The aperture's vertical MIDDLE — the seam where the two slot halves meet.
+ *  Keep in step with `.slot-anchor`'s top in confirm.css; the halves offset
+ *  themselves off this line and the masking plate starts SLOT.h / 2 below it
+ *  (under the whole aperture, so the lower half stays visible). Used in JS as
+ *  the point the envelope is "entering", which drives the hint fade and the
+ *  slot close. */
 export const SLOT_MOUTH = SLOT_TOP + SLOT.h / 2; // +80
 /** How far the envelope travels to be fully swallowed. Must exceed
  *  SLOT_TOP + ENVELOPE.h / 2 (= 110mm): envY moves the envelope's CENTRE, so

@@ -426,14 +426,18 @@
 /* Anchors both halves to the same origin: the aperture's vertical MIDDLE
    (SLOT_TOP + half the slot height = 75 + 5mm). Masking from the aperture's
    top edge made the envelope look like it entered halfway down the hole;
-   splitting at the middle puts the seam where a real letterbox's mouth is. */
+   splitting at the middle puts the seam where a real letterbox's mouth is.
+
+   The box is ZERO-HEIGHT on purpose: it marks the seam LINE. Both halves and
+   the plate position themselves off that line with explicit offsets — nothing
+   here may use a percentage height, since there is no height to take a
+   percentage of. */
 .slot-anchor {
   position: absolute;
   left: 50%;
   top: calc(50% + 80 * var(--mm));
   width: 100%;
-  /* Height stays auto (it collapses — every child is absolutely positioned).
-     Nothing depends on it: the plate states its own height in mm. */
+  height: 0;
 }
 
 /* Each half is 5mm — half the 10mm aperture — and carries radii only on its
@@ -448,15 +452,16 @@
   background: var(--slot);
 }
 
-/* Upper half: sits above the seam, keeps the top corners and the lip rim. */
+/* Upper half: the 5mm ABOVE the seam line, so it is offset up by its own
+   height. Keeps the top corners and the lip rim. */
 .slot-rect--front {
-  bottom: 0;
+  top: calc(-5 * var(--mm));
   transform-origin: 50% 100%;
   border-radius: calc(5 * var(--mm)) calc(5 * var(--mm)) 0 0;
   border-top: 1px solid var(--slot-rim);
 }
 
-/* Lower half: sits below the seam, keeps the bottom corners. */
+/* Lower half: the 5mm BELOW the seam line. Keeps the bottom corners. */
 .slot-rect--back {
   top: 0;
   transform-origin: 50% 0;
@@ -469,16 +474,21 @@
    narrower than the window. Stage-relative units keep the slot rect and the
    envelope on the same vertical axis.
 
-   Starts at the seam (the anchor's origin), so everything below the slot's
-   mouth is hidden. Height is stated in mm rather than as a % of the anchor:
-   the envelope parks at POST_TRAVEL (120mm) and is 70mm tall, so its bottom
-   edge reaches 120 + 35 = 155mm — measured from the seam at 80mm that is 75mm
-   of paper to cover. 200mm is generous margin and still cheap. */
+   Starts BELOW the whole aperture (the seam + the lower half's 5mm), not at
+   the seam: starting at the seam painted the plate straight over the lower
+   half and the bottom of the slot vanished. Everything under the aperture's
+   bottom edge is hidden; the aperture itself stays visible.
+
+   Height is stated in mm, never as a % — .slot-anchor is deliberately
+   zero-height (it marks the seam line), so a percentage resolves to nothing.
+   The envelope parks at POST_TRAVEL (120mm) and is 70mm tall, so its bottom
+   edge reaches 155mm; from the plate's top at 85mm that is 70mm of paper to
+   cover. 200mm is generous margin and still cheap. */
 .slot-plate {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  top: 0;
+  top: calc(5 * var(--mm));
   width: 300%;
   height: calc(200 * var(--mm));
   background: var(--color-2);
