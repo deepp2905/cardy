@@ -103,6 +103,11 @@ export function useWrapSequence({
   const envOpacity = useMotionValue(0);
   const envY = useMotionValue(0);
   const flapRot = useMotionValue(-165);
+  // The flap hinges 1.5mm below the envelope's top edge so its square corners
+  // don't hang past the body's rounded ones while it lies open (see .env-flap).
+  // That offset would leave it sitting low once closed, so it slides up to the
+  // edge just before the fold: 1 = parked at the radius, 0 = flush with the top.
+  const flapLift = useMotionValue(1);
   const sealScale = useMotionValue(0);
   const sealRot = useMotionValue(-8);
   const flipRot = useMotionValue(0);
@@ -172,6 +177,7 @@ export function useWrapSequence({
       envOpacity,
       envY,
       flapRot,
+      flapLift,
       sealScale,
       sealRot,
       flipRot,
@@ -222,6 +228,7 @@ export function useWrapSequence({
       const t = { duration: REDUCED.swap };
       flipRot.set(180);
       flapRot.set(0);
+      flapLift.set(0); // arrives already closed, so already flush
       sealScale.set(1);
       sealRot.set(0);
       animate(cardScale, restScale, t);
@@ -263,6 +270,11 @@ export function useWrapSequence({
     });
     at(BEAT.close, () => {
       // Flap closes while the pair rises to centre — one beat, two motions.
+      // The lift runs first and fast: the flap slides the 1.5mm up to the
+      // envelope's top edge, then folds from there, so it lands flush instead
+      // of a radius low. Short enough (0.16s) to read as part of the same
+      // gesture rather than a separate beat.
+      animate(flapLift, 0, { duration: 0.16, ease: crossfade.ease });
       animate(flapRot, 0, fold);
       animate(envY, 0, fold);
       animate(sheetY, 0, fold);
@@ -336,6 +348,7 @@ export function useWrapSequence({
     reset(envOpacity, 0);
     reset(envY, 0);
     reset(flapRot, -165);
+    reset(flapLift, 1);
     reset(sealScale, 0);
     reset(sealRot, -8);
     reset(flipRot, 0);

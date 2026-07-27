@@ -158,8 +158,10 @@ export function SequencePlayground() {
       close: {
         at: 2.25,
         duration: 0.45,
-        from: { flapRot: -165, envY: 1, packetY: 1 },
-        to: { flapRot: 0, envY: 0, packetY: 0 },
+        // flapLift slides the hinge from its parked corner-radius offset up to
+        // the envelope's top edge, so the shut flap lands flush.
+        from: { flapRot: -165, flapLift: 1, envY: 1, packetY: 1 },
+        to: { flapRot: 0, flapLift: 0, envY: 0, packetY: 0 },
         transition: { type: "spring", stiffness: 220, damping: 26 },
       },
 
@@ -222,6 +224,7 @@ export function SequencePlayground() {
   const envOpacity = useMotionValue(0);
   const envY = useMotionValue(0);
   const flapRot = useMotionValue(-165);
+  const flapLift = useMotionValue(1);
   const sealScale = useMotionValue(0);
   const sealRot = useMotionValue(-8);
   const flipRot = useMotionValue(0);
@@ -257,6 +260,7 @@ export function SequencePlayground() {
     rotTop.set(t.folds.current.rotTop);
     envOpacity.set(t.envelope.current.envOpacity);
     flapRot.set(t.close.current.flapRot);
+    flapLift.set(t.close.current.flapLift);
     sealScale.set(t.seal.current.sealScale);
     sealRot.set(t.seal.current.sealRot);
     nudgeY.set(t.seal.current.nudgeY * mmPx);
@@ -308,6 +312,7 @@ export function SequencePlayground() {
     envOpacity,
     envY,
     flapRot,
+    flapLift,
     sealScale,
     sealRot,
     flipRot,

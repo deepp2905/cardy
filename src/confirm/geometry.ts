@@ -8,6 +8,11 @@ export const PANEL_H = 64; // SHEET.h / 3
 export const PACKET = { w: 120, h: 64 } as const;
 export const ENVELOPE = { w: 126, h: 70, flapH: 38.5, r: 1.5 } as const;
 export const SEAL_D = 14;
+/** How far below the envelope's top edge the flap hinges while it lies open.
+ *  Exactly the envelope's corner radius: at 0 the flap's square corners hang
+ *  past the body's rounded ones and it reads as detached. It animates to 0 as
+ *  the flap closes (flapLift) so the shut flap sits flush with the edge. */
+export const FLAP_PARK_MM = ENVELOPE.r;
 export const SLOT = { w: 139, h: 10, r: 5 } as const;
 
 // --- Vertical choreography, y in mm relative to stage centre (PRD §2.3) ---

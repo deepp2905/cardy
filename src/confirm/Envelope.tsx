@@ -1,5 +1,6 @@
 import type { KeyboardEvent } from "react";
 import { motion, useTransform, type MotionValue } from "motion/react";
+import { FLAP_PARK_MM } from "./geometry";
 import type { SequenceValues } from "./useWrapSequence";
 
 /**
@@ -60,6 +61,16 @@ export function Envelope({
   // we see its INSIDE (the darker liner); from -90° to 0° we see the outside,
   // which is just the front of a closed envelope and should match the pocket.
   const flapInner = useTransform(v.flapRot, (r) => (r < -90 ? 1 : 0));
+
+  // The hinge's vertical offset: flapLift 1 = parked at the envelope's corner
+  // radius (so the flap's square corners don't overhang the body's rounded ones
+  // while it lies open), 0 = flush with the top edge. Expressed as a calc() in
+  // --mm rather than resolved px, so it tracks the stage scale without this
+  // component needing to know it.
+  const flapOffset = useTransform(
+    v.flapLift,
+    (lift) => `calc(${lift * FLAP_PARK_MM} * var(--mm))`,
+  );
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -143,7 +154,14 @@ export function Envelope({
       >
         <motion.div
           className="env-flap"
-          style={{ rotateX: v.flapRot, opacity: v.envBackOpacity }}
+          style={{
+            rotateX: v.flapRot,
+            opacity: v.envBackOpacity,
+            // Slides the hinge from its parked 1.5mm offset up to the envelope's
+            // top edge as the flap closes, so it lands flush rather than a
+            // corner-radius low. y (not top) so it stays on the compositor.
+            y: flapOffset,
+          }}
         >
           {/* The INSIDE of the flap (what you see while it hangs open, folded
               back toward the viewer) is a darker liner — it's the underside of

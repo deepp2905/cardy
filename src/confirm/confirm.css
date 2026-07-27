@@ -419,17 +419,17 @@
 /* Triangular flap hinged on the envelope's top edge. Open sits at -165°, not a
    full 180 — the residual 15° reads as depth, as in the reference.
 
-   Hinged 1.5mm down (the envelope's own border-radius): at top: 0 the flap's
-   square corners hang past the body's rounded ones, so the triangle read as
-   detached from the envelope with a notch of background between them. Dropping
-   it by exactly the radius puts the hinge where the body's straight edge
-   actually begins. */
-/* Base fill is the OUTSIDE of the flap — plain kraft, matching the pocket,
+   The hinge's vertical offset is DRIVEN FROM JS (flapLift → y), not set here:
+   it parks a corner-radius below the top edge while the flap lies open, so its
+   square corners don't hang past the body's rounded ones, then slides flush as
+   the flap closes. See FLAP_PARK_MM in geometry.ts.
+
+   Base fill is the OUTSIDE of the flap — plain kraft, matching the pocket,
    because closed at 0° this is simply the front of the envelope. The inner
    liner is a separate face layered over it (.env-flap-face--inner). */
 .env-flap {
   position: absolute;
-  top: calc(1.5 * var(--mm));
+  top: 0;
   left: 0;
   width: 100%;
   height: calc(38.5 * var(--mm));
