@@ -143,10 +143,43 @@ export function CardCarousel({
     let raf = 0;
     let lastY = NaN;
     let stableFrames = 0;
-    // Poll the active card's centre each frame until it stops moving (the step's
-    // enter animation and the deck's own settle both push it around for a few
-    // frames after `settled` flips). Report only the RESTING position, so the
-    // hero can't inherit a mid-animation offset — that was the vertical snap.
+    // Poll the active card's centre until it stops moving, reporting only the
+    // RESTING position — but report the first reading immediately so the hero
+    // has somewhere to be right away.
+    //
+    // The deck's centre walks ~18px over ~200ms after `settled` flips, because
+    // the customize step animates its children `y: 8 -> 0` on entry. Feeding the
+    // hero every frame of that made it chase a moving target (a long climb from
+    // the rest slot, re-aimed four times mid-flight). But waiting for the walk
+    // to finish before reporting anything left the hero with no position at all
+    // for those 200ms, so it appeared late and without motion.
+    //
+    // So: report the first measurement at once, but correct for the entrance
+    // offset still in flight. The step lifts its children by ENTER_Y and the
+    // hero replays that same rise itself, so what the hero wants is the deck
+    // card's RESTING centre — the live rect minus however much of the lift has
+    // not yet played out. Measuring the wrapper (which carries the animating
+    // transform) against the item gives exactly that remainder.
+    // How much of the step's enter-lift is still applied to the deck, in px.
+    // Read off the live transform of the animating ancestor rather than assumed
+    // from a timer, so it is correct whenever we happen to sample.
+    const pendingLift = () => {
+      const el = activeItemRef.current?.closest(".customize-carousel");
+      if (!(el instanceof HTMLElement)) return 0;
+      const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
+      return m.m42; // translateY currently applied
+    };
+    const report = () => {
+      const el = activeItemRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      // Round to whole pixels: a fractional fixed-position with a box-shadow
+      // anti-aliases into a faint light seam on one edge. Integer coords remove it.
+      onHeroSlot("deck", {
+        x: Math.round(r.left + r.width / 2),
+        y: Math.round(r.top + r.height / 2 - pendingLift()),
+      });
+    };
     const tick = () => {
       const el = activeItemRef.current;
       if (!el) return;
@@ -155,13 +188,15 @@ export function CardCarousel({
         raf = requestAnimationFrame(tick);
         return;
       }
-      // Round to whole pixels: a fractional fixed-position with a box-shadow
-      // anti-aliases into a faint light seam on one edge. Integer coords remove it.
       const cy = Math.round(r.top + r.height / 2);
-      onHeroSlot("deck", { x: Math.round(r.left + r.width / 2), y: cy });
-      // Two consecutive frames within 0.5px = at rest; stop polling.
+      // First real measurement: hand it over now, don't wait for the settle.
+      if (Number.isNaN(lastY)) report();
+      // Two consecutive frames within 0.5px = at rest; correct once and stop.
       if (Math.abs(cy - lastY) < 0.5) {
-        if (++stableFrames >= 2) return;
+        if (++stableFrames >= 2) {
+          report();
+          return;
+        }
       } else {
         stableFrames = 0;
       }
