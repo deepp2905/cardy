@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState, type CSSProperties } from "react";
-import { animate, motion, useTransform, type MotionValue } from "motion/react";
+import { motion, useTransform, type MotionValue } from "motion/react";
 import { Card } from "../card/Card";
 import type { CardConfig } from "../card/cardConfig";
 import { PALETTE } from "../card/cardConfig";
@@ -106,23 +106,31 @@ export function CardCarousel({
   // (the flat hero owns the centre), 0 mid-drag (the deck's own live card, which
   // can do the coverflow tilt the flat hero can't, owns it).
   //
-  // Both the hero and the deck's centre card read this SAME MotionValue — the
-  // deck card gets the inverse (deckCardOpacity below) — and we CROSSFADE it
-  // rather than hard-set. That's the fix for the settle flicker: a hard 0/1 flip
-  // split across two render pipelines (React style on the deck card, MotionValue
-  // on the hero) left a frame where both or neither showed, reading as a
-  // flash/double. One animated value, applied by Motion to both in the same
-  // frames, with a brief overlap where both are partially visible — and since
-  // they're pixel-aligned, that overlap is invisible.
+  // Both the hero and the deck's centre card read this SAME MotionValue — one
+  // value applied by Motion to both in the same frames. That's what fixed the
+  // original settle flicker: a 0/1 flip split across two render pipelines
+  // (React style on the deck card, MotionValue on the hero) left a frame where
+  // both or neither showed.
+  //
+  // The handoff is a SWAP, not a crossfade. Both cards cast --card-shadow, and
+  // a shadow fades with its element: mid-crossfade you get two shadows at ~50%
+  // instead of one at 100%, which composites LIGHTER than either endpoint. The
+  // hairline (0 0 0 1px) and the ambient drop both thin out at once and the
+  // card blooms off the page — a gentle brightening right on settle. Being
+  // pixel-aligned doesn't save it; that only holds at full opacity.
+  //
+  // So the handoff is a hard swap at a single instant: deckOpacity goes 0 or 1
+  // with no ramp, and the deck card takes its exact inverse. Exactly one card,
+  // and therefore exactly one shadow, is visible in every frame.
   const settled = Number.isInteger(index);
   useEffect(() => {
-    animate(deckOpacity, settled ? 1 : 0, {
-      duration: 0.12,
-      ease: [0.32, 0.72, 0, 1],
-    });
+    // Set, don't animate: any ramp puts both cards at partial alpha for those
+    // frames, which is exactly the shadow artifact described above.
+    deckOpacity.set(settled ? 1 : 0);
   }, [settled, deckOpacity]);
 
-  // The deck's active centre card shows the inverse of the hero.
+  // Exact inverse of a value that is only ever 0 or 1 — so this is only ever
+  // 1 or 0 too. The two cards are pixel-identical, so the swap is invisible.
   const deckCardOpacity = useTransform(deckOpacity, (v) => 1 - v);
 
   // Report the ACTIVE deck card's real viewport centre as the hero target, so
