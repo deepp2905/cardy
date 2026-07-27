@@ -15,6 +15,7 @@ dist-ssr
 # Working notes — not part of the shipped repo
 PLAN.md
 UPDATES-AND-CHANGES.md
+AUDIT.md
 
 # Editor directories and files
 .vscode/*
