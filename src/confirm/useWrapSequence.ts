@@ -14,7 +14,7 @@ import {
   stamp,
   wrap,
 } from "../lib/motionConfig";
-import { CARD, ENVELOPE_ENTER_Y, INSERT_TRAVEL } from "./geometry";
+import { CARD, ENVELOPE, ENVELOPE_ENTER_Y, INSERT_TRAVEL } from "./geometry";
 
 /**
  * The whole 3.85s wrap sequence, as MotionValues plus a beat schedule.
@@ -80,6 +80,20 @@ export function useWrapSequence({
   restOpacity: MotionValue<number>;
 }) {
   const [phase, setPhase] = useState<Phase>("rest");
+
+  // Read inside MotionValue transforms, which build their mapper once and would
+  // otherwise capture the first render's values forever.
+  const mmPxRef = useRef(mmPx);
+  mmPxRef.current = mmPx;
+  // The packet is only clipped once it is actually going into the envelope.
+  const insertingRef = useRef(false);
+  insertingRef.current =
+    phase === "inserting" ||
+    phase === "sealing" ||
+    phase === "flipping" ||
+    phase === "idle" ||
+    phase === "posting" ||
+    phase === "done";
 
   // --- Card -----------------------------------------------------------------
   // The card renders at its sequence size (85.6mm) and is scaled UP at rest so
@@ -150,6 +164,25 @@ export function useWrapSequence({
   // closed flap read as a dark wedge stuck to the envelope.
   const flapShade = useTransform(flapRot, [-165, -90, 0], [0.2, 0.3, 0]);
 
+  // Packet clip. The sheet is 192mm tall and the envelope only 70mm, so once
+  // the packet descends into the pocket its unfolded thirds hang out above and
+  // below the envelope. The masking plate used to hide the lower overhang by
+  // accident; with the plate gone the packet has to be clipped to the mouth
+  // explicitly.
+  //
+  // Cut at the envelope's own top edge, tracked live: envY moves the envelope,
+  // so the line moves with it. Expressed in the STAGE's coordinates (the
+  // wrapper is stage-sized and static), as a calc in --mm so it needs no px
+  // scale here. Only applies from `inserting` on — before that the sheet is
+  // the whole subject and must not be cut.
+  const sheetClip = useTransform([envY, sheetY], ([ey]: number[]) => {
+    if (!insertingRef.current) return "inset(0 0 0 0)";
+    // Envelope's top edge, in px from stage centre.
+    const mouth = ey - (ENVELOPE.h / 2) * mmPxRef.current;
+    // Distance from the stage's top to that line.
+    return `inset(calc(50% + ${Math.round(mouth)}px) 0 0 0)`;
+  });
+
   // --- Derived: flip (PRD §5.5) --------------------------------------------
   const norm = (r: number) => ((r % 360) + 360) % 360;
   const isBack = (r: number) => norm(r) < 90 || norm(r) > 270;
@@ -197,6 +230,7 @@ export function useWrapSequence({
       topFront,
       topBack,
       flapShade,
+      sheetClip,
       envBackOpacity,
       envFrontOpacity,
       shadowScaleX,

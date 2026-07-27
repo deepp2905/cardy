@@ -113,6 +113,23 @@
 
 /* ---------------------------------------------------------------- sheet --- */
 
+/* Clipping wrapper for the packet, same pattern as .env-clip: .sheet is
+   preserve-3d (its panels rotate), and clip-path on it would flatten that.
+   Static and stage-sized, so the cut line stays fixed while the packet travels
+   through it. Re-declares the perspective because it now sits between
+   .wrap-scene and .sheet, and the clip stops the ancestor perspective reaching
+   through. */
+.sheet-clip {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 1;
+  pointer-events: none;
+  perspective: 1400px;
+  perspective-origin: 50% 50%;
+}
+
 .sheet {
   position: absolute;
   width: calc(120 * var(--mm));
@@ -315,8 +332,12 @@
    The clip cannot go on .envelope: that element is preserve-3d and carries the
    rotateY flip, and clip-path forces a new stacking context which flattens
    preserve-3d, collapsing the two faces. This wrapper has no 3D of its own, so
-   it can be clipped freely. z-index matches the envelope's old value so the
-   ordering against the packet and slot halves is unchanged. */
+   it can be clipped freely.
+
+   z-index 2 keeps the old envelope ordering against the slot halves. Note this
+   makes the wrapper a stacking context, so .env-body's own z-index no longer
+   orders it against the packet — the packet is masked by .sheet-clip instead
+   (see below), not by the envelope body. */
 .env-clip {
   position: absolute;
   inset: 0;

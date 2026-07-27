@@ -211,7 +211,7 @@ export function Confirm({
             />
           )}
 
-          <CarrierSheet v={values}>
+          <CarrierSheet v={values} clip={values.sheetClip}>
             {sheetCardVisible && (
               <motion.div
                 className="card-holder"

@@ -225,6 +225,8 @@ export function SequencePlayground() {
   const envY = useMotionValue(0);
   const flapRot = useMotionValue(-165);
   const flapLift = useMotionValue(1);
+  // The bench has no phase machine, so the packet is never clipped here.
+  const sheetClip = useMotionValue("inset(0 0 0 0)");
   const sealScale = useMotionValue(0);
   const sealRot = useMotionValue(-8);
   const flipRot = useMotionValue(0);
@@ -332,6 +334,7 @@ export function SequencePlayground() {
     topFront,
     topBack,
     flapShade,
+    sheetClip,
     envBackOpacity,
     envFrontOpacity,
     shadowScaleX,

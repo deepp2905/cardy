@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { motion } from "motion/react";
+import { motion, type MotionValue } from "motion/react";
 import {
   BOTTOM_PANEL,
   TOP_PANEL,
@@ -66,18 +66,26 @@ function BottomFace() {
 
 export function CarrierSheet({
   v,
+  clip,
   children,
 }: {
   v: SequenceValues;
+  /** Clip path for the wrapper, hiding packet that has entered the envelope. */
+  clip?: MotionValue<string>;
   /** The live card, sized at 85.6mm and scaled by the sequence. */
   children: ReactNode;
 }) {
   return (
-    <motion.div
-      className="sheet"
-      style={{ opacity: v.sheetOpacity, scale: v.sheetScale, y: v.sheetY }}
-      aria-hidden="true"
-    >
+    /* Clipping wrapper, for the same reason Envelope has one: .sheet is
+       preserve-3d (the panels rotate in 3D), and clip-path on it would flatten
+       that. This wrapper is static and stage-sized, so the cut line stays fixed
+       while the packet travels through it. */
+    <motion.div className="sheet-clip" style={{ clipPath: clip }}>
+      <motion.div
+        className="sheet"
+        style={{ opacity: v.sheetOpacity, scale: v.sheetScale, y: v.sheetY }}
+        aria-hidden="true"
+      >
       {/* Middle panel — static. The card's bed; nothing else on it. */}
       <div className="panel panel--mid">
         <motion.div className="sheet-print" style={{ opacity: v.printOpacity }}>
@@ -135,7 +143,8 @@ export function CarrierSheet({
           className="panel-side panel-side--back"
           style={{ opacity: v.topBack }}
         />
-        <motion.div className="panel-shade" style={{ opacity: v.topShade }} />
+          <motion.div className="panel-shade" style={{ opacity: v.topShade }} />
+        </motion.div>
       </motion.div>
     </motion.div>
   );
