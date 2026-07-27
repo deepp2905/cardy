@@ -468,31 +468,12 @@
   border-radius: 0 0 calc(5 * var(--mm)) calc(5 * var(--mm));
 }
 
-/* Sized to overflow the stage, not the viewport: `100vw` centred the plate on
-   the window (and included the scrollbar), while the envelope above it is
-   centred on the column — so the two disagreed whenever the column was
-   narrower than the window. Stage-relative units keep the slot rect and the
-   envelope on the same vertical axis.
-
-   Starts BELOW the whole aperture (the seam + the lower half's 5mm), not at
-   the seam: starting at the seam painted the plate straight over the lower
-   half and the bottom of the slot vanished. Everything under the aperture's
-   bottom edge is hidden; the aperture itself stays visible.
-
-   Height is stated in mm, never as a % — .slot-anchor is deliberately
-   zero-height (it marks the seam line), so a percentage resolves to nothing.
-   The envelope parks at POST_TRAVEL (120mm) and is 70mm tall, so its bottom
-   edge reaches 155mm; from the plate's top at 85mm that is 70mm of paper to
-   cover. 200mm is generous margin and still cheap. */
-.slot-plate {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  top: calc(5 * var(--mm));
-  width: 300%;
-  height: calc(200 * var(--mm));
-  background: var(--color-2);
-}
+/* The masking plate is gone. It was a full-width opaque rectangle covering
+   everything below the mouth, which meant it masked far more than the envelope
+   — most visibly the envelope's own bottom edge while it was still above the
+   slot, and it had to be kept in sync with the stage background colour. The
+   envelope now clips itself at SLOT_MOUTH (Envelope.tsx), so exactly one
+   element is masked and the stage behind it is untouched. */
 
 .post-hint {
   position: absolute;

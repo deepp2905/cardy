@@ -1,5 +1,6 @@
 import type { KeyboardEvent } from "react";
 import { motion, useTransform, type MotionValue } from "motion/react";
+import { ENVELOPE, SLOT_MOUTH } from "./geometry";
 import type { SequenceValues } from "./useWrapSequence";
 
 /**
@@ -17,6 +18,7 @@ export function Envelope({
   v,
   firstName,
   interactive,
+  mmPx,
   onPost,
   dragProps,
   dragScale,
@@ -27,6 +29,8 @@ export function Envelope({
   firstName: string;
   /** True only at `idle` — the envelope becomes the drag/keyboard target. */
   interactive: boolean;
+  /** Stage scale, for the slot-mouth clip below. */
+  mmPx: number;
   onPost: () => void;
   dragProps: Record<string, unknown>;
   dragScale: MotionValue<number>;
@@ -42,10 +46,46 @@ export function Envelope({
   // above it without dragging it along), which means it does NOT inherit the
   // envelope's own opacity. Gate it by envOpacity * vanish too, or it shows at
   // rest as a blob with nothing casting it (the envelope is still invisible then).
-  const shadowOpacity = useTransform(
-    [v.shadowOpacity, v.envOpacity, vanish],
-    ([s, a, b]: number[]) => s * a * b,
+  //
+  // It also gets its own fade at the mouth: it sits BELOW the envelope, so it
+  // would cross the line first and sit there as a smudge under a slot that has
+  // nothing above it. Clipping it would just cut a hard edge into a soft
+  // gradient, so it fades over the last few mm of approach instead.
+  const shadowSink = useTransform(
+    v.envY,
+    [(SLOT_MOUTH - ENVELOPE.h / 2 - 12) * mmPx, (SLOT_MOUTH - ENVELOPE.h / 2) * mmPx],
+    [1, 0],
+    { clamp: true },
   );
+  const shadowOpacity = useTransform(
+    [v.shadowOpacity, v.envOpacity, vanish, shadowSink],
+    ([s, a, b, sink]: number[]) => s * a * b * sink,
+  );
+
+  // Clip the envelope at the slot's mouth, so ONLY the envelope is masked.
+  //
+  // The old approach painted a full-width opaque plate over everything below
+  // the line, which also covered whatever else happened to be down there — in
+  // practice the envelope's own bottom edge while it was still above the slot.
+  // A clip-path applies to this element alone: nothing else in the scene is
+  // touched, and there is no plate to keep in sync with the stage colour.
+  //
+  // The cut must stay FIXED in stage space while the envelope travels through
+  // it, so it's expressed in the envelope's own local coordinates: as envY
+  // grows the cut moves up the element by the same amount. Above the mouth the
+  // inset is 0 (nothing clipped); once the envelope's bottom edge passes the
+  // mouth the inset grows until the whole element is hidden.
+  //
+  // clip-path (not an ancestor's overflow: hidden) because the envelope is a
+  // `preserve-3d` subtree, which Safari will not clip via an ancestor — see
+  // MailSlot's docblock. Clipping the element itself is reliable.
+  const clip = useTransform(v.envY, (y) => {
+    const h = ENVELOPE.h * mmPx;
+    // Distance from the element's top edge down to the fixed mouth line.
+    const cutFromTop = SLOT_MOUTH * mmPx - (y - h / 2);
+    const hidden = Math.min(Math.max(h - cutFromTop, 0), h);
+    return `inset(0 0 ${hidden}px 0)`;
+  });
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -69,6 +109,7 @@ export function Envelope({
           rotateY: v.flipRot,
           scale: dragScale,
           rotate: dragTilt,
+          clipPath: clip,
         }}
         {...(interactive
           ? {

@@ -66,22 +66,20 @@ export function MailSlot({
         </div>
       </motion.div>
 
-      {/* Front layer — above the envelope. Two separate concerns here:
-          the PLATE is the mask and must stay fully opaque for as long as the
-          envelope is parked below the lip (fading it would reveal the paper
-          it is hiding), so it rides only the arrival opacity. The upper half
-          of the aperture rides the closing fade like its twin. */}
+      {/* Front half — above the envelope, so the lip covers paper on the way
+          in. No masking plate here any more: the envelope clips ITSELF at the
+          mouth (see Envelope.tsx), which hides only the envelope instead of
+          painting an opaque rectangle over everything below the line. */}
       <motion.div
         className="slot-layer slot-layer--front"
-        style={{ opacity: v.slotOpacity }}
+        style={{ opacity }}
         aria-hidden="true"
       >
         <div className="slot-anchor">
           <motion.div
             className="slot-rect slot-rect--front"
-            style={{ x: "-50%", scaleX, scaleY: v.slotSwallow, opacity: fade }}
+            style={{ x: "-50%", scaleX, scaleY: v.slotSwallow }}
           />
-          <div className="slot-plate" />
         </div>
       </motion.div>
     </>
