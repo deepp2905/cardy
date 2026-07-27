@@ -472,6 +472,38 @@
   padding-inline: 28px;
 }
 
+/* ------------------------------------------------- post-loading beat --- */
+
+/* Grid child of .confirm-stage (which centres), like the epilogue. */
+.post-loading {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  text-align: center;
+}
+
+/* Outer node carries the continuous rotation; the svg inside carries the
+   sine pulse — two transforms, two nodes, no fighting over one matrix. */
+.post-loading-spin {
+  width: 48px;
+  height: 48px;
+}
+
+.post-loading-shape {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.post-loading-text {
+  font-size: var(--text-sm);
+  color: var(--color-10);
+  margin: 0;
+}
+
 /* ------------------------------------------------------------- epilogue --- */
 
 .epilogue {

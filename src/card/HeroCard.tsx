@@ -57,7 +57,15 @@ export const HeroCard = memo(function HeroCard({
   // Inner opacity = within-step fade: the deck yields to its live centre card
   // mid-drag; the wrap sequence hands off to the in-sheet copy. Two nodes at
   // identical position and size crossfading — no layout, so no pop.
-  const innerOpacity = phase === "rest" ? restOpacity : deckOpacity;
+  //
+  // ONLY the deck phase reads deckOpacity; rest AND hidden read restOpacity.
+  // Binding hidden to deckOpacity flashed the card at the end of the wrap
+  // sequence: through the sequence the inner value is restOpacity = 0 (handed
+  // off to the sheet), but the moment the epilogue flipped the phase to
+  // hidden, the binding switched to deckOpacity = 1 — so the card popped fully
+  // visible for the outer fade's 300ms. Outside the sequence restOpacity is 1,
+  // so welcome's hide behaves exactly as before.
+  const innerOpacity = phase === "deck" ? deckOpacity : restOpacity;
 
   const reduce = usePrefersReducedMotion();
   const x = useMotionValue(0);

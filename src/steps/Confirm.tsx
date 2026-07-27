@@ -9,6 +9,7 @@ import { Envelope } from "../confirm/Envelope";
 import { Epilogue } from "../confirm/Epilogue";
 import { MailSlot } from "../confirm/MailSlot";
 import { PostHint } from "../confirm/PostHint";
+import { PostLoading } from "../confirm/PostLoading";
 import { usePostDrag } from "../confirm/usePostDrag";
 import { useStageScale } from "../confirm/useStageScale";
 import { useSlideW } from "../lib/useSlideW";
@@ -61,6 +62,10 @@ export function Confirm({
   // hook measures a probe so the min() actually resolves.
   const slideW = useSlideW();
   const [showEpilogue, setShowEpilogue] = useState(false);
+  // Between the envelope sinking into the slot and the epilogue: a short
+  // "making it" beat (the user's own shape spinning — see PostLoading). Also
+  // papers over the scene teardown so the epilogue arrives as a clean fade.
+  const [showLoading, setShowLoading] = useState(false);
 
   const { phase, setPhase, values } = useWrapSequence({
     mmPx,
@@ -77,9 +82,19 @@ export function Confirm({
     setPhase,
     onPosted: () => {
       setPhase("done");
-      setShowEpilogue(true);
+      setShowLoading(true);
     },
   });
+
+  // Hold the loading beat, then hand over to the epilogue.
+  useEffect(() => {
+    if (!showLoading) return;
+    const t = window.setTimeout(() => {
+      setShowLoading(false);
+      setShowEpilogue(true);
+    }, 1800);
+    return () => clearTimeout(t);
+  }, [showLoading]);
 
   // Chrome hides for the wrap sequence, then RETURNS on the epilogue: the
   // ActionBar there hosts "Start over" + the wallet CTA, so it must be visible.
@@ -95,7 +110,10 @@ export function Confirm({
   }, [started, showEpilogue]);
 
   useEffect(() => {
-    if (!started) setShowEpilogue(false);
+    if (!started) {
+      setShowEpilogue(false);
+      setShowLoading(false);
+    }
   }, [started]);
 
   // Let App swap the ActionBar to its epilogue form (Start over + wallet).
@@ -117,9 +135,10 @@ export function Confirm({
   const restCardVisible = phase === "rest";
   const sheetCardVisible = started && (phase === "rest" || phase === "folding");
 
-  const status =
-    phase === "done"
-      ? "Posted. Your card arrives in about 7 days."
+  const status = showEpilogue
+    ? "Posted. Your card arrives in about 7 days."
+    : showLoading
+      ? "Creating your card."
       : phase === "idle"
         ? "Sealed. Drag down or press Enter to post."
         : started
@@ -137,7 +156,7 @@ export function Confirm({
         {status}
       </p>
 
-      {!showEpilogue && (
+      {!showEpilogue && !showLoading && (
         <motion.div className="wrap-scene" style={{ y: values.nudgeY }}>
           {/* The at-rest card is the PERSISTENT hero (mounted in App), not a
               local node — so there is no hand-off and nothing to measure across
@@ -182,7 +201,18 @@ export function Confirm({
         </motion.div>
       )}
 
-      <AnimatePresence>
+      {/* mode="wait": the loading beat fades fully out before the epilogue
+          fades in — one thing on stage at a time. */}
+      <AnimatePresence mode="wait">
+        {showLoading && (
+          <PostLoading
+            key="loading"
+            shape={config.shape}
+            filled={config.filled}
+            color={config.baseColor}
+            reduce={reduce}
+          />
+        )}
         {showEpilogue && <Epilogue key="epilogue" walletAdded={walletAdded} />}
       </AnimatePresence>
     </div>
