@@ -40,7 +40,6 @@ export function usePostDrag({
   onPosted: () => void;
 }) {
   const dragScale = useMotionValue(1);
-  const hintDismissed = useRef(false);
   // The 450ms post-completion timer must not fire into an unmounted tree.
   const postTimer = useRef(0);
   useEffect(() => () => clearTimeout(postTimer.current), []);
@@ -73,13 +72,15 @@ export function usePostDrag({
     postTimer.current = window.setTimeout(onPosted, 450);
   }, [phase, setPhase, v, mmPx, dragScale, onPosted]);
 
+  // The hint stays put through a drag: picking the envelope up and putting it
+  // back down doesn't teach you anything, so the affordance has to survive it.
+  // It only leaves on an actual post (runPost fades it as the envelope goes).
   const onDragStart = useCallback(() => {
-    if (!hintDismissed.current) {
-      hintDismissed.current = true;
-      animate(v.hintOpacity, 0, { duration: 0.2 });
-    }
+    // The idle tug may still be running on envY; stop it or Motion's drag and
+    // the keyframe animation both write the same value and the envelope jitters.
+    v.envY.stop();
     animate(dragScale, 1.03, snappy);
-  }, [v.hintOpacity, dragScale]);
+  }, [v.envY, dragScale]);
 
   const onDragEnd = useCallback(
     (_e: unknown, info: PanInfo) => {

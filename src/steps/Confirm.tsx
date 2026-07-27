@@ -209,7 +209,6 @@ export function Confirm({
             key="loading"
             shape={config.shape}
             filled={config.filled}
-            color={config.baseColor}
             reduce={reduce}
           />
         )}

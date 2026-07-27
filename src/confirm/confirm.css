@@ -463,6 +463,10 @@
 .post-hint-chevron {
   width: 26px;
   height: 26px;
+  /* A step lighter than the hint's own ink: the chevron is a quiet affordance
+     that now persists through drags, so it shouldn't compete with the sealed
+     envelope above it. */
+  color: var(--color-9);
   /* A soft glow so the moving mark separates from paper and slot alike. */
   filter: drop-shadow(0 1px 2px oklch(0 0 0 / 0.18));
 }
@@ -488,14 +492,17 @@
 /* Outer node carries the continuous rotation; the svg inside carries the
    sine pulse — two transforms, two nodes, no fighting over one matrix. */
 .post-loading-spin {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
 }
 
+/* Neutral ink, not the card colour — the shape is the user's, the colour is
+   the UI's. Mid-grey so it reads as a quiet progress mark in both themes. */
 .post-loading-shape {
   display: block;
   width: 100%;
   height: 100%;
+  color: var(--color-9);
 }
 
 .post-loading-text {

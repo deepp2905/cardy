@@ -59,6 +59,10 @@ const BEAT = {
 /** Reduced-motion path: two crossfades, 0.7s total (PLAN.md §7). */
 const REDUCED = { swap: 0.35 } as const;
 
+/** How far the idle tug pulls the envelope, in mm. Small — it's a hint that
+ *  the object is grabbable, not a demonstration of the whole travel. */
+const TUG_MM = 7;
+
 export function useWrapSequence({
   mmPx,
   slideW,
@@ -281,6 +285,20 @@ export function useWrapSequence({
     });
     at(BEAT.hint, () => {
       animate(hintOpacity, 1, { duration: 0.3, ease: crossfade.ease });
+      // Tug the envelope down twice and let it snap back — the gesture the
+      // chevron is asking for, performed once so it reads as "this thing
+      // moves, and it moves DOWN". Keyframes on one animate() call so the two
+      // pulls are one interruptible animation: the drag handler stops envY on
+      // pointerdown, so grabbing mid-tug hands control straight over.
+      animate(
+        envY,
+        [0, TUG_MM * mmPx, 0, TUG_MM * 0.62 * mmPx, 0],
+        {
+          duration: 1.5,
+          times: [0, 0.22, 0.46, 0.66, 1],
+          ease: "easeInOut",
+        },
+      );
     });
 
     return clear;

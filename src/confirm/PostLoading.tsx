@@ -5,8 +5,10 @@ import { crossfade } from "../lib/motionConfig";
 /**
  * Brief "making it" beat between the envelope dropping into the slot and the
  * epilogue. The mark is the user's OWN pattern shape — same shape and fill
- * mode they chose in customize, drawn in their card's colour — so the wait
- * reads as their card being made, not a generic spinner.
+ * mode they chose in customize — so the wait reads as their card being made
+ * rather than a generic spinner. Drawn in neutral ink, not the card colour:
+ * the card has just gone into the slot, and a saturated mark here reads as a
+ * new object rather than a quiet progress state.
  *
  * Motion: a continuous 360° rotation with a size pulse. The pulse is a
  * symmetric keyframe set on easeInOut — the smoothed sine of a pendulum — so
@@ -19,17 +21,17 @@ import { crossfade } from "../lib/motionConfig";
 export function PostLoading({
   shape,
   filled,
-  color,
   reduce,
 }: {
   shape: PatternShape;
   filled: boolean;
-  color: string;
   reduce: boolean;
 }) {
+  // currentColor, set by .post-loading-shape in CSS, so the mark tracks the
+  // theme's neutral ink in both light and dark.
   const paint = filled
-    ? { fill: color }
-    : { fill: "none", stroke: color, strokeWidth: 2.6 };
+    ? { fill: "currentColor" }
+    : { fill: "none", stroke: "currentColor", strokeWidth: 2.6 };
 
   return (
     <motion.div
