@@ -5,9 +5,10 @@ import "./ui.css";
 
 type Theme = "light" | "dark";
 
+// Read back whatever index.html stamped pre-paint (stored choice, else dark)
+// so the button's icon matches the surface on first render.
 function initialTheme(): Theme {
-  const t = document.documentElement.dataset.theme;
-  return t === "dark" ? "dark" : "light"; // stamped pre-paint in index.html
+  return document.documentElement.dataset.theme === "light" ? "light" : "dark";
 }
 
 export function ThemeToggle() {
