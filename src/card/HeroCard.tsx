@@ -125,6 +125,12 @@ export const HeroCard = memo(function HeroCard({
     >
       <motion.div
         className="hero-card-fade"
+        // initial={false} would keep whatever the DOM starts at; an explicit
+        // 0 is what stops the first-paint flash. Without it Motion renders the
+        // element at its natural opacity (1) for the frame before the animate
+        // prop applies — and at that moment the card has no target yet, so it
+        // paints full-strength in the top-left corner.
+        initial={{ opacity: 0 }}
         animate={{ opacity: visible ? 1 : 0 }}
         transition={crossfade}
       >
