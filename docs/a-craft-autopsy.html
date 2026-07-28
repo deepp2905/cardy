@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cardy — a craft autopsy</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<nav class="variant-bar">
+  <div class="inner">
+    <span class="label">draft</span>
+    <a href="a-craft-autopsy.html" aria-current="page">A · autopsy</a>
+    <a href="b-journey.html">B · journey</a>
+    <a href="c-thesis.html">C · thesis</a>
+    <a href="index.html">brief</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════ HERO ══════════════════════ -->
+<section class="hero wrap">
+  <div class="col">
+    <p class="eyebrow accent">Design engineering challenge · 7 days</p>
+    <h1>I deleted the<br>best parts.</h1>
+    <p class="sub">A card you design yourself, then watch get folded, sealed and posted. This is the record of what I built, what I threw away, and why the throwing away is the part worth reading.</p>
+    <div class="cta-row">
+      <a class="btn" href="https://cardyb.vercel.app/ria-money/">Open the live card <span class="arr">→</span></a>
+      <a class="btn ghost" href="#autopsies">Skip to the three deletions</a>
+    </div>
+    <div class="hero-meta">
+      <span>Built in <b>5 days</b></span>
+      <span><b>182</b> commits</span>
+      <span><b>9</b> abandoned branches</span>
+      <span><b>1</b> dependency deleted</span>
+    </div>
+  </div>
+</section>
+
+<!-- Hero video -->
+<section class="wrap">
+  <div class="wide rv">
+    <div class="media">
+      <div class="media-empty">
+        <b>Video 01 · hero</b>
+        the finished card, resting, then the ship sequence<br>
+        <span class="dur">8–10s · loop · no cursor</span>
+      </div>
+    </div>
+    <p class="caption">Everything below is in service of these ten seconds.</p>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ OPPORTUNITIES ══════════════════════ -->
+<section class="wrap">
+  <div class="col rv">
+    <p class="eyebrow">01 · Explore</p>
+    <h2>Five problems, five different people</h2>
+    <p class="lede">I went looking for fintech problems that were actually worth solving. Each of these belongs to a different person, in a different moment, with something different at stake.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="opps">
+      <div class="opp">
+        <span class="n">01</span>
+        <h3>Currency rate charts</h3>
+        <p>Someone timing a tuition payment or a property deposit gets the same line graph everyone got in 2009. The rate is the whole product for these people, and the chart is still an afterthought.</p>
+        <span class="who">for · expats, parents paying overseas fees</span>
+      </div>
+      <div class="opp">
+        <span class="n">02</span>
+        <h3>Send-money interaction for teens</h3>
+        <p>Teens transact constantly, but every wallet they touch is really designed for the parent funding it. The interaction is what would make them stay — not the balance, not the transaction list.</p>
+        <span class="who">for · 13–17, and the parent who has to approve it</span>
+      </div>
+      <div class="opp chosen">
+        <span class="n">03</span>
+        <h3>A card that's actually yours</h3>
+        <p>Banks give you a gallery to pick from, or an image to upload. One offers no control and the other offers too much. Neither is customization in any sense that matters to the person holding it.</p>
+        <span class="who">for · anyone who has ever put a sticker on a laptop</span>
+        <span class="tag">Chosen</span>
+      </div>
+      <div class="opp">
+        <span class="n">04</span>
+        <h3>Receiving money, but delightful</h3>
+        <p>Money arrives as a push notification and a reference number, and that's the end of it. The most emotional moment in the entire transfer is the one nobody has bothered to design.</p>
+        <span class="who">for · the receiver, who nobody builds for</span>
+      </div>
+      <div class="opp">
+        <span class="n">05</span>
+        <h3>A rate alert setter</h3>
+        <p>Freelancers, families and expats want to catch a rate, not sit watching one all week. Setting the threshold should feel as satisfying as the moment it finally gets hit.</p>
+        <span class="who">for · freelancers billing in a second currency</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ THE PICK ══════════════════════ -->
+<section class="wrap">
+  <div class="col rv">
+    <p class="eyebrow">02 · Decide</p>
+    <h2>Why the card, and not the chart</h2>
+    <p>Three of those five are rate problems in different clothes. I picked the one furthest from a rate table on purpose: it had the most room for motion and feel, and it was the only one of the five with a genuine <em>magic moment</em> already sitting inside it, waiting to be found.</p>
+
+    <h3 style="margin-top:2rem">People were already doing this themselves</h3>
+    <p>Cash App's payment wand didn't invent a behaviour — it productised one. People were already gluing tap-to-pay cards inside homemade wands and filming themselves paying with them. The first drop of ten thousand units sold out in hours.</p>
+    <p>That isn't a marketing win. That's people hacking a payment object into something expressive because the one they were issued felt dead. The demand signal was already in the wild; nobody had built the front door.</p>
+
+    <p class="pull">The IKEA effect, applied to a piece of plastic that otherwise arrives looking like everybody else's. Effort creates ownership. So make the effort feel good, and make it impossible to waste.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div data-dgm="heroCard"></div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ THE AUTOPSIES ══════════════════════ -->
+<section class="wrap" id="autopsies">
+  <div class="col rv">
+    <p class="eyebrow accent">03 · Build</p>
+    <h2>Three things I built and then deleted</h2>
+    <p class="lede">AI got me to ninety percent in two days. The last ten percent took the rest of the week — and it turns out to be the only part anybody actually feels. Here is where that week went.</p>
+  </div>
+</section>
+
+<!-- ── AUTOPSY 1 ── -->
+<section class="wrap">
+  <div class="col rv">
+    <div class="autopsy">
+      <div class="autopsy-head">
+        <span class="tagline t-deleted">deleted</span>
+        <h3 style="margin:0">The bounce I got right, then removed</h3>
+      </div>
+
+      <div class="beat built">
+        <span class="lbl">built</span>
+        <p>Native overscroll bounce only exists on iOS and macOS Safari. Everywhere else, a carousel that hits its end just stops — dead, no give. So I wrote one: track the pull past the edge, shape it through a resistance curve, spring it back on release.</p>
+      </div>
+
+      <div class="beat broke">
+        <span class="lbl">broke</span>
+        <p>My first curve saturated exponentially. It felt right for about 300 pixels and then went completely dead — you keep dragging and nothing answers. The card is still under your finger and the interface has stopped listening.</p>
+      </div>
+
+      <div class="beat fixed">
+        <span class="lbl">fixed</span>
+        <p>The right shape is a rational asymptote: <code>t = pull / (pull + resistance)</code>, mapped onto the allowed travel. It <em>approaches</em> the ceiling without ever arriving, so it keeps responding however hard you pull. Its two knobs are also orthogonal, which is why it's tunable: <code>resistance</code> is the pull at which you've used half the travel, and the ceiling is the travel cap. Changing one doesn't move the other.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="dgm">
+      <div class="dgm-head">
+        <h4>Overscroll resistance · wrong vs right</h4>
+        <span class="hint">drag across →</span>
+      </div>
+      <div data-dgm="rubberband"></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <div class="autopsy" style="margin-top:0">
+      <div class="beat broke">
+        <span class="lbl">then</span>
+        <p>I shipped it. And the carousel still felt subtly wrong — not broken, just <em>un-fluent</em>, in a way I couldn't name for two days.</p>
+      </div>
+      <div class="beat lesson">
+        <span class="lbl">lesson</span>
+        <p>A custom rubberband doesn't <em>replace</em> the platform's elastic scroll. It runs on top of it. There is no way to switch off native overscroll while keeping a scroll container, so both systems were animating the same gesture and disagreeing about where it should end up.</p>
+        <p>I deleted the whole thing. What's left is one line — <code>overscroll-behavior-x: contain</code> — which only stops a hard swipe triggering browser back-navigation.</p>
+      </div>
+    </div>
+
+    <p class="pull">A custom bounce only works when you own the scroll position. Never layered over a native scroller.</p>
+
+    <p>The curve wasn't wasted, though: it survived into the <em>sliders</em>, where the track is a plain div with no native scroll to fight. Same maths, right context. And when I later rebuilt the carousel on an owned fractional index instead of a native scroller — which is what ships — the bounce could come back, because by then I owned the position.</p>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ── AUTOPSY 2 ── -->
+<section class="wrap">
+  <div class="col rv">
+    <div class="autopsy">
+      <div class="autopsy-head">
+        <span class="tagline t-reverted">reverted</span>
+        <h3 style="margin:0">I rebuilt this three times and shipped the original</h3>
+      </div>
+
+      <div class="beat built">
+        <span class="lbl">brief</span>
+        <p>Make the step indicator wider. Make the active segment bigger. Make it travel faster when it jumps more than one step.</p>
+      </div>
+
+      <div class="beat broke">
+        <span class="lbl">v2–v4</span>
+        <p>I built a <code>flexGrow</code> spring with an opacity-crossfaded fill. Then a <code>scaleX</code> wipe. Then cumulative fills, so completed steps stayed resolved — which is what USWDS, Carbon and Aurora all do, so I had a citation and everything.</p>
+        <p>Then I hit a bounce on backward navigation and spent a full turn fixing it.</p>
+      </div>
+
+      <div class="beat fixed">
+        <span class="lbl">revert</span>
+        <p>The bounce was self-inflicted. My <code>flexGrow</code> spring was fighting motion's layout projection — two animation systems measuring the same element at different moments and disagreeing. It only existed because I'd added it.</p>
+        <p>I reverted to v1. It was better, and the reason is embarrassingly simple: <strong>one object moves.</strong> A single fill physically slides between segments. It's continuous, and your eye can track it. Every version I'd built to improve it replaced that one travelling object with three separate fills appearing and disappearing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="dgm">
+      <div class="dgm-head">
+        <h4>Four versions · the one that shipped is the first</h4>
+        <span class="hint">running live</span>
+      </div>
+      <div data-dgm="stepIndicator"></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <p>The one thing I <em>did</em> keep from that detour was a second spring for long jumps — confirm back to welcome travels two segments, so it gets 4× the stiffness. Damping went up with it to hold the ratio at exactly 0.732, identical to the normal slide. <strong>Same character, half the settle time.</strong> Nothing about how it feels changed; only how long it takes.</p>
+    <p class="pull">When something already works, diff before you add. I had a citation for three-state progress indicators and it was still the wrong call for this component.</p>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ── AUTOPSY 3 ── -->
+<section class="wrap">
+  <div class="col rv">
+    <div class="autopsy">
+      <div class="autopsy-head">
+        <span class="tagline t-reversed">reversed</span>
+        <h3 style="margin:0">The decision I locked, then broke</h3>
+      </div>
+
+      <div class="beat built">
+        <span class="lbl">decided</span>
+        <p>Before writing a line of the ship sequence I wrote a full build spec for it. It has a decision table with ten locked entries. <strong>D10: fold the snapshot PNG, never the live card.</strong> Rationale: a WebGL canvas inside a <code>preserve-3d</code> context is a known Safari failure mode, and I'd flagged it as the single highest craft risk in the project.</p>
+        <p>So the plan was: capture the card to a PNG, fold the image. I installed a dependency for it.</p>
+      </div>
+
+      <div class="beat broke">
+        <span class="lbl">wrong</span>
+        <p>D10 was defensive against a risk that the geometry had already removed. The card sits on the <em>middle</em> panel of a three-panel fold — and the middle panel never rotates. Only the two outer panels do. And the card unmounts entirely at the insert beat, before anything containing it moves in 3D.</p>
+        <p>The dangerous case I'd designed around couldn't happen.</p>
+      </div>
+
+      <div class="beat fixed">
+        <span class="lbl">reversed</span>
+        <p>The sequence folds the <em>live</em> card. It's the real component, with its real pattern, all the way into the envelope — no capture step, no 200ms swap, no imperceptible-hand-off to disguise. <code>snapshot.ts</code> and <code>html-to-image</code> are both deleted.</p>
+      </div>
+
+      <div class="beat lesson">
+        <span class="lbl">lesson</span>
+        <p>Writing the spec first was still right — it's why the geometry was solid enough to notice the contradiction. But a locked decision is only as good as the assumption under it, and the assumption had expired two phases earlier without anybody re-reading it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="media">
+      <div class="media-empty">
+        <b>Video 02 · the ship sequence</b>
+        armed by the arrow, through to the envelope at rest<br>
+        <span class="dur">12–14s · one take · no cursor until the drag</span>
+      </div>
+    </div>
+    <p class="caption">Eight beats, five seconds, no skip button. <b>A skippable moment isn't a designed moment</b> — the accepted cost is that going back and forward replays the whole thing.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="dgm">
+      <div class="dgm-head">
+        <h4>Scrub the choreography</h4>
+        <span class="hint">drag the slider →</span>
+      </div>
+      <div data-dgm="scrubber"></div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ GEOMETRY ══════════════════════ -->
+<section class="wrap">
+  <div class="col rv">
+    <p class="eyebrow">04 · Under it</p>
+    <h2>Everything is specified in millimetres</h2>
+    <p>The card is ISO/IEC 7810 ID-1 — 85.6 × 53.98mm, 3.18mm corner radius — at every size it ever appears. Wrong card proportions are the first thing a design reviewer notices, and there's no recovering from it.</p>
+    <p>So the whole sequence is drawn in real units and converted by a single scale factor. The slot is the widest object, so it sets the horizontal scale. The sheet is the tallest, so it binds the vertical. <strong>No raw pixel value exists inside the stage</strong> except hairlines and shadow offsets.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="full rv">
+    <div class="dgm">
+      <div class="dgm-head"><h4>Sheet → packet → envelope → slot</h4><span class="hint">to scale</span></div>
+      <div data-dgm="geometry"></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="grid2">
+      <div class="panel">
+        <h3>The fidelity gap is the focus device</h3>
+        <p class="small">The carrier sheet is a deliberate low-fidelity wireframe — placeholder bars, no real copy. The card is the only fully rendered object in the frame. So even while it's being covered up, it stays the hero. The wireframe stops at the sheet, because the envelope has to carry real text.</p>
+      </div>
+      <div class="panel">
+        <h3>Paper doesn't obey the theme</h3>
+        <p class="small">Every other colour in the app comes from one 12-step ramp that inverts between light and dark. Paper and kraft are the only exceptions. Paper that changes colour with the UI theme stops reading as a physical object — so they shift in value between themes, for glare and separation, but never in hue.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <h3>One card, three steps, never re-mounted</h3>
+    <p>The card is a single React node mounted once at the top of the app that <em>never unmounts</em>. Each step reports where it should sit via an invisible spacer, and the card springs its transform to that point.</p>
+    <p>This replaced a shared-element hand-off, which popped — the measured box was being distorted by the deck's coverflow transform, so the hand-off was reading a lie. With one persistent node there is nothing to measure and nothing to hand off. <strong>One object travels through the entire story.</strong></p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="dgm">
+      <div class="dgm-head"><h4>The whole sequence runs 1.25× slower than it was tuned</h4></div>
+      <div data-dgm="tempo"></div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ CONSTRAINTS ══════════════════════ -->
+<section class="wrap">
+  <div class="col rv">
+    <p class="eyebrow">05 · The invisible work</p>
+    <h2>Two sliders out of thirteen parameters</h2>
+    <p class="lede">The constraints are where the actual design work went. If I did that job properly, you never notice they're there at all.</p>
+    <p>The pattern engine has around thirteen knobs. The interface exposes two. Every other one is pinned to a constant I tuned by hand, and each slider maps 0..1 into a band narrow enough that <strong>no position on any track looks like a mistake</strong>.</p>
+    <p>That comes out at around <strong>54 million distinct cards</strong> — and the number isn't the achievement. Anyone can multiply a parameter space out to millions; the work was making sure that every single one of those states is worth having.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="dgm">
+      <div class="dgm-head"><h4>Where 54 million comes from</h4><span class="hint">every term is in the share URL</span></div>
+      <div data-dgm="combinations"></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="dgm">
+      <div class="dgm-head"><h4>One card · every position of both sliders</h4></div>
+      <div data-dgm="constraints"></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <h3>A third slider that didn't earn its place</h3>
+    <p>Phase was a real parameter and it was on the panel. Sliding it moved the wave offset — the ripple slid, and the pattern's <em>character</em> didn't change at all. It looked like it did something. It did nothing worth a control.</p>
+    <p>It's now a constant. The URL parameter for it was dropped, so older share links just render at zero.</p>
+    <p class="pull">Every choice I removed made the output better. Fewer knobs on the panel, noticeably stronger cards coming out the other end.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="dgm">
+      <div class="dgm-head"><h4>The nine colourways</h4><span class="hint">deterministic</span></div>
+      <div data-dgm="palette"></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <p>Nine colours, three shapes, two fill modes, two continuous sliders. But the variety that actually reads isn't in the sliders — it's <strong>seeded at build time</strong>. Each colourway gets its own grid angle, mark weight, and how hard the radial wave twists, pulses and shoves each cell. Those are the levers that change a pattern's <em>character</em>; the sliders mostly change density and scale.</p>
+    <p>Without that, nine cards were one design recoloured nine times. I could see it, and I couldn't fix it by widening the slider ranges — I'd tried that first.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="media">
+      <div class="media-empty">
+        <b>Video 03 · the deck</b>
+        drag through the nine, then both sliders moving on one card<br>
+        <span class="dur">10–12s · cursor visible · zoom on the slider thumb</span>
+      </div>
+    </div>
+    <p class="caption">Switching cards retargets the sliders with a spring, so the panel visibly re-aims at the new card's values. While you're dragging, the slider tracks 1:1 — springing a control under your own finger feels rubbery, not alive.</p>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ PERSONALIZATION ══════════════════════ -->
+<section class="wrap">
+  <div class="col rv">
+    <p class="eyebrow">06 · The small one</p>
+    <h2>The card is already engraved before you touch anything</h2>
+    <p>Visit <code>/ria-money</code> and the welcome greets Ria, and the card carries <span class="mono">RIA MONEY</span> before you've made a single choice. It's the whole feature: one pure function, read once at mount, no state and no router.</p>
+    <p>It survives the entire journey for free, because the app never mutates the URL — every step change is component state, so the path segment just sits there.</p>
+    <div class="table-scroll" style="margin-top:1.5rem">
+      <table class="spec">
+        <thead><tr><th>URL</th><th>Engraved</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">/alex-rivera</td><td class="mono">ALEX RIVERA</td><td>split on the first dash</td></tr>
+          <tr><td class="mono">/mary-jane-watson</td><td class="mono">MARY JANE WATSON</td><td>extra dashes fold into the last name</td></tr>
+          <tr><td class="mono">/bartholomew-featherstonehaugh</td><td class="mono">BARTHOLOMEW F.</td><td>too long → the convention embossed cards already use</td></tr>
+          <tr><td class="mono">/favicon.ico</td><td class="mono">ALEX RIVERA</td><td>charset gate → default</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small dim" style="margin-top:1rem">That last row is the point of the charset gate: letters and interior dashes only. A scanner probe, an encoded byte or a stray path can never be read as a name — it's the injection guard, not a formatting nicety. It also means a deploy rewrite is a hard dependency, not a nicety: without it the feature works locally and 404s in production.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="media tall" style="max-width:26rem;margin-inline:auto">
+      <div class="media-empty">
+        <b>Video 04 · your name</b>
+        type a name into the URL bar, hit enter, card is already engraved<br>
+        <span class="dur">6–8s · zoom on the URL bar, then on the card name</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ PLAYGROUND ══════════════════════ -->
+<section class="wrap">
+  <div class="col rv">
+    <p class="eyebrow">07 · Process</p>
+    <h2>A playground before the product</h2>
+    <p>Carousel behaviour, colour, typography, card graphics, and the whole envelope choreography — I tested all of it on separate dev routes first, each with its own control panel and a copy button that hands me back apply-ready values.</p>
+    <p>So nothing landed in the real build before I already knew how it would behave. The ship sequence in particular was built against a <em>scrubbable timeline</em>, not by reloading the flow and watching it play — you cannot tune the fourth beat of a five-second animation if you have to sit through the first three every time.</p>
+    <p class="small dim">All of it is lazy-loaded on hash routes and split out of the main bundle, so the tuning tool never ships to a user.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="grid2">
+      <div class="media square">
+        <div class="media-empty"><b>Image · carousel range</b>seven mechanics as grey wireframes<br><span class="dur">screenshot grid, 7-up</span></div>
+      </div>
+      <div class="media square">
+        <div class="media-empty"><b>Image · card explorations</b>the variants that didn't ship<br><span class="dur">screenshot grid, 4-up</span></div>
+      </div>
+    </div>
+    <p class="caption">Apple's dock, Revolut, and a long tail of my own dead ends. <b>Seven carousel mechanics built as throwaway wireframes; one shipped.</b> I had to see the whole range before I could commit to a position — and the six that lost were the reason I trusted the one that won.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <h3>What the explore route taught me that the real build couldn't</h3>
+    <p>The first four mechanics weren't draggable and I couldn't work out why. The cause was structural: a scroll container with mandatory snap can't coexist with imperatively setting the scroll position — snap re-snaps every programmatic write, so it fights you on every frame.</p>
+    <p>The fix was to stop using scroll at all. A hook owns a fractional index driven by drag, wheel and arrow keys, with a spring settle and a rubberband at the ends. Every variant became pure geometry read off that one number — no measuring, no scroll container, nothing to fight.</p>
+    <p><strong>That hook is what ships.</strong> The coverflow mechanic won, and the deck in the real product runs on the same index the wireframes did.</p>
+    <p class="pull">A blank page with no console error is a crash, not a CSS problem. And repeated single-symptom patches mean a structural cause — stop patching, read every sibling.</p>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ STACK ══════════════════════ -->
+<section class="wrap">
+  <div class="col rv">
+    <p class="eyebrow">08 · Stack</p>
+    <h2>How this was actually made</h2>
+    <div class="chips" style="margin-bottom:2rem">
+      <span class="chip"><b>Claude Code</b> <span class="role">the building</span></span>
+      <span class="chip"><b>Paper</b> <span class="role">the thinking</span></span>
+      <span class="chip"><b>motion</b> <span class="role">everything that moves</span></span>
+      <span class="chip"><b>dialKit</b> <span class="role">dev-only tuning</span></span>
+      <span class="chip"><b>Vite · React 19 · TS</b></span>
+      <span class="chip"><b>OKLCH</b> <span class="role">every colour</span></span>
+      <span class="chip"><b>Vercel</b></span>
+    </div>
+
+    <h3>The four steps that produced the ship sequence</h3>
+    <ol class="list" style="counter-reset:none">
+      <li>Thought out loud about exactly what I wanted, then let Claude ask <em>me</em> the questions.</li>
+      <li>Wrote a full build spec before any code — geometry in millimetres, a decision table, an explicit list of things nobody is allowed to re-propose.</li>
+      <li>New branch, wired into the existing scaffold, nothing else touched.</li>
+      <li>Tuned the easing and timing by hand until it felt right. This was the only slow one.</li>
+    </ol>
+
+    <p style="margin-top:2rem">The spec has a section listing decisions I'd <em>declined</em> — tinting the envelope from the card colour, a hero hold before the first fold, the card bulging through the folded packet — recorded specifically so neither of us would propose them again three days later. That section saved more time than any of the code.</p>
+
+    <p class="pull">The way I work with AI isn't prompting for output. It's writing the constraints down hard enough that the output has nowhere bad to go.</p>
+
+    <h3 style="margin-top:2.5rem">On prompting for visuals</h3>
+    <p>I prompted with explicit structural constraints — geometry, angle, size, weight — rather than asking for something that looked nice. Vague prompts get you vague cards, every single time. The nine patterns are the result of specifying the <em>parameter space</em> and then hand-tuning the bands, not of describing a mood.</p>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ SCOPE ══════════════════════ -->
+<section class="wrap">
+  <div class="wide rv">
+    <div class="grid2">
+      <div class="panel">
+        <p class="eyebrow" style="margin-bottom:0.75rem">Shipped</p>
+        <ul class="list done">
+          <li>Nine seeded colourways, deterministic across reloads</li>
+          <li>Coverflow deck — drag, wheel, arrow keys, click-to-centre</li>
+          <li>Two sliders + two segmented controls, retargeting per card</li>
+          <li>Full wrap → seal → flip → post sequence, 5.00s</li>
+          <li>Drag-to-post with magnetic assist — <em>impossible to fail</em></li>
+          <li>Name from the URL path, with an injection gate</li>
+          <li>Light and dark, resolved before first paint</li>
+          <li>Reduced motion as a <em>real path</em>, not a disable switch</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <p class="eyebrow" style="margin-bottom:0.75rem">Cut, deliberately</p>
+        <ul class="list cut">
+          <li>Responsiveness beyond the fixed column</li>
+          <li>Full keyboard parity across every control</li>
+          <li>Tilt — pointer and accelerometer both</li>
+          <li>The wax seal (the beat survives; it drives the settle bump)</li>
+          <li>The engraving note field — built, plumbed, then unmounted</li>
+          <li>The phase slider — didn't change anything that mattered</li>
+        </ul>
+      </div>
+    </div>
+    <p class="caption">Responsiveness and keyboard depth were the trade I made for depth on the core interaction. Both are the first thing I pick back up, and neither is a hard problem — just an unspent day.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <h3>Reduced motion, since it's usually a lie</h3>
+    <p>It's not a switch that turns animation off. The wrap sequence collapses into two crossfades. The deck becomes a flat draggable strip. The drag-to-post gets a button — because <strong>the terminal action of a flow can never be gesture-only</strong>. Idle drift stops. Opacity transitions all stay, because they were never the problem.</p>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ NEXT ══════════════════════ -->
+<section class="wrap">
+  <div class="col rv">
+    <p class="eyebrow">09 · Next</p>
+    <h2>What I'd do with another week</h2>
+    <ul class="list">
+      <li>A sequence showing the card being <em>made</em>, not only shipped</li>
+      <li>Sound design — the envelope closing genuinely deserves a thunk</li>
+      <li>Finer control over how each individual graphic is sized and placed</li>
+      <li>More graphics, so the vocabulary stops feeling as narrow as it does</li>
+      <li>Rewrite the deck's per-frame React renders as motion values — documented as the first suspect if jank ever appears, deliberately not paid for before then</li>
+    </ul>
+    <p style="margin-top:1.75rem" class="small dim">That last one is in the audit with a recommendation of <em>accept, don't rewrite</em>. It's a half-day restructure with real regression risk to the feel, for jank nobody has observed on target hardware. Knowing which problems to leave alone is the same skill as knowing which to fix.</p>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ REFS ══════════════════════ -->
+<section class="wrap">
+  <div class="wide rv">
+    <h2 class="col" style="max-width:var(--measure);margin-inline:auto">Standing on</h2>
+    <div class="refs" style="margin-top:1.5rem">
+      <div class="ref">
+        <div class="who"><b>Josh Puckett</b> <span>interfacecraft.dev · dialKit</span></div>
+        <p>Heavily shaped the overall feel, and every tuning control in the build is dialKit underneath. The envelope animation I analysed frame by frame and then ran in reverse — his unwraps, mine wraps.</p>
+      </div>
+      <div class="ref">
+        <div class="who"><b>Emil Kowalski</b> <span>animations.dev</span></div>
+        <p>Where my instincts about easing and timing came from. The Skills kept the motion code honest when I was moving fast.</p>
+      </div>
+      <div class="ref">
+        <div class="who"><b>Jakub Krehel</b> <span>oklch.fyi</span></div>
+        <p>Every colour in the product is picked and reasoned about in OKLCH, and that's because of this.</p>
+      </div>
+      <div class="ref">
+        <div class="who"><b>Disney</b> <span>The 12 Principles of Animation</span></div>
+        <p>The grammar under every micro-interaction here, and the shipping sequence most of all.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ CLOSE ══════════════════════ -->
+<section class="wrap">
+  <div class="col rv">
+    <h2>Three things I actually learnt</h2>
+    <p><strong>AI got me to ninety percent in two days.</strong> The last ten percent took the rest of the week, and it's the only part anybody feels when they use it. The ninety was never the hard bit and pretending otherwise would be dishonest about how this was made.</p>
+    <p><strong>Constraints are invisible work.</strong> Nobody should ever see a guardrail. They should only notice that nothing they manage to make comes out looking bad.</p>
+    <p><strong>Every choice I removed made the output better.</strong> Fewer knobs on the panel, stronger cards out the other end. Restraint did more here than range ever did — and I only know that because I built the range first and watched it not help.</p>
+    <div class="cta-row">
+      <a class="btn" href="https://cardyb.vercel.app/ria-money/">Design one yourself <span class="arr">→</span></a>
+    </div>
+  </div>
+</section>
+
+<footer class="wrap">
+  <div class="col">
+    <p>Deep Patel · 2026 · <a href="https://cardyb.vercel.app/">cardy</a> · <a href="https://cardyb.vercel.app/#/play">the playground</a></p>
+  </div>
+</footer>
+
+<script src="diagrams.js"></script>
+</body>
+</html>

@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cardy — effort is the product</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .claim {
+    font-size: clamp(2rem, 5.5vw, 3.4rem);
+    line-height: 1.08;
+    letter-spacing: -0.028em;
+    font-weight: 600;
+    color: var(--c12);
+    text-wrap: balance;
+    margin: 0 0 1.5rem;
+  }
+  .evidence {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.1rem 1.4rem;
+    align-items: start;
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--c3);
+  }
+  .evidence:first-of-type { border-top: 0; }
+  .evidence .badge {
+    font-family: var(--mono); font-size: 0.625rem; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 0.3rem 0.55rem; border-radius: 999px;
+    background: var(--c3); color: var(--c8); white-space: nowrap; margin-top: 0.2rem;
+  }
+  .evidence .badge.holds { background: color-mix(in oklab, var(--good) 16%, transparent); color: var(--good); }
+  .evidence .badge.strain { background: color-mix(in oklab, var(--yellow) 14%, transparent); color: var(--yellow); }
+  .evidence h3 { margin-bottom: 0.4rem; }
+  .evidence p { margin: 0; font-size: 0.9688rem; }
+  .evidence p + p { margin-top: 0.55em; }
+  .verdict {
+    border-radius: 14px;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    background: color-mix(in oklab, var(--accent) 9%, var(--c2));
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 22%, transparent);
+  }
+</style>
+</head>
+<body>
+
+<nav class="variant-bar">
+  <div class="inner">
+    <span class="label">draft</span>
+    <a href="a-craft-autopsy.html">A · autopsy</a>
+    <a href="b-journey.html">B · journey</a>
+    <a href="c-thesis.html" aria-current="page">C · thesis</a>
+    <a href="index.html">brief</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════ HERO ══════════════════════ -->
+<section class="hero wrap">
+  <div class="col">
+    <p class="eyebrow accent">Design engineering challenge</p>
+    <h1>Effort is<br>the product.</h1>
+    <p class="sub">People don't get attached to what they're given. They get attached to what they made. So I built a card you have to design, and then made you post it yourself.</p>
+    <div class="cta-row">
+      <a class="btn" href="https://cardyb.vercel.app/ria-money/">Open the live card <span class="arr">→</span></a>
+      <a class="btn ghost" href="#evidence">See whether the claim holds</a>
+    </div>
+    <div class="hero-meta">
+      <span>Built in <b>5 days</b></span>
+      <span><b>182</b> commits</span>
+      <span><b>1</b> claim</span>
+      <span><b>6</b> design decisions tested against it</span>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="wide rv">
+    <div class="media">
+      <div class="media-empty">
+        <b>Video 01 · hero</b>
+        the finished card, resting, then the ship sequence<br>
+        <span class="dur">8–10s · loop · no cursor</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ THE CLAIM ══════════════════════ -->
+<section class="wrap">
+  <div class="col rv">
+    <p class="eyebrow accent">The claim</p>
+    <p class="claim">Ownership doesn't come from possessing an object. It comes from having put something into it.</p>
+    <p class="lede">The IKEA effect: people value what they assembled more than the identical thing bought finished. It's one of the most robustly replicated findings in behavioural economics, and almost nobody in fintech has built anything on it.</p>
+    <p>Your bank card is the most-touched physical object your bank will ever give you. You carry it every day, you hand it to strangers, you put it on a table in front of people. And it arrives looking exactly like everybody else's, because it was designed for a print run of two million.</p>
+    <p>So the claim under this project is narrow and testable: <strong>if you make someone design their card, they will care about the card.</strong> Everything I built is either evidence for that or a constraint protecting it.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════ THE SIGNAL ══════════════════════ -->
+<section class="wrap">
+  <div class="col rv">
+    <h2>The behaviour already exists in the wild</h2>
+    <p>Cash App's payment wand didn't invent anything. It productised something people were already doing: gluing tap-to-pay cards inside homemade wands, and filming themselves paying for things with them.</p>
+    <p>The first drop of ten thousand units sold out within hours.</p>
+    <p class="pull">That's not a marketing win. That's people hacking a payment object into something expressive because the one they were issued felt dead.</p>
+    <p>The demand was already proven. Nobody had built the front door — a way to do it that doesn't involve a glue gun.</p>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ THE FIVE, JUDGED ══════════════════════ -->
+<section class="wrap">
+  <div class="col rv">
+    <p class="eyebrow">Explore</p>
+    <h2>Five opportunities, one test</h2>
+    <p class="lede">I found five fintech problems worth solving. Then I asked each one the same question: <em>is there a moment here where a person's own effort could become the thing they value?</em></p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="opps">
+      <div class="opp">
+        <span class="n">01</span><h3>Currency rate charts</h3>
+        <p>Someone timing a tuition payment gets the same line graph everyone got in 2009. Real problem, real user — but the user's job is to <em>read</em>, not to make. No effort to invest.</p>
+        <span class="who">verdict · a clarity problem, not an ownership one</span>
+      </div>
+      <div class="opp">
+        <span class="n">02</span><h3>Send-money interaction for teens</h3>
+        <p>Every teen wallet is really designed for the parent funding it. Closest runner-up — there's genuine room for expression in the send gesture itself. But the artefact disappears the moment it's sent.</p>
+        <span class="who">verdict · effort with nothing durable to attach to</span>
+      </div>
+      <div class="opp chosen">
+        <span class="n">03</span><h3>A card that's actually yours</h3>
+        <p>A gallery to pick from, or an image to upload. One gives no control, the other gives too much — and neither is customization. But the artefact is permanent, physical, carried daily, and <em>seen by other people</em>.</p>
+        <span class="who">verdict · effort → a durable object you show to strangers</span>
+        <span class="tag">Chosen</span>
+      </div>
+      <div class="opp">
+        <span class="n">04</span><h3>Receiving money, but delightful</h3>
+        <p>Money arrives as a push notification and a reference number. The most emotional moment in the transfer, undesigned. But the receiver did nothing — the effort belongs to the sender.</p>
+        <span class="who">verdict · emotion without authorship</span>
+      </div>
+      <div class="opp">
+        <span class="n">05</span><h3>A rate alert setter</h3>
+        <p>Setting a threshold should feel as satisfying as the moment it's hit. There <em>is</em> effort here — but it's the effort of configuration, and nobody ever felt attached to a threshold.</p>
+        <span class="who">verdict · effort that produces no artefact</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <div class="verdict">
+      <h3 style="margin-bottom:0.6rem">Why the card wins on the test</h3>
+      <p class="small" style="margin:0">It's the only one where a person's effort produces <strong>a durable object they carry and other people see</strong>. Three of the other four are rate problems in different clothes. The teen wallet was the real contender, and it lost because the thing you make there vanishes on send.</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div data-dgm="heroCard"></div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ EVIDENCE ══════════════════════ -->
+<section class="wrap" id="evidence">
+  <div class="col rv">
+    <p class="eyebrow accent">Build</p>
+    <h2>Six decisions, each one an argument</h2>
+    <p class="lede">If effort creates ownership, then the design job is narrow: make effort feel good, make it impossible to waste, and give it somewhere to land. Every decision below is one of those three — or it's a decision that turned out to be arguing against the claim, which is why I reversed it.</p>
+  </div>
+</section>
+
+<!-- E1 -->
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <div class="evidence">
+      <span class="badge holds">makes effort<br>feel good</span>
+      <div>
+        <h3>Nine cards that had to be nine designs</h3>
+        <p>The first version was one design recoloured nine times. If the starting points all rhyme, then choosing between them isn't effort — it's picking a colour, and you know it.</p>
+        <p>My instinct was to widen the slider ranges. That made it worse: every card just had more room to look wrong. The variety that actually reads is <strong>seeded at build time</strong> — each colourway gets its own grid angle, mark weight, and how hard the radial wave twists and shoves each cell. Those are the levers that change a pattern's character. The sliders only change density and scale.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="dgm">
+      <div class="dgm-head"><h4>The nine, deterministically</h4><span class="hint">same seed, every visit</span></div>
+      <div data-dgm="palette"></div>
+    </div>
+  </div>
+</section>
+
+<!-- E2 -->
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <div class="evidence">
+      <span class="badge holds">makes effort<br>unwastable</span>
+      <div>
+        <h3>Two sliders out of thirteen parameters</h3>
+        <p>The most direct threat to the claim is a user who invests effort and produces something ugly. Then the effort was worse than wasted — it was a lesson in your own bad taste, delivered by a bank.</p>
+        <p>So the pattern engine's thirteen knobs are pinned to eleven hand-tuned constants, and each of the two exposed sliders maps into a band narrow enough that <strong>no position on any track looks like a mistake</strong>. Around 54 million distinct cards, and not one of them is ugly.</p>
+      </div>
+    </div>
+    <p class="pull">The constraints are where the actual design work went. If I did that job properly, you never notice they're there at all.</p>
+    <p>The reachable space comes out at around <strong>54 million distinct cards</strong>. That number is not the achievement — anyone can multiply a parameter space out to millions, and most bad customisation tools have a far bigger one. The claim is the second half of the sentence: <em>and not one of them is ugly.</em></p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="dgm">
+      <div class="dgm-head"><h4>Where 54 million comes from</h4><span class="hint">every term is in the share URL</span></div>
+      <div data-dgm="combinations"></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="dgm">
+      <div class="dgm-head"><h4>One card · every position of both sliders</h4></div>
+      <div data-dgm="constraints"></div>
+    </div>
+  </div>
+</section>
+
+<!-- E3 -->
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <div class="evidence">
+      <span class="badge strain">tested the<br>claim</span>
+      <div>
+        <h3>The slider I removed</h3>
+        <p>Phase was a real parameter and it was on the panel. Sliding it moved the wave offset — the ripple slid, and the pattern's character didn't change at all.</p>
+        <p>This is the sharpest version of the question. If effort creates ownership, does <em>more</em> effort create more of it? No. A control that looks like it does something and does nothing is worse than no control, because it teaches the user their effort doesn't land. It's a constant now.</p>
+      </div>
+    </div>
+    <p class="pull">Every choice I removed made the output better. Fewer knobs on the panel, stronger cards out the other end. Restraint did more here than range ever did.</p>
+  </div>
+</section>
+
+<!-- E4 -->
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <div class="evidence">
+      <span class="badge holds">gives effort<br>somewhere to land</span>
+      <div>
+        <h3>You have to post it yourself</h3>
+        <p>The card is laid on a carrier sheet, folded in thirds, slid into a kraft envelope, sealed and flipped to show the address side. Then the flow stops and waits — <strong>you</strong> drag it into the mail slot.</p>
+        <p>That last gesture is the entire argument in one interaction. A button would have completed the same transaction. Making you perform the posting is what converts five seconds of animation from <em>something you watched</em> into <em>something you did</em>.</p>
+        <p>It's also impossible to fail. Release anywhere past halfway, or with any downward velocity at all, and it snaps in. The gesture is ceremony, not a test — a flow that can reject your effort at the final step is arguing against itself.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="media">
+      <div class="media-empty">
+        <b>Video 02 · the ship sequence</b>
+        armed by the arrow, through to the envelope at rest, then the drag<br>
+        <span class="dur">12–14s · one take · no cursor until the drag</span>
+      </div>
+    </div>
+    <p class="caption">Eight beats, five seconds, no skip button. <b>A skippable moment isn't a designed moment</b> — the accepted cost is a full replay if you go back and come forward again.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="dgm">
+      <div class="dgm-head"><h4>Scrub the choreography</h4><span class="hint">drag the slider →</span></div>
+      <div data-dgm="scrubber"></div>
+    </div>
+  </div>
+</section>
+
+<!-- E5 -->
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <div class="evidence">
+      <span class="badge holds">gives effort<br>somewhere to land</span>
+      <div>
+        <h3>It's yours before you've done anything</h3>
+        <p>Visit <code>/ria-money</code> and the welcome greets Ria and the card already carries <span class="mono">RIA MONEY</span>, engraved, before a single choice has been made.</p>
+        <p>This is the cheapest thing in the build and it might be doing the most work. Ownership needs somewhere to start — and there's a real difference between customising <em>a card</em> and customising <em>your card</em>. The name arrives first so that everything after it is editing rather than creating.</p>
+        <p class="small dim">One pure function, read once at mount. No state, no router, no effect — the app never mutates the URL, so the path segment survives the whole journey for free. A charset gate means a scanner probe or <code>/favicon.ico</code> can never be read as a name.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="media tall" style="max-width:26rem;margin-inline:auto">
+      <div class="media-empty">
+        <b>Video 03 · your name</b>
+        type a name into the URL, hit enter, card is already engraved<br>
+        <span class="dur">6–8s · zoom the URL bar, then the card name</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- E6 -->
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <div class="evidence">
+      <span class="badge holds">makes effort<br>feel good</span>
+      <div>
+        <h3>One object, never re-mounted</h3>
+        <p>The card is a single node mounted once that <em>never unmounts</em> across all three steps. Each step reports where it should sit and the card springs to that point.</p>
+        <p>This is a continuity argument, not a technical one. If the thing you're making disappears and a different-looking thing appears in its place, you've been shown two objects. The whole flow depends on you believing it's the same card the entire way through — the one you made, the one going in the envelope.</p>
+        <p class="small dim">It replaced a shared-element hand-off, which popped: the measured box was distorted by the deck's coverflow transform, so the hand-off was reading a lie about where the card was. With one persistent node there's nothing to measure and nothing to hand off.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ WHERE IT STRAINED ══════════════════════ -->
+<section class="wrap">
+  <div class="col rv">
+    <p class="eyebrow">Honesty</p>
+    <h2>Where the claim didn't help me</h2>
+    <p class="lede">A thesis is only useful if it can be wrong about something. Three places it gave me no guidance at all — and one where following it cost me two days.</p>
+
+    <div class="evidence" style="margin-top:1.5rem">
+      <span class="badge strain">no guidance</span>
+      <div>
+        <h3>Everything about the carousel</h3>
+        <p>Whether the deck is coverflow or a flat strip or an exploded stack has nothing to do with ownership. I built seven mechanics as grey wireframes and picked by feel, because feel was the only available criterion. Coverflow won. The thesis was silent.</p>
+      </div>
+    </div>
+
+    <div class="evidence">
+      <span class="badge strain">actively cost me</span>
+      <div>
+        <h3>I locked a decision and had to break it</h3>
+        <p>Before writing the ship sequence I wrote a full build spec with a ten-row decision table. <strong>D10: fold a snapshot PNG, never the live card</strong> — a WebGL canvas inside a 3D transform is a known Safari failure mode.</p>
+        <p>D10 was defensive against a risk the geometry had already removed. The card sits on the <em>middle</em> panel of a three-panel fold, and the middle panel never rotates. The card also unmounts before anything containing it moves in 3D. The dangerous case couldn't happen.</p>
+        <p>Reversing it deleted a whole dependency, and the sequence now folds the real card. Writing the spec first is still why the geometry was solid enough to catch it — but a locked decision is only as good as the assumption under it, and mine had expired two phases earlier without anyone re-reading it.</p>
+      </div>
+    </div>
+
+    <div class="evidence">
+      <span class="badge strain">no guidance</span>
+      <div>
+        <h3>The step indicator I rebuilt three times</h3>
+        <p>I built a flexGrow spring, a scaleX wipe, and cumulative fills — and reverted all three to the version I started with. It was better for a reason the thesis has nothing to say about: <strong>one object moves</strong>, and your eye can track it. Every improvement replaced one travelling fill with three appearing and disappearing.</p>
+        <p>The bounce I then spent a turn fixing was self-inflicted — my spring was fighting motion's layout projection for the same pixels. It only existed because I'd added it.</p>
+      </div>
+    </div>
+
+    <div class="evidence">
+      <span class="badge strain">no guidance</span>
+      <div>
+        <h3>The overscroll bounce I wrote twice and deleted once</h3>
+        <p>My first resistance curve saturated exponentially and went dead after about 300px of pull — you keep dragging and nothing answers. The right shape is a rational asymptote that approaches its ceiling without arriving.</p>
+        <p>Then I deleted the whole thing anyway. A custom rubberband runs <em>on top of</em> the platform's native elastic scroll rather than replacing it, and the two fighting is what felt wrong. It came back later, once I'd rebuilt the deck on an index I owned instead of a scroll container.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="dgm">
+      <div class="dgm-head"><h4>Overscroll resistance · wrong vs right</h4><span class="hint">drag across →</span></div>
+      <div data-dgm="rubberband"></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <p class="pull">A thesis tells you what to build. It never tells you how to make it feel right. That part is still just taste, iteration, and being willing to throw away the version you already shipped.</p>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ CRAFT UNDER IT ══════════════════════ -->
+<section class="wrap">
+  <div class="col rv">
+    <p class="eyebrow">Underneath</p>
+    <h2>The parts nobody sees</h2>
+    <p>The card is ISO/IEC 7810 ID-1 — 85.6 × 53.98mm, 3.18mm radius — at every size it appears. The whole ship sequence is drawn in real millimetres and converted by a single scale factor. No raw pixel value exists inside the stage except hairlines and shadows.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="full rv">
+    <div class="dgm">
+      <div class="dgm-head"><h4>Sheet → packet → envelope → slot</h4><span class="hint">to scale</span></div>
+      <div data-dgm="geometry"></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="grid2">
+      <div class="panel">
+        <h3>Paper doesn't obey the theme</h3>
+        <p class="small">Every colour in the app comes from one 12-step neutral ramp that inverts between light and dark — and the cards are the only source of colour anywhere. Paper and kraft are the sole exceptions to the ramp: paper that changes colour with the UI theme stops reading as a physical object.</p>
+      </div>
+      <div class="panel">
+        <h3>The fidelity gap is the focus device</h3>
+        <p class="small">The carrier sheet is a deliberate lo-fi wireframe — placeholder bars, no real copy. The card is the only fully rendered object in frame, so even while it's being covered up it stays the hero.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <h3>Slowing seven springs without changing any of them</h3>
+    <p>The sequence runs 1.25× slower than it was first tuned. Not seven re-tunings — slowing by <code>k/T²</code> and <code>c/T</code> holds the damping ratio exactly, so the overshoot and the settle shape are identical and only the pace changes. Which mattered because the envelope's flip is deliberately under-damped, and that small rock as it lands is the signature of the beat.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="dgm">
+      <div class="dgm-head"><h4>Original tuning vs shipped tempo · same ζ</h4></div>
+      <div data-dgm="tempo"></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <h3>Reduced motion, since it's usually a lie</h3>
+    <p>Not a switch that turns animation off. The wrap sequence collapses to two crossfades. The deck becomes a flat draggable strip. The drag-to-post becomes a button — because <strong>the terminal action of a flow can never be gesture-only</strong>. If the posting gesture is the argument, then a user who can't perform gestures still has to be able to make the argument.</p>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ PROCESS ══════════════════════ -->
+<section class="wrap">
+  <div class="col rv">
+    <p class="eyebrow">Process</p>
+    <h2>A playground before the product</h2>
+    <p>Carousel behaviour, colour, typography, card graphics and the whole envelope choreography were tested on separate dev routes first, each with its own control panel and a copy button handing back apply-ready values. Nothing landed in the real build before I knew how it would behave.</p>
+    <p>The ship sequence was built against a <strong>scrubbable timeline</strong> — you cannot tune the fourth beat of a five-second animation if you have to sit through the first three every time.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+    <div class="grid2">
+      <div class="media square"><div class="media-empty"><b>Image · carousel range</b>seven mechanics as grey wireframes<br><span class="dur">screenshot grid, 7-up</span></div></div>
+      <div class="media square"><div class="media-empty"><b>Image · card explorations</b>the variants that didn't ship<br><span class="dur">screenshot grid, 4-up</span></div></div>
+    </div>
+    <p class="caption">Seven mechanics built as throwaway wireframes; one shipped. <b>The six that lost are the reason I trust the one that won.</b></p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <h3>Stack</h3>
+    <div class="chips" style="margin-bottom:1.75rem">
+      <span class="chip"><b>Claude Code</b> <span class="role">the building</span></span>
+      <span class="chip"><b>Paper</b> <span class="role">the thinking</span></span>
+      <span class="chip"><b>motion</b> <span class="role">everything that moves</span></span>
+      <span class="chip"><b>dialKit</b> <span class="role">dev-only tuning</span></span>
+      <span class="chip"><b>Vite · React 19 · TS</b></span>
+      <span class="chip"><b>OKLCH</b></span>
+      <span class="chip"><b>Vercel</b></span>
+    </div>
+    <p>Four steps produced the ship sequence, and only the last was slow: think out loud and let Claude ask <em>me</em> the questions; write a full build spec before any code; new branch into the existing scaffold, nothing else touched; hand-tune easing and timing until it felt right.</p>
+    <p>The spec includes a list of decisions I'd <em>declined</em> — recorded specifically so neither of us would re-propose them three days later. That section saved more time than any of the code.</p>
+    <p class="pull">Working with AI isn't prompting for output. It's writing the constraints down hard enough that the output has nowhere bad to go.</p>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ SCOPE ══════════════════════ -->
+<section class="wrap">
+  <div class="wide rv">
+    <div class="grid2">
+      <div class="panel">
+        <p class="eyebrow" style="margin-bottom:0.75rem">Shipped</p>
+        <ul class="list done">
+          <li>Nine seeded colourways, deterministic across reloads</li>
+          <li>Coverflow deck — drag, wheel, arrows, click-to-centre</li>
+          <li>Two sliders + two segmented controls, retargeting per card</li>
+          <li>Full wrap → seal → flip → post sequence, 5.00s</li>
+          <li>Drag-to-post with magnetic assist</li>
+          <li>Name from the URL path, with an injection gate</li>
+          <li>Light and dark, resolved before first paint</li>
+          <li>Reduced motion as a real path</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <p class="eyebrow" style="margin-bottom:0.75rem">Cut, deliberately</p>
+        <ul class="list cut">
+          <li>Responsiveness beyond the fixed column</li>
+          <li>Full keyboard parity across every control</li>
+          <li>Tilt — pointer and accelerometer both</li>
+          <li>The wax seal (the beat survives; it drives the settle bump)</li>
+          <li>The engraving note field — built, plumbed, then unmounted</li>
+          <li>The phase slider — argued against the thesis</li>
+        </ul>
+      </div>
+    </div>
+    <p class="caption">Responsiveness and keyboard depth were the trade for depth on the core interaction. Both are the first thing I pick back up, and neither is a hard problem — just an unspent day.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="col rv">
+    <h3>What I'd do next</h3>
+    <ul class="list">
+      <li>A sequence showing the card being <em>made</em>, not only shipped — the strongest remaining move on the thesis</li>
+      <li>Sound design — the envelope closing deserves a thunk</li>
+      <li>Finer control over how each graphic is sized and placed</li>
+      <li>More graphics, so the vocabulary stops feeling as narrow</li>
+      <li>Deck per-frame renders as motion values — logged as the first suspect if jank appears, deliberately not paid for before then</li>
+    </ul>
+  </div>
+</section>
+
+<hr class="rule">
+
+<section class="wrap">
+  <div class="wide rv">
+    <h2 class="col" style="max-width:var(--measure);margin-inline:auto">Standing on</h2>
+    <div class="refs" style="margin-top:1.5rem">
+      <div class="ref"><div class="who"><b>Josh Puckett</b> <span>interfacecraft.dev · dialKit</span></div>
+        <p>Heavily shaped the overall feel, and every tuning control is dialKit underneath. The envelope animation I analysed frame by frame and ran in reverse — his unwraps, mine wraps.</p></div>
+      <div class="ref"><div class="who"><b>Emil Kowalski</b> <span>animations.dev</span></div>
+        <p>Where my instincts about easing and timing came from. The Skills kept the motion code honest when I was moving fast.</p></div>
+      <div class="ref"><div class="who"><b>Jakub Krehel</b> <span>oklch.fyi</span></div>
+        <p>Every colour in the product is picked and reasoned about in OKLCH, and that's because of this.</p></div>
+      <div class="ref"><div class="who"><b>Disney</b> <span>The 12 Principles of Animation</span></div>
+        <p>The grammar under every micro-interaction here, and the shipping sequence most of all.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="col rv">
+    <h2>Did it work?</h2>
+    <p>I can't prove the thesis with a five-day prototype and no users. What I can say is that it was a <em>useful</em> claim to hold: it decided which of five opportunities to take, it justified capping the interface at two sliders when my instinct was to add more, and it's the reason the flow makes you post the envelope yourself instead of pressing a button.</p>
+    <p>And it correctly identified the one control I should delete. A slider that looks like it does something and does nothing teaches you your effort doesn't land — which is the exact opposite of what the whole thing is for.</p>
+    <p class="pull">AI got me to ninety percent in two days. The last ten percent took the rest of the week, and it's the only part anybody feels when they use it.</p>
+    <div class="cta-row">
+      <a class="btn" href="https://cardyb.vercel.app/ria-money/">Design one yourself <span class="arr">→</span></a>
+    </div>
+  </div>
+</section>
+
+<footer class="wrap">
+  <div class="col">
+    <p>Deep Patel · 2026 · <a href="https://cardyb.vercel.app/">cardy</a> · <a href="https://cardyb.vercel.app/#/play">the playground</a></p>
+  </div>
+</footer>
+
+<script src="diagrams.js"></script>
+</body>
+</html>

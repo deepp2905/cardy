@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cardy case study — three drafts + recording brief</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .pick { display: grid; gap: 1px; background: var(--c3); border-radius: 14px; overflow: hidden; box-shadow: inset 0 0 0 1px var(--c3); }
+  .pick a {
+    background: var(--c2); padding: 1.5rem clamp(1.2rem,3vw,2rem);
+    text-decoration: none; display: grid; gap: 0.5rem;
+    transition: background .2s var(--ease);
+  }
+  .pick a:hover { background: var(--c3); }
+  .pick .top { display: flex; align-items: baseline; gap: 0.85rem; flex-wrap: wrap; }
+  .pick .k { font-family: var(--mono); font-size: 0.75rem; color: var(--accent); letter-spacing: 0.08em; }
+  .pick h3 { margin: 0; }
+  .pick p { margin: 0; color: var(--c8); font-size: 0.9375rem; }
+  .pick .for { font-family: var(--mono); font-size: 0.75rem; color: var(--c6); margin-top: 0.35rem; }
+  .shot {
+    display: grid; grid-template-columns: 3.5rem 1fr; gap: 0.6rem 1.25rem;
+    padding: 1.4rem 0; border-top: 1px solid var(--c3); align-items: start;
+  }
+  .shot:first-of-type { border-top: 0; }
+  .shot .id { font-family: var(--mono); font-size: 0.8125rem; color: var(--accent); padding-top: 0.15rem; }
+  .shot h3 { margin: 0 0 0.35rem; }
+  .shot .meta { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.6rem 0 0.75rem; }
+  .shot .meta span { font-family: var(--mono); font-size: 0.6875rem; padding: 0.25rem 0.55rem; border-radius: 999px; background: var(--c3); color: var(--c10); }
+  .shot ol { margin: 0.5rem 0 0; padding-left: 1.1rem; font-size: 0.9375rem; color: var(--c10); }
+  .shot ol li { margin-bottom: 0.3rem; }
+  .shot .zoom { margin-top: 0.75rem; font-size: 0.875rem; color: var(--c8); padding-left: 0.9rem; border-left: 2px solid var(--accent); }
+  .warn { border-left-color: var(--yellow) !important; }
+</style>
+</head>
+<body>
+
+<nav class="variant-bar">
+  <div class="inner">
+    <span class="label">draft</span>
+    <a href="a-craft-autopsy.html">A · autopsy</a>
+    <a href="b-journey.html">B · journey</a>
+    <a href="c-thesis.html">C · thesis</a>
+    <a href="index.html" aria-current="page">brief</a>
+  </div>
+</nav>
+
+<section class="hero wrap" style="min-height:auto;padding-block:4rem 2rem">
+  <div class="col">
+    <p class="eyebrow accent">docs/ · committed</p>
+    <h1 style="font-size:clamp(2rem,5vw,3.2rem)">Three drafts,<br>one recording brief.</h1>
+    <p class="sub">All three pull from the same <code>shared.css</code> and <code>diagrams.js</code>, so edits to the visuals land everywhere at once. Pick a spine, then delete the other two.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:2rem">
+  <div class="wide rv">
+    <div class="pick">
+      <a href="a-craft-autopsy.html">
+        <div class="top"><span class="k">A</span><h3>I deleted the best parts</h3></div>
+        <p>Opens on the finished moment, then works backward through three things you built and threw away. Uses the material nobody else has — the reverts, the deleted dependency, the self-inflicted bug.</p>
+        <p class="for">strongest for · a design-engineering reviewer who has read fifty case studies this month</p>
+      </a>
+      <a href="b-journey.html">
+        <div class="top"><span class="k">B</span><h3>Designing a card that's actually yours</h3></div>
+        <p>Follows the user's path — welcome, customize, ship — with decisions attached where you meet them. A sticky step rail tracks progress. Most legible, easiest to skim.</p>
+        <p class="for">strongest for · a mixed audience, or if this goes in a portfolio next to other work</p>
+      </a>
+      <a href="c-thesis.html">
+        <div class="top"><span class="k">C</span><h3>Effort is the product</h3></div>
+        <p>One claim, six decisions tested against it, and an honest section on where the claim gave no guidance at all. The five opportunities get judged by a stated criterion rather than vibes.</p>
+        <p class="for">strongest for · proving you think like a designer, not just that you can build</p>
+      </a>
+    </div>
+    <p class="caption">My pick is <b>A</b>. The brief asks how you <em>think, decide and execute</em> — and reverting your own work three times is the hardest thing to fake. <b>C</b> is the close second and the better read if you want the strategic framing to lead.</p>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ RECORDING BRIEF ══════════════════════ -->
+<section class="wrap">
+  <div class="col rv">
+    <p class="eyebrow accent">Recording brief</p>
+    <h2>Four videos, about 40 seconds total</h2>
+    <p class="lede">Short, crisp, immediately legible. Every one of these should be understandable with the sound off and no caption read.</p>
+    <p><strong>Global settings.</strong> Record at 2× the display size and scale down — text on the card is small. Hide the cursor except where noted. Kill the theme toggle in frame if you can. Use the dark theme throughout, it matches all three pages. Export as MP4 <em>and</em> WebM; drop them in <code>media/</code> and swap the placeholder <code>.media-empty</code> blocks for a <code>&lt;video autoplay muted loop playsinline&gt;</code>.</p>
+    <p class="small dim">Loop-friendly means: start and end on the same frame. For 01 that's the resting card; for 03 it's the deck centred on the same card you started on.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="wide rv">
+
+    <div class="shot">
+      <span class="id">01</span>
+      <div>
+        <h3>Hero — the card, then the ship</h3>
+        <div class="meta"><span>8–10s</span><span>16:10</span><span>loop</span><span>no cursor</span><span>appears in all 3</span></div>
+        <ol>
+          <li>Open on the finished card at rest, dead centre, holding for ~1s.</li>
+          <li>Cut straight to the fold beginning — <em>skip the arming click</em>, the cursor would break the loop.</li>
+          <li>Run through to the envelope settled at rest. Cut before the mail slot appears.</li>
+        </ol>
+        <p class="zoom"><b>Zoom:</b> one slow push from ~100% to ~115% across the whole clip, centred on the card. Nothing sharp. This is the only clip where the zoom should be invisible.</p>
+      </div>
+    </div>
+
+    <div class="shot">
+      <span class="id">02</span>
+      <div>
+        <h3>The ship sequence, in full</h3>
+        <div class="meta"><span>12–14s</span><span>16:10</span><span>cursor on the drag only</span><span>appears in all 3</span></div>
+        <ol>
+          <li>Start on the rest beat — "One of one." visible above the card.</li>
+          <li>Click the forward arrow. <em>Show this click</em> — it's the moment you're arming it.</li>
+          <li>Hide the cursor for the whole sequence. Let it run untouched to the envelope at rest.</li>
+          <li>Cursor returns, grabs the envelope, drags down into the slot. <b>Deliberately release early, above halfway-ish</b> — let the magnetic assist finish it. That's the point.</li>
+        </ol>
+        <p class="zoom"><b>Zoom:</b> punch to ~130% on the first fold, hold through the folds, pull back to 100% when the envelope appears so the slot and envelope are both in frame for the drag.</p>
+        <p class="zoom warn"><b>Watch for:</b> this is 5s of animation plus a drag. If it runs past 14s, cut the rest beat down to half a second rather than speeding anything up.</p>
+      </div>
+    </div>
+
+    <div class="shot">
+      <span class="id">03</span>
+      <div>
+        <h3>The deck and the sliders</h3>
+        <div class="meta"><span>10–12s</span><span>16:10</span><span>cursor visible</span><span>appears in all 3</span></div>
+        <ol>
+          <li>Drag through four or five cards — one continuous gesture, let it settle with the spring, don't click through.</li>
+          <li>Land on a card. Pause half a second.</li>
+          <li>Drag the spacing slider full-left to full-right, slowly. The pattern should visibly breathe.</li>
+          <li>Drag frequency across.</li>
+          <li>Now drag the deck one card sideways — <b>this is the shot</b>: the sliders spring to the new card's values on their own.</li>
+        </ol>
+        <p class="zoom"><b>Zoom:</b> stay at 100% for the deck drag. Punch to ~140% on the slider row for steps 3–4 with the card still partly in frame. Pull back for step 5 so both the card change and the slider retarget are visible in one frame.</p>
+        <p class="zoom warn"><b>Watch for:</b> step 5 is the micro-magic moment and it's easy to miss. Consider a click-ring emphasis on the slider thumbs as they move by themselves.</p>
+      </div>
+    </div>
+
+    <div class="shot">
+      <span class="id">04</span>
+      <div>
+        <h3>Your name in the URL</h3>
+        <div class="meta"><span>6–8s</span><span>4:5 tall</span><span>cursor + typing</span><span>appears in all 3</span></div>
+        <ol>
+          <li>Start with the browser URL bar visible and the app on the welcome screen showing the default name.</li>
+          <li>Click the URL bar, type a real name — use the reviewer's if you're sending this directly. Hit enter.</li>
+          <li>Page reloads: headline greets them, card is already engraved.</li>
+          <li>Hold 1.5s on the engraved name.</li>
+        </ol>
+        <p class="zoom"><b>Zoom:</b> start framed on the URL bar at ~150%. As you hit enter, pull down and out to frame the card, then push to ~170% on the engraved name for the hold. Two moves, both motivated.</p>
+        <p class="zoom warn"><b>Note:</b> this is a tall 4:5 crop in all three pages so the URL bar and the card both fit without either being tiny. Record it 16:9 and crop, or record a narrow window.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="rule">
+
+<section class="wrap">
+  <div class="col rv">
+    <h2>Two stills to capture</h2>
+    <p>Both are screenshot grids, not videos. Composite them in Figma or just screenshot the dev routes side by side.</p>
+    <ul class="list">
+      <li><b>Carousel range</b> — the seven mechanics from <code>#/explore</code> as a 7-up grid of grey wireframes. Label each one. The point is visible volume: you built seven and shipped one.</li>
+      <li><b>Card explorations</b> — the variants from <code>#/play/card</code> that didn't ship, 4-up. Include the wave/Lissajous one, since it was the original plan and got replaced by the pattern field.</li>
+    </ul>
+    <p class="small dim" style="margin-top:1.25rem">Optional third, if you want it: a screenshot of the PRD's decision table or the "explicitly declined" section. It's the single most legible artefact of how you work, and it's currently only described rather than shown.</p>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ══════════════════════ FACT CHECK ══════════════════════ -->
+<section class="wrap">
+  <div class="col rv">
+    <p class="eyebrow" style="color:var(--yellow)">Before you publish</p>
+    <h2>Five things to fix from the current live page</h2>
+
+    <div class="autopsy">
+      <div class="beat fixed">
+        <span class="lbl">number</span>
+        <p><b>"54 million" checks out — show the working.</b> <code>cardConfigToParams</code> serializes both sliders with <code>.toFixed(3)</code>, so each carries 1001 distinct values. 9 × 3 × 2 × 1001 × 1001 = <b>54,108,054</b> distinct shareable states. That's not a marketing number, it's the exact size of the space your share URL can encode.</p>
+        <p>All three drafts now keep the number and add a diagram deriving it, plus one line of framing: <em>the number isn't the achievement — making all 54 million worth having is.</em> Stating it that way pre-empts the reviewer who does the arithmetic, and turns a volume claim into a constraint claim.</p>
+      </div>
+      <div class="beat broke">
+        <span class="lbl">wording</span>
+        <p><b>"Credit card."</b> The live page says credit card throughout. The product is a challenger-bank card that arrives in the post — there's no credit product anywhere in it. All three drafts just say "card".</p>
+      </div>
+      <div class="beat broke">
+        <span class="lbl">contradiction</span>
+        <p><b>Reduced motion is listed under "what's next"</b> — but it ships. The wrap collapses to crossfades, the deck flattens, the drag becomes a button. Either the writeup undersells shipped work or the README oversells it. <b>Confirm which, then fix one of them.</b> All three drafts currently assume it ships, in the "cut, deliberately" panel's counterpart.</p>
+      </div>
+      <div class="beat broke">
+        <span class="lbl">missing</span>
+        <p><b>The URL personalization isn't in the live writeup at all</b>, even though your demo link uses it. It's the cheapest magic moment in the build and possibly the highest-leverage: you can send a reviewer a link with <em>their own name on the card</em>. All three drafts give it a section and a video.</p>
+      </div>
+      <div class="beat broke">
+        <span class="lbl">decide</span>
+        <p><b>The engraving note field.</b> Built, plumbed, URL param and all — then unmounted from the panel. Right now it's invisible in both the app and the writeup. All three drafts list it under "cut, deliberately", which is the honest framing. If you'd rather it not appear at all, delete that line — but then also don't mention "your words" anywhere.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<section class="wrap">
+  <div class="col rv">
+    <h2>What's in the diagrams</h2>
+    <p>All eight are generated in <code>diagrams.js</code> from the real values in your source — the palette and the seeded PRNG are copied verbatim from <code>cardConfig.ts</code>, so the nine cards on these pages <em>are</em> the nine cards in the app. Spring curves are numerically integrated from <code>motionConfig.ts</code>. Geometry is from the PRD's millimetre table.</p>
+    <div class="table-scroll" style="margin-top:1.5rem">
+      <table class="spec">
+        <thead><tr><th>Diagram</th><th>Interactive</th><th>Source of truth</th></tr></thead>
+        <tbody>
+          <tr><td>heroCard</td><td>tilt + click to cycle</td><td class="mono">PALETTE, seedConfigs()</td></tr>
+          <tr><td>palette</td><td>hover lift</td><td class="mono">mulberry32, round-robin deal</td></tr>
+          <tr><td>constraints</td><td>—</td><td class="mono">SPACING/FREQ_MIN..MAX</td></tr>
+          <tr><td>rubberband</td><td>drag to probe both curves</td><td class="mono">t = pull/(pull+resistance)</td></tr>
+          <tr><td>geometry</td><td>—</td><td class="mono">PRD-CONFIRM §2.1</td></tr>
+          <tr><td>tempo</td><td>—</td><td class="mono">flip: 180/22 → 115/17.6</td></tr>
+          <tr><td>stepIndicator</td><td>auto-plays the comparison</td><td class="mono">UPDATES §16</td></tr>
+          <tr><td>scrubber</td><td>drag the timeline</td><td class="mono">PRD-CONFIRM §4 beats</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small dim" style="margin-top:1rem">To reuse one anywhere, drop <code>&lt;div data-dgm="palette"&gt;&lt;/div&gt;</code> into the page. To change a value everywhere, edit it once in <code>diagrams.js</code>.</p>
+  </div>
+</section>
+
+<footer class="wrap">
+  <div class="col">
+    <p>docs/ · <a href="a-craft-autopsy.html">A</a> · <a href="b-journey.html">B</a> · <a href="c-thesis.html">C</a></p>
+  </div>
+</footer>
+
+<script src="diagrams.js"></script>
+</body>
+</html>
