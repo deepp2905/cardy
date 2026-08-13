@@ -182,7 +182,15 @@ const OKLCH_RE = /oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\)/;
 
 export function parseOklch(color: string): { l: number; c: number; h: number } {
   const m = OKLCH_RE.exec(color);
-  if (!m) return { l: 0.62, c: 0.19, h: 250 };
+  if (!m) {
+    // Unreachable while PALETTE is the only input, which is exactly why a silent
+    // fallback is a liability: if the palette ever moves to another colour space,
+    // every card quietly renders as this blue instead of failing visibly.
+    if (import.meta.env.DEV) {
+      console.warn(`[cardy] parseOklch could not read "${color}" — using fallback`);
+    }
+    return { l: 0.62, c: 0.19, h: 250 };
+  }
   return { l: Number(m[1]), c: Number(m[2]), h: Number(m[3]) };
 }
 

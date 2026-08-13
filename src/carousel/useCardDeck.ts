@@ -29,7 +29,12 @@ const DRAG_DIVISOR = 190; // pointer px per card
 // enough that it eases into the card without visibly overshooting past it.
 const SETTLE_STIFFNESS = 210;
 const SETTLE_DAMPING_RATIO = 0.82;
-const REST_DELTA = 0.001; // stop when this close and near-still
+// Rest thresholds. Two constants because they measure different dimensions:
+// one is a distance in cards, the other a speed in cards/sec. A single 0.001
+// for both made the velocity test ~1000x stricter than the position test, so
+// the spring ran a tail of frames after it had visually arrived.
+const REST_DELTA = 0.001; // position: stop when this close to the target, in cards
+const REST_VELOCITY = 0.01; // speed: and moving slower than this, in cards/sec
 
 // Rubberband past the ends (same asymptote as the app's slider): the raw
 // overshoot is squashed so it approaches a ceiling but never reaches it, then
@@ -99,7 +104,10 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
         velocity += accel * dt;
         const next = value.current + velocity * dt;
 
-        if (Math.abs(next - to) < REST_DELTA && Math.abs(velocity) < REST_DELTA) {
+        if (
+          Math.abs(next - to) < REST_DELTA &&
+          Math.abs(velocity) < REST_VELOCITY
+        ) {
           commit(to);
           raf.current = null;
           return;
