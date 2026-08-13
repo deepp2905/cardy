@@ -1,4 +1,10 @@
-import { memo, useEffect, useRef, type CSSProperties } from "react";
+import {
+  memo,
+  useDeferredValue,
+  useEffect,
+  useRef,
+  type CSSProperties,
+} from "react";
 import { motion, useTransform, type MotionValue } from "motion/react";
 import { Card } from "../card/Card";
 import type { CardConfig } from "../card/cardConfig";
@@ -135,16 +141,25 @@ export function CardCarousel({
   // 1 or 0 too. The two cards are pixel-identical, so the swap is invisible.
   const deckCardOpacity = useTransform(deckOpacity, (v) => 1 - v);
 
-  // Freeze the active card's config while it's hidden. Settled, the active
-  // deck card sits at opacity 0 behind the hero — but slider ticks change its
-  // config identity, so the DeckCard memo missed and the INVISIBLE card
-  // rebuilt its full pattern on every pointermove. Holding the last-visible
-  // config while settled skips that; the frame a drag starts (settled flips
-  // false) it re-renders once with the live config — exactly when it becomes
-  // visible, which is the only moment correctness needs it.
+  // Defer the active card's config while it's hidden. Settled, the active deck
+  // card sits at opacity 0 behind the hero — but slider ticks change its config
+  // identity, so the DeckCard memo missed and the INVISIBLE card rebuilt its
+  // full pattern on every pointermove.
+  //
+  // The deferral is by TIMING, not by value: useDeferredValue lets React serve
+  // the previous config on the urgent render (the pointermove that must stay at
+  // 60fps) and rebuild the real one in a follow-up low-priority render. So the
+  // held value converges on the live config within a frame or two instead of
+  // being pinned until the next drag.
+  //
+  // That distinction matters. This used to be a ref refreshed only while
+  // `!settled`, which meant a slider drag on a settled deck left the frozen copy
+  // holding the PRE-EDIT config indefinitely — invisible only because the hero
+  // covers it exactly, and betting that the stale frame and the opacity swap
+  // land in the same commit when a drag starts. Now the worst case is a config
+  // one render behind, which the hero is covering anyway.
   const activeConfig = configs[ids[focusedIndex]];
-  const frozenActive = useRef(activeConfig);
-  if (!settled) frozenActive.current = activeConfig;
+  const deferredActive = useDeferredValue(activeConfig);
 
   // Report the ACTIVE deck card's real viewport centre as the hero target, so
   // the flat hero lands exactly on the deck card (measuring the live element
@@ -324,9 +339,7 @@ export function CardCarousel({
               style={active ? { opacity: deckCardOpacity } : undefined}
             >
               <DeckCard
-                config={
-                  active && settled ? frozenActive.current : configs[id]
-                }
+                config={active ? deferredActive : configs[id]}
                 note={note}
                 name={cardName}
               />
