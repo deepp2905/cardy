@@ -6,8 +6,7 @@ export type PatternShape = "circle" | "rect" | "triangle";
  * Per-card "personality": constants the UI never exposes but that we vary at
  * seed time so every colourway reads as its own design, not the same motif
  * recoloured. Overrides the matching PATTERN_FIXED values in patternParams.
- * Optional so a shared-link config (no personality in the URL) simply falls
- * back to the tuned defaults.
+ * Optional so a config without one simply falls back to the tuned defaults.
  */
 export type CardPersonality = {
   angle: number; // base grid rotation, deg
@@ -27,7 +26,7 @@ export type CardConfig = {
   spacing: number; // 0..1 → grid pitch, SPACING_MIN..SPACING_MAX
   frequency: number; // 0..1 → radial wavelength, FREQ_MIN..FREQ_MAX
   note: string; // "" | max 24 chars
-  /** Seed-time flavour; absent on shared links (falls back to PATTERN_FIXED). */
+  /** Seed-time flavour; absent means the PATTERN_FIXED defaults apply. */
   personality?: CardPersonality;
 };
 
@@ -50,14 +49,6 @@ export const PALETTE: PaletteEntry[] = [
   { name: "cyan", color: "oklch(0.665 0.186 249.535)" },
   { name: "purple", color: "oklch(0.499 0.241 282.011)" },
 ];
-
-// Defaults kept for the shared-link fallback path (cardConfigFromParams) and
-// as the neutral centre of the randomised bands below.
-export const DEFAULT_SHAPE: PatternShape = "circle";
-export const DEFAULT_FILLED = false;
-// Spacing starts at 20 (SPACING_MIN); the slider only ever adds sparseness.
-export const DEFAULT_SPACING = 0;
-export const DEFAULT_FREQUENCY = 0.32; // ≈140px wavelength, the tuned default
 
 /** Wave offset, radians. Was a third slider; now pinned — the offset only slid
  *  the ripple without changing the pattern's character, so it earned no dial. */
@@ -171,7 +162,7 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 /** Resolve the two sliders + fixed constants into the pattern's real params.
  *  The per-card personality (seed time) overrides the matching fixed values;
- *  a shared-link config carries none and keeps the tuned defaults. */
+ *  a config without one keeps the tuned defaults. */
 export function patternParams(config: CardConfig) {
   return {
     ...PATTERN_FIXED,
@@ -232,71 +223,4 @@ export const NOTE_CHARSET = /[^A-Za-z0-9 .,!♥]/g;
 
 export function sanitizeNote(raw: string): string {
   return raw.replace(NOTE_CHARSET, "").slice(0, NOTE_MAX);
-}
-
-// --- URL serialization (applied on confirm; PLAN.md §3) ---
-
-const SHAPES: PatternShape[] = ["circle", "rect", "triangle"];
-
-// Personality order in the compact `pr` param. Keep in sync with the parser.
-const PERSONALITY_KEYS = [
-  "angle",
-  "size",
-  "strokeWidth",
-  "staggerSize",
-  "staggerAngle",
-  "staggerSpacing",
-] as const;
-
-export function cardConfigToParams(config: CardConfig): URLSearchParams {
-  const p = new URLSearchParams();
-  p.set("c", config.baseColor);
-  p.set("sh", config.shape);
-  p.set("f", config.filled ? "1" : "0");
-  p.set("sp", config.spacing.toFixed(3));
-  p.set("fq", config.frequency.toFixed(3));
-  if (config.note) p.set("n", config.note);
-  // Serialize personality so a shared card looks identical to the sender's,
-  // not a defaults fallback. One compact param: six numbers, fixed order.
-  if (config.personality) {
-    p.set(
-      "pr",
-      PERSONALITY_KEYS.map((k) => config.personality![k].toFixed(2)).join(","),
-    );
-  }
-  return p;
-}
-
-function personalityFromParam(raw: string | null): CardPersonality | undefined {
-  if (!raw) return undefined;
-  const n = raw.split(",").map(Number);
-  if (n.length !== PERSONALITY_KEYS.length || n.some((v) => !Number.isFinite(v)))
-    return undefined;
-  return {
-    angle: n[0],
-    size: n[1],
-    strokeWidth: n[2],
-    staggerSize: n[3],
-    staggerAngle: n[4],
-    staggerSpacing: n[5],
-  };
-}
-
-export function cardConfigFromParams(params: URLSearchParams): CardConfig | null {
-  const c = params.get("c");
-  if (!c || !OKLCH_RE.test(c)) return null;
-  const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
-  const shape = params.get("sh");
-  return {
-    id: "shared",
-    baseColor: c,
-    shape: SHAPES.includes(shape as PatternShape)
-      ? (shape as PatternShape)
-      : DEFAULT_SHAPE,
-    filled: params.get("f") === "1",
-    spacing: clamp01(Number(params.get("sp") ?? DEFAULT_SPACING)),
-    frequency: clamp01(Number(params.get("fq") ?? DEFAULT_FREQUENCY)),
-    note: sanitizeNote(params.get("n") ?? ""),
-    personality: personalityFromParam(params.get("pr")),
-  };
 }
