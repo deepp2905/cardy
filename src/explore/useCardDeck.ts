@@ -4,6 +4,13 @@ import { useEffect, useRef, useState } from "react";
 export const COUNT = 8;
 
 /**
+ * FORK of src/carousel/useCardDeck.ts — dev-only (#/explore). Editing this file
+ * does NOT change the shipped carousel; the app imports the carousel copy.
+ * Known drift: arrow keys hard-set here (commit) but spring in the shipped copy
+ * (settle), and the pointerdown drag guard is gated on data-clickable here so a
+ * bench can opt into dragging any card. Plus COUNT and focusAmount, which only
+ * these benches use.
+ *
  * A fractional card index driven directly by drag and wheel — no native
  * scroller underneath.
  *
@@ -22,7 +29,7 @@ export const COUNT = 8;
 const WHEEL_DIVISOR = 220; // wheel px per card
 const DRAG_DIVISOR = 190; // pointer px per card
 
-// Settle spring. Damping ratio ~0.9 — under 1 so it feels alive, but high
+// Settle spring. Damping ratio 0.82 — under 1 so it feels alive, but high
 // enough that it eases into the card without visibly overshooting past it.
 // Lower STIFFNESS = slower; lower DAMPING_RATIO = bouncier.
 const SETTLE_STIFFNESS = 210;

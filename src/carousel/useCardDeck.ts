@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
+ * THIS is the deck the app ships. src/explore/useCardDeck.ts is a near-identical
+ * dev-only fork behind #/explore — tune the real carousel HERE, or the change
+ * won't reach users. Known drift, so a diff between them isn't alarming:
+ * arrow keys spring here (settle) but hard-set there (commit); the drag guard
+ * is unconditional here but gated on data-clickable there; and the fork carries
+ * a COUNT default and a focusAmount helper the app has no use for.
+ *
  * A fractional card index driven directly by drag, wheel, and keyboard — no
  * native scroller underneath. Ported from the explore playground's deck hook
  * (the Coverflow experiment), which is the mechanic the app now ships.
