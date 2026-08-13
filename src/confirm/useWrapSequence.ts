@@ -269,28 +269,58 @@ export function useWrapSequence({
 
   // --- Schedule ------------------------------------------------------------
   const timers = useRef<number[]>([]);
+  // Beats scheduled but not yet run. Distinct from `timers`, which keeps every
+  // id it ever created (including fired ones) purely so clear() can cancel in
+  // bulk — so its length says nothing about what is still outstanding. The
+  // visibility recovery below needs exactly that question answered.
+  const pendingBeats = useRef(0);
   const clear = useCallback(() => {
     timers.current.forEach(clearTimeout);
     timers.current = [];
+    pendingBeats.current = 0;
   }, []);
 
   const at = useCallback((seconds: number, run: () => void) => {
-    timers.current.push(window.setTimeout(run, seconds * 1000));
+    pendingBeats.current++;
+    timers.current.push(
+      window.setTimeout(() => {
+        pendingBeats.current--;
+        run();
+      }, seconds * 1000),
+    );
   }, []);
 
   useEffect(() => {
     if (!started || mmPx <= 0) return;
     startedRef.current = true;
 
-    if (reduce) {
-      // Two crossfades, no folds, no flip. The card and sheet leave; a sealed,
-      // addressed envelope arrives in their place.
-      const t = { duration: REDUCED.swap };
-      flipRot.set(180);
-      flapRot.set(0);
-      flapLift.set(0); // arrives already closed, so already flush
-      sealScale.set(1);
-      sealRot.set(0);
+    // The sequence's END STATE: sealed, flipped, addressed, slot open, hint up.
+    // Shared by the reduced-motion path (which goes straight here) and the
+    // backgrounded-tab recovery below, so there is one definition of "packed"
+    // rather than two that can drift.
+    const settleToIdle = (duration: number) => {
+      const t = { duration };
+      // .set() does NOT stop an animation already running on the value (same
+      // trap the rewind effect below documents). On the reduced-motion path
+      // nothing is in flight, but the visibility recovery interrupts a live
+      // sequence — without the stop, an in-flight fold keeps writing over these.
+      const hardSet = (mv: MotionValue<number>, v: number) => {
+        mv.stop();
+        mv.set(v);
+      };
+      hardSet(flipRot, 180);
+      hardSet(flapRot, 0);
+      hardSet(flapLift, 0); // arrives already closed, so already flush
+      hardSet(sealScale, 1);
+      hardSet(sealRot, 0);
+      // Mid-fold/mid-insert values. Unset on the reduced-motion path (nothing
+      // ever moved them), but the recovery can land here with the packet half
+      // folded and the envelope still parked below its entry point.
+      hardSet(rotBottom, -180);
+      hardSet(rotTop, 180);
+      hardSet(sheetY, 0);
+      hardSet(envY, 0);
+      hardSet(nudgeY, 0);
       animate(cardScale, restScale, t);
       animate(restOpacity, 0, t);
       animate(sheetOpacity, 0, t);
@@ -299,8 +329,38 @@ export function useWrapSequence({
       animate(slotScaleX, 1, t);
       animate(hintOpacity, 1, t);
       setPhase("idle");
+    };
+
+    if (reduce) {
+      // Two crossfades, no folds, no flip. The card and sheet leave; a sealed,
+      // addressed envelope arrives in their place.
+      settleToIdle(REDUCED.swap);
       return clear;
     }
+
+    // Backgrounding the tab clamps setTimeout, so every beat still pending when
+    // the tab is hidden lands bunched together on return — the fold, insert,
+    // seal and flip firing within a few hundred ms of each other, which reads as
+    // a glitch rather than as choreography. The sequence is a performance; if
+    // the audience left mid-way there is nothing to perform.
+    //
+    // So on returning to a tab that was hidden while beats were outstanding,
+    // cancel the rest and settle straight to the packed state. The user gets the
+    // sealed envelope ready to drag, which is where the sequence was going.
+    // Only recover if the sequence was actually mid-flight when we left; a tab
+    // switch after the envelope is already idle must not re-run the settle.
+    let hiddenMidSequence = false;
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        hiddenMidSequence = pendingBeats.current > 0;
+        return;
+      }
+      if (!hiddenMidSequence) return;
+      hiddenMidSequence = false;
+      clear();
+      settleToIdle(REDUCED.swap);
+    };
+    document.addEventListener("visibilitychange", onVisibility);
 
     at(BEAT.sheet, () => {
       // Hand the hero card off from the standalone rest copy to the one on the
@@ -379,7 +439,10 @@ export function useWrapSequence({
       );
     });
 
-    return clear;
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      clear();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started, reduce, mmPx]);
 
