@@ -45,6 +45,22 @@ export function HeroSlot({
         y: r.top + r.height / 2,
       });
     };
+    // Coalesce to one measurement per frame. The scroll listener below is
+    // registered in the CAPTURE phase, so it fires for every scrollable element
+    // in the document (the dial panel, any overflow container) — not just the
+    // window. Each raw call is a getBoundingClientRect (a sync layout read)
+    // followed by a setState in App, so an unthrottled burst during a flick is
+    // a layout thrash on the step that owns the card. One rAF per frame is all
+    // the precision a position report can actually use.
+    let pending = 0;
+    const scheduleMeasure = () => {
+      if (pending) return;
+      pending = requestAnimationFrame(() => {
+        pending = 0;
+        measure();
+      });
+    };
+
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
@@ -52,14 +68,15 @@ export function HeroSlot({
     // on the next few frames after mount and on scroll/resize.
     const raf1 = requestAnimationFrame(measure);
     const raf2 = requestAnimationFrame(() => requestAnimationFrame(measure));
-    window.addEventListener("resize", measure);
-    window.addEventListener("scroll", measure, true);
+    window.addEventListener("resize", scheduleMeasure);
+    window.addEventListener("scroll", scheduleMeasure, true);
     return () => {
       ro.disconnect();
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
-      window.removeEventListener("resize", measure);
-      window.removeEventListener("scroll", measure, true);
+      if (pending) cancelAnimationFrame(pending);
+      window.removeEventListener("resize", scheduleMeasure);
+      window.removeEventListener("scroll", scheduleMeasure, true);
     };
   }, [owner, onMeasure]);
 
