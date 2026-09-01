@@ -2,6 +2,7 @@ import {
   memo,
   useDeferredValue,
   useEffect,
+  useLayoutEffect,
   useRef,
   type CSSProperties,
 } from "react";
@@ -55,8 +56,8 @@ type CardCarouselProps = {
   /** Shared engraving — merged into every card's config at render. */
   note: string;
   onActiveChange: (id: string) => void;
-  /** 1 while the deck is mid-drag (its own centre card shows), 0 when settled
-   *  (the persistent hero shows in the centre slot instead). The carousel drives
+  /** 1 while settled (the persistent hero shows), 0 while the deck is moving
+   *  (its own centre card shows in the centre slot instead). The carousel drives
    *  this; HeroCard reads it. A MotionValue so the per-frame index changes never
    *  cause a React render here. */
   deckOpacity: MotionValue<number>;
@@ -81,7 +82,11 @@ export function CardCarousel({
   const count = ids.length;
   const activePos = Math.max(0, ids.indexOf(activeId));
 
-  const { ref, index, focusedIndex, goTo } = useCardDeck("x", count, activePos);
+  const { ref, index, focusedIndex, settled, goTo } = useCardDeck(
+    "x",
+    count,
+    activePos,
+  );
 
   // Card width: the SAME resolved --slide-w the hero and confirm use — one
   // source of truth. The deck used to measure its own width (full-bleed dvw
@@ -89,26 +94,11 @@ export function CardCarousel({
   // the hero/deck swap visibly changed card size on phones.
   const cardW = useSlideW();
 
-  // True only at a whole index — i.e. the frame the settle spring commits.
-  // Declared here because both the parent report below and the hero handoff
-  // further down key off it.
-  const settled = Number.isInteger(index);
-
-  // Report the centred card up to the parent, but ONLY once the deck has
-  // settled on it. focusedIndex is Math.round(index), so mid-drag it flips at
-  // the halfway point between two cards, not when a card reaches centre —
-  // reporting on every change repointed the dial panel at a different card
-  // several times per gesture, and jitter around a .5 boundary toggled it back
-  // and forth. Gating on `settled` means the panel updates exactly when a card
-  // lands: no lag on a fast flick (the spring commits once), no churn on a slow
-  // drag. This is the same "truth transfers on settle" contract the hero
-  // handoff below already uses.
-  useEffect(() => {
-    if (!settled) return;
-    const next = ids[focusedIndex];
-    if (next && next !== activeId) onActiveChange(next);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focusedIndex, settled]);
+  const focusedId = ids[focusedIndex];
+  // The hero may own the centre only after the spring is at rest AND its parent
+  // has rendered the landing card's config. This keeps the previous card from
+  // flashing between the MotionValue swap and the activeId state update.
+  const heroOwnsSlot = settled && focusedId === activeId;
 
   // Hand the centre slot between the deck's live card (mid-drag) and the
   // persistent hero (settled). deckOpacity is the HERO's opacity: 1 when settled
@@ -131,17 +121,33 @@ export function CardCarousel({
   // So the handoff is a hard swap at a single instant: deckOpacity goes 0 or 1
   // with no ramp, and the deck card takes its exact inverse. Exactly one card,
   // and therefore exactly one shadow, is visible in every frame.
-  useEffect(() => {
+  useLayoutEffect(() => {
     // Set, don't animate: any ramp puts both cards at partial alpha for those
-    // frames, which is exactly the shadow artifact described above.
-    deckOpacity.set(settled ? 1 : 0);
-  }, [settled, deckOpacity]);
+    // frames, which is exactly the shadow artifact described above. A layout
+    // effect makes the swap before paint; the old passive effect left the hero
+    // visible for the first painted movement frame.
+    if (!settled) {
+      deckOpacity.set(0);
+      return;
+    }
+
+    if (focusedId && focusedId !== activeId) {
+      // Keep the live deck card visible while React commits the landing config.
+      // State updates from a layout effect are flushed before the browser paints;
+      // the next layout pass reveals the correctly-configured hero.
+      deckOpacity.set(0);
+      onActiveChange(focusedId);
+      return;
+    }
+
+    deckOpacity.set(focusedId ? 1 : 0);
+  }, [activeId, deckOpacity, focusedId, onActiveChange, settled]);
 
   // Exact inverse of a value that is only ever 0 or 1 — so this is only ever
   // 1 or 0 too. The two cards are pixel-identical, so the swap is invisible.
   const deckCardOpacity = useTransform(deckOpacity, (v) => 1 - v);
 
-  // Defer the active card's config while it's hidden. Settled, the active deck
+  // Defer the active card's config only while it's hidden. Settled, the active deck
   // card sits at opacity 0 behind the hero — but slider ticks change its config
   // identity, so the DeckCard memo missed and the INVISIBLE card rebuilt its
   // full pattern on every pointermove.
@@ -157,8 +163,9 @@ export function CardCarousel({
   // holding the PRE-EDIT config indefinitely — invisible only because the hero
   // covers it exactly, and betting that the stale frame and the opacity swap
   // land in the same commit when a drag starts. Now the worst case is a config
-  // one render behind, which the hero is covering anyway.
-  const activeConfig = configs[ids[focusedIndex]];
+  // one render behind, which the hero is covering anyway. During motion (and
+  // during the settle handoff) the visible deck card always reads its live config.
+  const activeConfig = configs[focusedId];
   const deferredActive = useDeferredValue(activeConfig);
 
   // Report the ACTIVE deck card's real viewport centre as the hero target, so
@@ -339,7 +346,7 @@ export function CardCarousel({
               style={active ? { opacity: deckCardOpacity } : undefined}
             >
               <DeckCard
-                config={active ? deferredActive : configs[id]}
+                config={active && heroOwnsSlot ? deferredActive : configs[id]}
                 note={note}
                 name={cardName}
               />

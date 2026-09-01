@@ -108,7 +108,7 @@ function MainFlow() {
   const [heroTarget, setHeroTarget] = useState<{ x: number; y: number } | null>(
     null,
   );
-  // deckOpacity: carousel drives it (1 mid-drag, 0 settled) so the hero yields
+  // deckOpacity: carousel drives it (0 mid-drag, 1 settled) so the hero yields
   // to the live deck card while dragging. restOpacity: the wrap sequence drives
   // it so the hero hands off to the in-sheet card. Both are MotionValues so the
   // per-frame writes never render React.

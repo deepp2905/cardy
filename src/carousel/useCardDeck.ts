@@ -54,6 +54,11 @@ function rubberband(v: number, max: number): number {
 export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
   const ref = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(initial);
+  // Motion state is explicit rather than inferred from index. A wheel event can
+  // clamp to an exact end index while the gesture is still live, and floating
+  // point integration can cross a whole number before the spring is actually at
+  // rest. Only the spring's rest condition is allowed to settle the deck.
+  const [settled, setSettled] = useState(true);
   // Ref mirrors state so handlers read the live value without re-subscribing.
   const value = useRef(initial);
   const raf = useRef<number | null>(null);
@@ -91,6 +96,14 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
       // the deck, so snap to the real end card. On a card click, `target` is
       // that card's index.
       const to = clamp(target ?? Math.round(value.current));
+      // A press/release or boundary key can ask to settle an already-resting
+      // card. Keep ownership with the hero instead of flashing the deck copy.
+      if (Math.abs(value.current - to) < REST_DELTA) {
+        commit(to);
+        setSettled(true);
+        return;
+      }
+      setSettled(false);
       const damping = SETTLE_DAMPING_RATIO * 2 * Math.sqrt(SETTLE_STIFFNESS);
       let velocity = 0;
       let last = performance.now();
@@ -109,6 +122,7 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
           Math.abs(velocity) < REST_VELOCITY
         ) {
           commit(to);
+          setSettled(true);
           raf.current = null;
           return;
         }
@@ -132,6 +146,7 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
       if (!delta) return;
       e.preventDefault();
       stopSettle();
+      setSettled(false);
       commit(value.current + delta / WHEEL_DIVISOR);
       clearTimeout(wheelIdle);
       wheelIdle = setTimeout(settle, 110);
@@ -159,6 +174,7 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
       if (!dragging) return;
       const now = axis === "x" ? e.clientX : e.clientY;
       // Dragging left/up advances the deck, matching scroll direction.
+      setSettled(false);
       commitDrag(startIndex - (now - startPos) / DRAG_DIVISOR);
     };
 
@@ -210,5 +226,5 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
   /** Spring the deck so card `i` becomes the centred one. */
   const goTo = (i: number) => settleTo.current(i);
 
-  return { ref, index, focusedIndex, goTo };
+  return { ref, index, focusedIndex, settled, goTo };
 }
