@@ -57,6 +57,7 @@ export function PostHint({
       style={{ opacity, top: `calc(50% + ${mm(hintY)})` }}
       aria-hidden="true"
     >
+      <span className="post-hint-copy">Drag down to send your card</span>
       {/* A sine bob: the ease-in-out on a symmetric 0 → peak → 0 keyframe set is
           the smoothed sine of a pendulum, so the chevron eases in at the top of
           its travel and again at the bottom — the "slow at the extremes" that

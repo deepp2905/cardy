@@ -638,6 +638,16 @@
   pointer-events: auto;
 }
 
+.post-hint-copy {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  font-size: var(--text-sm);
+  line-height: 1.25;
+  color: var(--color-10);
+  white-space: nowrap;
+  user-select: none;
+}
+
 .post-hint-chevron {
   width: 26px;
   height: 26px;
