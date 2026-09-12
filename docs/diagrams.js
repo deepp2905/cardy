@@ -573,7 +573,6 @@ function scrubber(host) {
     sheet.setAttribute("height", (192 * S) * (1 - folded * (1 - 64 / 192)));
     sheet.setAttribute("y", 112 - (192 * S) * (1 - folded * (1 - 64 / 192)) / 2);
     cardR.setAttribute("opacity", 1 - Math.max(p(3), p(4)));
-    packet.setAttribute("opacity", p(3) * (1 - p(5) * 0.0));
     env.setAttribute("opacity", p(4));
     const ins = p(5);
     packet.setAttribute("y", 112 - 64 * S / 2 + ins * 30);

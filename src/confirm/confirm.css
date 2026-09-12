@@ -368,6 +368,14 @@
   border-radius: calc(1.5 * var(--mm));
 }
 
+.envelope[role="button"] {
+  cursor: grab;
+}
+
+.envelope[role="button"]:active {
+  cursor: grabbing;
+}
+
 .envelope:focus-visible {
   outline: 2px solid var(--color-9);
   outline-offset: 4px;
