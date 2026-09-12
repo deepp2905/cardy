@@ -90,6 +90,7 @@ export function Confirm({
     mmPx,
     phase,
     setPhase,
+    reduce,
     onPosted: () => {
       setPhase("done");
       setShowLoading(true);
@@ -231,6 +232,7 @@ export function Confirm({
             v={values}
             firstName={firstName}
             interactive={phase === "idle"}
+            draggable={phase === "idle" && !reduce}
             onPost={runPost}
             dragProps={dragProps}
             dragScale={dragScale}

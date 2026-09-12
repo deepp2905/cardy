@@ -18,6 +18,7 @@ export function Envelope({
   v,
   firstName,
   interactive,
+  draggable,
   onPost,
   dragProps,
   dragScale,
@@ -28,6 +29,8 @@ export function Envelope({
   firstName: string;
   /** True only at `idle` — the envelope becomes the drag/keyboard target. */
   interactive: boolean;
+  /** Pointer gesture is available (false for the reduced-motion button path). */
+  draggable: boolean;
   onPost: () => void;
   dragProps: Record<string, unknown>;
   dragScale: MotionValue<number>;
@@ -109,7 +112,7 @@ export function Envelope({
           aria-hidden="true"
         />
         <motion.div
-          className="envelope"
+          className={`envelope${draggable ? " envelope--draggable" : ""}`}
           style={{
             opacity,
             y: v.envY,

@@ -110,6 +110,15 @@ export const POST_FLICK_MM = 6;
 export const POST_FLICK_VELOCITY = 300; // px/s
 /** A little upward give so the envelope doesn't feel nailed down. */
 export const DRAG_TOP_GIVE = 8;
+/** The envelope's centre at the slot mouth: exactly half the envelope is in. */
+export const POST_CATCH_Y = SLOT_MOUTH;
+/** Visible lead-in over which the user's pull progressively loses leverage. */
+export const DRAG_BRAKE_ZONE_MM = 8;
+/** Pointer travel used to cross the brake zone. Twice the visible distance
+ *  gives the curve a 1:1 slope at entry and a zero slope at the catch. */
+export const DRAG_BRAKE_PULL_MM = DRAG_BRAKE_ZONE_MM * 2;
+/** How far the machine lets the caught envelope peek back out before pulling. */
+export const POST_RECOIL_MM = 8;
 
 /** mm → a CSS length that tracks the stage scale. */
 export function mm(value: number): string {

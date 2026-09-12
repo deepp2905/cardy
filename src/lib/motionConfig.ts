@@ -193,10 +193,36 @@ export const flip: Transition = {
   mass: 1.1,
 };
 
-// Envelope gliding into the slot after release. A response to a gesture, so a
-// spring — never a duration tween (§6 rules).
-export const post: Transition = {
+// Envelope settling at the slot's catch after release. Near-critical so the
+// machine reads as a firm stop rather than a bounce before the pause.
+export const postCatch: Transition = {
   type: "spring",
   stiffness: 154, // was 240
   damping: 24, // was 30 — ζ 0.968
 };
+
+// The machine briefly gives the caught envelope back. Critically damped: this
+// is anticipation for the pull, not a second flourish competing with it.
+export const postRecoil: Transition = {
+  type: "spring",
+  stiffness: 360,
+  damping: 34,
+  mass: 0.8,
+};
+
+// The machine's final pull. Deliberately under-damped (ζ ≈ 0.75) so the handoff
+// has a playful snap; the visible recoil supplies the bounce before the rest is
+// swallowed by the slot's clipping mask.
+export const postPull: Transition = {
+  type: "spring",
+  stiffness: 220,
+  damping: 21,
+  mass: 0.9,
+};
+
+export const postHintDismiss: Transition = {
+  duration: 0.15,
+  ease: [0.32, 0.72, 0, 1],
+};
+
+export const POST_CATCH_PAUSE_MS = 1000;

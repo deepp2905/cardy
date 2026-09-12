@@ -378,6 +378,7 @@ export function SequencePlayground() {
             v={values}
             firstName="Alex"
             interactive={false}
+            draggable={false}
             onPost={noop}
             dragProps={noDrag}
             dragScale={one}

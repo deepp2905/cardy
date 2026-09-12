@@ -7,13 +7,24 @@ import {
   useVelocity,
   type PanInfo,
 } from "motion/react";
-import { post, snappy } from "../lib/motionConfig";
 import {
+  POST_CATCH_PAUSE_MS,
+  postCatch,
+  postHintDismiss,
+  postPull,
+  postRecoil,
+  snappy,
+} from "../lib/motionConfig";
+import {
+  DRAG_BRAKE_PULL_MM,
+  DRAG_BRAKE_ZONE_MM,
   DRAG_TOP_GIVE,
   ENVELOPE,
+  POST_CATCH_Y,
   POST_COMMIT_MM,
   POST_FLICK_MM,
   POST_FLICK_VELOCITY,
+  POST_RECOIL_MM,
   POST_TRAVEL,
   SLOT_MOUTH,
 } from "./geometry";
@@ -31,18 +42,27 @@ export function usePostDrag({
   mmPx,
   phase,
   setPhase,
+  reduce,
   onPosted,
 }: {
   v: SequenceValues;
   mmPx: number;
   phase: Phase;
   setPhase: (p: Phase) => void;
+  reduce: boolean;
   onPosted: () => void;
 }) {
   const dragScale = useMotionValue(1);
-  // The 450ms post-completion timer must not fire into an unmounted tree.
+  // The catch pause must not resume the machine sequence into an unmounted tree.
   const postTimer = useRef(0);
-  useEffect(() => () => clearTimeout(postTimer.current), []);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      clearTimeout(postTimer.current);
+    };
+  }, []);
 
   // Small velocity-derived tilt. The difference between dragging an object and
   // dragging a div.
@@ -63,24 +83,10 @@ export function usePostDrag({
   // gesture is reversible until the user lets go.
   const committed = useMotionValue(0);
 
-  // Chevron fade, driven by POSITION rather than by the post trigger: it holds
-  // while the envelope is still travelling toward the slot it points at, and
-  // clears over the stretch where the paper is disappearing behind the lip.
-  // Starts once the envelope's top edge reaches the mouth, done by the time it
-  // is fully swallowed. Multiplied into the sequence's own hintOpacity in
-  // Confirm, so the arrival fade-in still owns the other direction.
-  // Position-driven like the slot close, and gated the same way: a drag that
-  // goes deep and comes back keeps its arrow, because nothing was committed.
-  const hintFadeStart = SLOT_MOUTH * mmPx;
-  const hintFadeEnd = (SLOT_MOUTH + ENVELOPE.h / 2) * mmPx;
-  const hintFade = useTransform(
-    [v.envY, committed] as const,
-    ([y, go]: number[]) => {
-      if (!go) return 1;
-      const t = (y - hintFadeStart) / (hintFadeEnd - hintFadeStart);
-      return 1 - Math.min(Math.max(t, 0), 1);
-    },
-  );
+  // The arrow and caption leave as one affordance only after the machine has
+  // caught the envelope. Keeping this independent of position means a user can
+  // pull into the brake zone and reverse without losing the instruction.
+  const hintFade = useMotionValue(1);
 
   // Slot close-up: once the envelope is in, the aperture narrows to nothing
   // (width only — the halves keep their height, so it reads as the mouth
@@ -126,39 +132,113 @@ export function usePostDrag({
   // as a constant 1 so MailSlot's opacity maths is untouched.
   const slotFade = useMotionValue(1);
 
-  const runPost = useCallback(() => {
-    if (phase !== "idle") return;
+  const runPost = useCallback(async (releaseVelocity = 0) => {
+    if (phase !== "idle" || committed.get()) return;
     setPhase("posting");
-    // Release (or Enter, or the reduced-motion button) is what commits: only
-    // now may the slot start closing behind the envelope.
     committed.set(1);
-    animate(v.envY, POST_TRAVEL * mmPx, post);
-    animate(dragScale, 0.97, post);
-    // The hint is NOT faded here. It fades when the envelope has actually gone
-    // in (see hintFade below) — dismissing it the moment the post is triggered
-    // took the arrow away while the paper was still visibly travelling toward
-    // the slot it was pointing at.
-    postTimer.current = window.setTimeout(onPosted, 450);
-  }, [phase, setPhase, v, mmPx, dragScale, onPosted, committed]);
-
-  // The hint stays put through a drag: picking the envelope up and putting it
-  // back down doesn't teach you anything, so the affordance has to survive it.
-  // It only leaves on an actual post (runPost fades it as the envelope goes).
-  const onDragStart = useCallback(() => {
-    // The idle tug may still be running on envY; stop it or Motion's drag and
-    // the keyframe animation both write the same value and the envelope jitters.
     v.envY.stop();
-    animate(dragScale, 1.03, snappy);
-  }, [v.envY, dragScale]);
+    dragScale.stop();
 
-  const onDragEnd = useCallback(
+    // Reduced motion keeps the same clear completion but skips the spatial
+    // pause, recoil, and pull entirely.
+    if (reduce) {
+      hintFade.jump(0);
+      v.envY.jump(POST_TRAVEL * mmPx);
+      dragScale.jump(0.97);
+      onPosted();
+      return;
+    }
+
+    const catchY = POST_CATCH_Y * mmPx;
+    const brakeStart = (POST_CATCH_Y - DRAG_BRAKE_ZONE_MM) * mmPx;
+    // Inside the brake zone the rendered velocity has already fallen toward
+    // zero. An early flick still hands its velocity to the catch spring, while
+    // a pull that reached the stop lands firmly without overshooting it.
+    const catchVelocity = v.envY.get() < brakeStart ? Math.max(0, releaseVelocity) : 0;
+
+    await Promise.all([
+      animate(v.envY, catchY, { ...postCatch, velocity: catchVelocity }).finished,
+      animate(dragScale, 1, postCatch).finished,
+    ]);
+    if (!mounted.current) return;
+
+    await animate(hintFade, 0, postHintDismiss).finished;
+    if (!mounted.current) return;
+
+    await new Promise<void>((resolve) => {
+      postTimer.current = window.setTimeout(resolve, POST_CATCH_PAUSE_MS);
+    });
+    if (!mounted.current) return;
+
+    // Visible anticipation first, then the under-damped machine pull. The final
+    // spring's overshoot is mostly behind the clip, so this explicit recoil is
+    // what makes the bounce legible while the envelope is still half exposed.
+    await animate(v.envY, (POST_CATCH_Y - POST_RECOIL_MM) * mmPx, postRecoil).finished;
+    if (!mounted.current) return;
+
+    await Promise.all([
+      animate(v.envY, POST_TRAVEL * mmPx, postPull).finished,
+      animate(dragScale, 0.97, postPull).finished,
+    ]);
+    if (mounted.current) onPosted();
+  }, [
+    phase,
+    committed,
+    setPhase,
+    v.envY,
+    dragScale,
+    reduce,
+    hintFade,
+    mmPx,
+    onPosted,
+  ]);
+
+  // Motion's pan recognizer tracks raw pointer travel without also writing the
+  // element's transform. That separation lets the final 8mm be remapped through
+  // a braking curve while the rest of the drag remains exactly 1:1.
+  const dragOrigin = useRef(0);
+
+  const onPanSessionStart = useCallback(() => {
+    animate(dragScale, 1.03, snappy);
+  }, [dragScale]);
+
+  const onPanStart = useCallback(() => {
+    // Stop the idle tug at its presentation value, then continue from there.
+    v.envY.stop();
+    dragOrigin.current = v.envY.get();
+  }, [v.envY]);
+
+  const onPan = useCallback(
+    (_e: unknown, info: PanInfo) => {
+      const top = -DRAG_TOP_GIVE * mmPx;
+      const catchY = POST_CATCH_Y * mmPx;
+      const brakeZone = DRAG_BRAKE_ZONE_MM * mmPx;
+      const brakePull = DRAG_BRAKE_PULL_MM * mmPx;
+      const brakeStart = catchY - brakeZone;
+      const rawY = Math.max(top, dragOrigin.current + info.offset.y);
+
+      if (rawY <= brakeStart) {
+        v.envY.set(rawY);
+        return;
+      }
+
+      // A quadratic ease-out has a 1:1 slope at entry because brakePull is
+      // exactly twice brakeZone, then its slope falls continuously to zero.
+      // The pointer travels 16mm while the envelope covers the final 8mm.
+      const t = Math.min((rawY - brakeStart) / brakePull, 1);
+      v.envY.set(brakeStart + brakeZone * (1 - (1 - t) ** 2));
+    },
+    [mmPx, v.envY],
+  );
+
+  const onPanEnd = useCallback(
     (_e: unknown, info: PanInfo) => {
       const y = info.offset.y;
       const commit =
         y > POST_COMMIT_MM * mmPx ||
         (info.velocity.y > POST_FLICK_VELOCITY && y > POST_FLICK_MM * mmPx);
       if (commit) {
-        runPost();
+        void runPost(info.velocity.y);
         return;
       }
       animate(dragScale, 1, snappy);
@@ -167,18 +247,26 @@ export function usePostDrag({
     [mmPx, runPost, dragScale, v.envY],
   );
 
+  const onPointerRelease = useCallback(() => {
+    // Also covers a press that never crossed Motion's pan threshold.
+    animate(dragScale, 1, snappy);
+  }, [dragScale]);
+
+  const onPointerCancel = useCallback(() => {
+    if (committed.get()) return;
+    animate(dragScale, 1, snappy);
+    animate(v.envY, 0, snappy);
+  }, [committed, dragScale, v.envY]);
+
   const dragProps =
-    phase === "idle"
+    phase === "idle" && !reduce
       ? {
-          drag: "y" as const,
-          dragConstraints: {
-            top: -DRAG_TOP_GIVE * mmPx,
-            bottom: POST_TRAVEL * mmPx,
-          },
-          dragElastic: 0.15,
-          dragMomentum: false,
-          onDragStart,
-          onDragEnd,
+          onPanSessionStart,
+          onPanStart,
+          onPan,
+          onPanEnd,
+          onPointerUp: onPointerRelease,
+          onPointerCancel,
         }
       : {};
 
