@@ -20,12 +20,14 @@ import {
   DRAG_BRAKE_PULL_MM,
   DRAG_BRAKE_ZONE_MM,
   DRAG_TOP_GIVE,
+  ENVELOPE,
   POST_CATCH_Y,
   POST_COMMIT_MM,
   POST_FLICK_MM,
   POST_FLICK_VELOCITY,
   POST_RECOIL_MM,
   POST_TRAVEL,
+  SLOT_MOUTH,
 } from "./geometry";
 import type { Phase, SequenceValues } from "./useWrapSequence";
 
@@ -87,10 +89,11 @@ export function usePostDrag({
   // pull into the brake zone and reverse without losing the instruction.
   const hintFade = useMotionValue(1);
 
-  // Slot closing is deliberately independent of envelope position. The pull
-  // completes first, then this separate motion value creates a legible
-  // "swallow, then shut" sequence without adding a delay. Width only — the
-  // halves keep their height, so it reads as closing rather than disappearing.
+  // Slot closing has its own fixed animation, but its start is tied to the
+  // physical moment the envelope becomes fully hidden. That lets it overlap
+  // the pull spring's settle without ever closing onto visible paper. Width
+  // only — the halves keep their height, so it reads as closing rather than
+  // disappearing.
   const slotClose = useMotionValue(1);
   // No opacity fade on the close: the aperture narrowing to nothing already
   // reads as the mouth shutting, and fading it at the same time made the slot
@@ -143,13 +146,30 @@ export function usePostDrag({
     await animate(v.envY, (POST_CATCH_Y - POST_RECOIL_MM) * mmPx, postRecoil).finished;
     if (!mounted.current) return;
 
+    const fullyHiddenY = (SLOT_MOUTH + ENVELOPE.h / 2) * mmPx;
+    const closeSlotWhenHidden = new Promise<void>((resolve) => {
+      let stopWatching = () => {};
+      const startClose = () => {
+        stopWatching();
+        void animate(slotClose, [1, 1.06, 0], postSlotClose).finished.then(resolve);
+      };
+
+      if (v.envY.get() >= fullyHiddenY) {
+        startClose();
+        return;
+      }
+
+      stopWatching = v.envY.on("change", (y) => {
+        if (y >= fullyHiddenY) startClose();
+      });
+    });
+
     await Promise.all([
       animate(v.envY, POST_TRAVEL * mmPx, postPull).finished,
       animate(dragScale, 0.97, postPull).finished,
+      closeSlotWhenHidden,
     ]);
     if (!mounted.current) return;
-
-    await animate(slotClose, [1, 1.06, 0], postSlotClose).finished;
     if (mounted.current) onPosted();
   }, [
     phase,
