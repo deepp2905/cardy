@@ -9,24 +9,24 @@ import {
 } from "motion/react";
 import {
   POST_CATCH_PAUSE_MS,
+  POST_SLOT_PAUSE_MS,
   postCatch,
   postHintDismiss,
   postPull,
   postRecoil,
+  postSlotClose,
   snappy,
 } from "../lib/motionConfig";
 import {
   DRAG_BRAKE_PULL_MM,
   DRAG_BRAKE_ZONE_MM,
   DRAG_TOP_GIVE,
-  ENVELOPE,
   POST_CATCH_Y,
   POST_COMMIT_MM,
   POST_FLICK_MM,
   POST_FLICK_VELOCITY,
   POST_RECOIL_MM,
   POST_TRAVEL,
-  SLOT_MOUTH,
 } from "./geometry";
 import type { Phase, SequenceValues } from "./useWrapSequence";
 
@@ -88,44 +88,11 @@ export function usePostDrag({
   // pull into the brake zone and reverse without losing the instruction.
   const hintFade = useMotionValue(1);
 
-  // Slot close-up: once the envelope is in, the aperture narrows to nothing
-  // (width only — the halves keep their height, so it reads as the mouth
-  // closing rather than the slot shrinking away) and the whole thing fades.
-  //
-  // Gated on `committed`, NOT on position alone. Dragging the envelope deep and
-  // then back up is a legitimate thing to do — the drag is reversible until you
-  // let go — and a position-only close started shutting the slot mid-gesture,
-  // so the target vanished under a finger that hadn't committed to anything.
-  // The gate flips in runPost, i.e. on release (or on the keyboard/button
-  // path), after which position drives the rest.
-  const closeStart = (SLOT_MOUTH + ENVELOPE.h / 2) * mmPx;
-  const closeEnd = POST_TRAVEL * mmPx;
-  /** How far past full width the mouth flares before it shuts. */
-  const SLOT_ANTICIPATE = 0.06;
-  /** Fraction of the close spent on that flare. */
-  const SLOT_ANTICIPATE_T = 0.28;
-  const slotClose = useTransform(
-    [v.envY, committed] as const,
-    ([y, go]: number[]) => {
-      if (!go) return 1;
-      const t = Math.min(Math.max((y - closeStart) / (closeEnd - closeStart), 0), 1);
-      // Anticipation: the mouth flares OUTWARD before it closes, the way a
-      // thing gathers itself before a move. Without it the aperture just
-      // deflates, which reads as it being switched off rather than shutting.
-      if (t < SLOT_ANTICIPATE_T) {
-        // One half-sine over the flare: 1 -> 1+SLOT_ANTICIPATE -> 1, so it
-        // arrives back at full width exactly where the narrowing starts and
-        // the two stretches meet without a kink.
-        const p = t / SLOT_ANTICIPATE_T;
-        return 1 + Math.sin(p * Math.PI) * SLOT_ANTICIPATE;
-      }
-      // Then narrow all the way to 0 — with the opacity fade gone, anything
-      // left over sits on the stage as a visible nub instead of a shut slot.
-      const p = (t - SLOT_ANTICIPATE_T) / (1 - SLOT_ANTICIPATE_T);
-      // Ease-in so it starts slowly out of the flare and accelerates shut.
-      return 1 - p * p;
-    },
-  );
+  // Slot closing is deliberately independent of envelope position. The pull
+  // completes first, then a short pause and this separate motion value create
+  // a legible "swallow, then shut" sequence. Width only — the halves keep
+  // their height, so it reads as the mouth closing rather than disappearing.
+  const slotClose = useMotionValue(1);
   // No opacity fade on the close: the aperture narrowing to nothing already
   // reads as the mouth shutting, and fading it at the same time made the slot
   // dissolve rather than close — two different exits fighting each other. Kept
@@ -145,6 +112,7 @@ export function usePostDrag({
       hintFade.jump(0);
       v.envY.jump(POST_TRAVEL * mmPx);
       dragScale.jump(0.97);
+      slotClose.jump(0);
       onPosted();
       return;
     }
@@ -180,6 +148,14 @@ export function usePostDrag({
       animate(v.envY, POST_TRAVEL * mmPx, postPull).finished,
       animate(dragScale, 0.97, postPull).finished,
     ]);
+    if (!mounted.current) return;
+
+    await new Promise<void>((resolve) => {
+      postTimer.current = window.setTimeout(resolve, POST_SLOT_PAUSE_MS);
+    });
+    if (!mounted.current) return;
+
+    await animate(slotClose, [1, 1.06, 0], postSlotClose).finished;
     if (mounted.current) onPosted();
   }, [
     phase,
@@ -189,6 +165,7 @@ export function usePostDrag({
     dragScale,
     reduce,
     hintFade,
+    slotClose,
     mmPx,
     onPosted,
   ]);
