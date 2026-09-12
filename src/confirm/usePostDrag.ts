@@ -9,7 +9,6 @@ import {
 } from "motion/react";
 import {
   POST_CATCH_PAUSE_MS,
-  POST_SLOT_PAUSE_MS,
   postCatch,
   postHintDismiss,
   postPull,
@@ -89,9 +88,9 @@ export function usePostDrag({
   const hintFade = useMotionValue(1);
 
   // Slot closing is deliberately independent of envelope position. The pull
-  // completes first, then a short pause and this separate motion value create
-  // a legible "swallow, then shut" sequence. Width only — the halves keep
-  // their height, so it reads as the mouth closing rather than disappearing.
+  // completes first, then this separate motion value creates a legible
+  // "swallow, then shut" sequence without adding a delay. Width only — the
+  // halves keep their height, so it reads as closing rather than disappearing.
   const slotClose = useMotionValue(1);
   // No opacity fade on the close: the aperture narrowing to nothing already
   // reads as the mouth shutting, and fading it at the same time made the slot
@@ -148,11 +147,6 @@ export function usePostDrag({
       animate(v.envY, POST_TRAVEL * mmPx, postPull).finished,
       animate(dragScale, 0.97, postPull).finished,
     ]);
-    if (!mounted.current) return;
-
-    await new Promise<void>((resolve) => {
-      postTimer.current = window.setTimeout(resolve, POST_SLOT_PAUSE_MS);
-    });
     if (!mounted.current) return;
 
     await animate(slotClose, [1, 1.06, 0], postSlotClose).finished;

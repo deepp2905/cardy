@@ -227,11 +227,6 @@ export const postHintDismiss: Transition = {
 
 export const POST_CATCH_PAUSE_MS = 1000;
 
-// Once the envelope has fully disappeared, leave a tiny beat before the mouth
-// reacts. The separation makes the sequence read as "swallow, then shut"
-// instead of one combined transform.
-export const POST_SLOT_PAUSE_MS = 100;
-
 // A quick outward breath followed by the close. The first keyframe preserves
 // the playful anticipation from the old position-driven version, while the
 // stronger ease-out on the close keeps this final beat crisp.
