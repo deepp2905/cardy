@@ -34,6 +34,7 @@
 .carousel-deck .deck-item {
   position: absolute;
   width: var(--card-w, 372px);
+  aspect-ratio: 85.6 / 53.98;
   will-change: transform;
   /* Non-active cards are clickable (bring themselves to centre); the active
      card owns the drag. */

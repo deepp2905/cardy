@@ -4,6 +4,7 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
+  useState,
   type ReactNode,
   type RefObject,
   type CSSProperties,
@@ -95,6 +96,8 @@ function DeckItem({
   active,
   activeItemRef,
   label,
+  initiallyVisible,
+  cardW,
   onSelect,
   children,
 }: {
@@ -106,9 +109,39 @@ function DeckItem({
   active: boolean;
   activeItemRef: RefObject<HTMLDivElement | null>;
   label: string;
+  initiallyVisible: boolean;
+  cardW: number;
   onSelect: () => void;
   children: ReactNode;
 }) {
+  const itemRef = useRef<HTMLDivElement>(null);
+  const [renderArtwork, setRenderArtwork] = useState(initiallyVisible);
+
+  // Observe the lightweight item shell, not the artwork it conditionally owns.
+  // A half-card horizontal margin mounts the SVG well before it can enter the
+  // clipped deck. The active measurement ref still points at this same shell.
+  useEffect(() => {
+    const node = itemRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setRenderArtwork(entry.isIntersecting),
+      {
+        root: node.parentElement,
+        rootMargin: `0px ${Math.ceil(cardW / 2)}px`,
+      },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [cardW]);
+
+  useLayoutEffect(() => {
+    if (!active) return;
+    activeItemRef.current = itemRef.current;
+    return () => {
+      if (activeItemRef.current === itemRef.current) activeItemRef.current = null;
+    };
+  }, [active, activeItemRef]);
+
   const transform = useTransform(layout, ({ cardW, centres, originX, position }) => {
     const d = i - position;
     const away = Math.abs(d);
@@ -125,7 +158,7 @@ function DeckItem({
   return (
     <motion.div
       id={`deck-${id}`}
-      ref={active ? activeItemRef : undefined}
+      ref={itemRef}
       className="deck-item"
       data-active={active}
       role="radio"
@@ -134,7 +167,7 @@ function DeckItem({
       onClick={onSelect}
       style={{ transform, zIndex }}
     >
-      {children}
+      {renderArtwork ? children : null}
     </motion.div>
   );
 }
@@ -376,6 +409,14 @@ export function CardCarousel({
     >
       {ids.map((id, i) => {
         const active = i === focusedIndex;
+        const current = layout.get();
+        const d = i - current.position;
+        const x = reduce
+          ? d * cardW * 1.06
+          : current.centres[i] - current.originX;
+        const initiallyVisible =
+          typeof window === "undefined" ||
+          Math.abs(x) <= window.innerWidth / 2 + cardW;
         // The active centre card crossfades with the persistent hero on the
         // shared deckOpacity (its inverse). Non-active cards are always opaque.
         // Transform is a MotionValue on the outer item; opacity rides the inner
@@ -391,6 +432,8 @@ export function CardCarousel({
             active={active}
             activeItemRef={activeItemRef}
             label={PALETTE[i]?.name ?? id}
+            initiallyVisible={initiallyVisible}
+            cardW={cardW}
             onSelect={() => {
               if (!active) goTo(i);
             }}
