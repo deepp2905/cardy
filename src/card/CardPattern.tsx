@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import type { CardConfig } from "./cardConfig";
 import { patternParams } from "./cardConfig";
 
@@ -14,7 +14,7 @@ import { patternParams } from "./cardConfig";
 const VIEW_W = 856;
 const VIEW_H = 540;
 
-export function CardPattern({ config }: { config: CardConfig }) {
+function CardPatternView({ config }: { config: CardConfig }) {
   const p = patternParams(config);
 
   // plus-lighter is fixed off, so shapes ARE a deepened tint of the card
@@ -114,3 +114,17 @@ export function CardPattern({ config }: { config: CardConfig }) {
     </svg>
   );
 }
+
+// The card config also carries engraving text, which does not affect this SVG.
+// Keep the several-hundred-node pattern tree intact when only that text changes;
+// actual artwork inputs still invalidate the memo immediately.
+export const CardPattern = memo(
+  CardPatternView,
+  (prev, next) =>
+    prev.config.baseColor === next.config.baseColor &&
+    prev.config.shape === next.config.shape &&
+    prev.config.filled === next.config.filled &&
+    prev.config.spacing === next.config.spacing &&
+    prev.config.frequency === next.config.frequency &&
+    prev.config.personality === next.config.personality,
+);
