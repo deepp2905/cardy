@@ -4,6 +4,8 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
+  type ReactNode,
+  type RefObject,
   type CSSProperties,
 } from "react";
 import { motion, useTransform, type MotionValue } from "motion/react";
@@ -47,6 +49,95 @@ const BACK_GAP = 0; // gap between the rotated background cards
 const SCALE_STEP = 0.04; // per-card shrink with depth
 const SCALE_DEPTH = 7; // cards out at which shrink stops
 const PERSPECTIVE = 1200; // px
+
+type DeckLayout = {
+  cardW: number;
+  centres: number[];
+  originX: number;
+  position: number;
+};
+
+function computeDeckLayout(
+  position: number,
+  cardW: number,
+  count: number,
+): DeckLayout {
+  const footprintOf = (i: number) => {
+    const away = Math.min(1, Math.abs(i - position));
+    return cardW * Math.cos((away * ROTATE_Y * Math.PI) / 180);
+  };
+  const gapOf = (i: number) => {
+    const nearCentre = Math.max(0, 1 - Math.abs(i - position - 0.5));
+    return cardW * (BACK_GAP + (CENTRE_GAP - BACK_GAP) * nearCentre);
+  };
+
+  const centres: number[] = [];
+  for (let i = 0, acc = 0; i < count; i++) {
+    acc +=
+      i === 0
+        ? footprintOf(0) / 2
+        : footprintOf(i - 1) / 2 + gapOf(i) + footprintOf(i) / 2;
+    centres.push(acc);
+  }
+  const lo = Math.max(0, Math.min(count - 1, Math.floor(position)));
+  const hi = Math.min(count - 1, lo + 1);
+  const progress = Math.min(1, Math.max(0, position - lo));
+  const originX = centres[lo] + (centres[hi] - centres[lo]) * progress;
+  return { cardW, centres, originX, position };
+}
+
+function DeckItem({
+  i,
+  id,
+  count,
+  layout,
+  reduce,
+  active,
+  activeItemRef,
+  label,
+  onSelect,
+  children,
+}: {
+  i: number;
+  id: string;
+  count: number;
+  layout: MotionValue<DeckLayout>;
+  reduce: boolean;
+  active: boolean;
+  activeItemRef: RefObject<HTMLDivElement | null>;
+  label: string;
+  onSelect: () => void;
+  children: ReactNode;
+}) {
+  const transform = useTransform(layout, ({ cardW, centres, originX, position }) => {
+    const d = i - position;
+    const away = Math.abs(d);
+    const turn = reduce ? 0 : -Math.sign(d) * Math.min(1, away) * ROTATE_Y;
+    const x = reduce ? d * cardW * 1.06 : centres[i] - originX;
+    const scale = reduce ? 1 : 1 - Math.min(away, SCALE_DEPTH) * SCALE_STEP;
+    return `translateX(${x}px) rotateY(${turn}deg) scale(${scale})`;
+  });
+  const zIndex = useTransform(
+    layout,
+    ({ position }) => count - Math.round(Math.abs(i - position)),
+  );
+
+  return (
+    <motion.div
+      id={`deck-${id}`}
+      ref={active ? activeItemRef : undefined}
+      className="deck-item"
+      data-active={active}
+      role="radio"
+      aria-checked={active}
+      aria-label={label}
+      onClick={onSelect}
+      style={{ transform, zIndex }}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 type CardCarouselProps = {
   configs: Record<string, CardConfig>;
@@ -257,33 +348,12 @@ export function CardCarousel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePos]);
 
-  // --- Coverflow layout, computed from the fractional index ----------------
-  // A flat centre card is full width on screen; a rotated neighbour is
-  // foreshortened to cardW * cos(angle). Each card is placed by its OWN
-  // on-screen footprint (plus a gap), accumulated along the strip from its
-  // actual rotation at the current index — so the flat centre gets a wide
-  // berth while the compressed background cards pack tighter, and rotated
-  // cards never overlap even mid-drag between positions.
-  const footprintOf = (i: number) => {
-    const away = Math.min(1, Math.abs(i - index));
-    return cardW * Math.cos((away * ROTATE_Y * Math.PI) / 180);
-  };
-  const gapOf = (i: number) => {
-    const nearCentre = Math.max(0, 1 - Math.abs(i - index - 0.5));
-    return cardW * (BACK_GAP + (CENTRE_GAP - BACK_GAP) * nearCentre);
-  };
-
-  const centres: number[] = [];
-  for (let i = 0, acc = 0; i < count; i++) {
-    acc +=
-      i === 0
-        ? footprintOf(0) / 2
-        : footprintOf(i - 1) / 2 + gapOf(i) + footprintOf(i) / 2;
-    centres.push(acc);
-  }
-  const lo = Math.floor(index);
-  const hi = Math.min(count - 1, lo + 1);
-  const originX = centres[lo] + (centres[hi] - centres[lo]) * (index - lo);
+  // One derived layout value fans the continuous index out to every card.
+  // Motion updates it outside React, preserving the exact coverflow geometry
+  // without re-rendering this component on each pointer or spring frame.
+  const layout = useTransform(index, (position) =>
+    computeDeckLayout(position, cardW, count),
+  );
 
   return (
     <div
@@ -305,40 +375,24 @@ export function CardCarousel({
       }
     >
       {ids.map((id, i) => {
-        const d = i - index;
-        const away = Math.abs(d);
         const active = i === focusedIndex;
-        // Rotation saturates at one card out so distant cards sit parallel
-        // rather than continuing to spin.
-        // Reduced motion: a flat draggable strip — cards still track the
-        // finger (keyed off the continuous index), just without the Y-rotation,
-        // depth scale, or perspective that make it a coverflow.
-        const turn = reduce ? 0 : -Math.sign(d) * Math.min(1, away) * ROTATE_Y;
-        const x = reduce ? d * cardW * 1.06 : centres[i] - originX;
-        const scale = reduce
-          ? 1
-          : 1 - Math.min(away, SCALE_DEPTH) * SCALE_STEP;
         // The active centre card crossfades with the persistent hero on the
         // shared deckOpacity (its inverse). Non-active cards are always opaque.
-        // Transform (per-frame from `index`) stays on the plain outer .deck-item;
-        // opacity rides an inner motion node so Motion never touches the
-        // transform string.
+        // Transform is a MotionValue on the outer item; opacity rides the inner
+        // node so the two animation channels never fight over one style.
         return (
-          <div
+          <DeckItem
             key={id}
-            id={`deck-${id}`}
-            ref={active ? activeItemRef : undefined}
-            className="deck-item"
-            data-active={active}
-            role="radio"
-            aria-checked={active}
-            aria-label={PALETTE[i]?.name ?? id}
-            onClick={() => {
+            i={i}
+            id={id}
+            count={count}
+            layout={layout}
+            reduce={reduce}
+            active={active}
+            activeItemRef={activeItemRef}
+            label={PALETTE[i]?.name ?? id}
+            onSelect={() => {
               if (!active) goTo(i);
-            }}
-            style={{
-              transform: `translateX(${x}px) rotateY(${turn}deg) scale(${scale})`,
-              zIndex: count - Math.round(away),
             }}
           >
             <motion.div
@@ -351,7 +405,7 @@ export function CardCarousel({
                 name={cardName}
               />
             </motion.div>
-          </div>
+          </DeckItem>
         );
       })}
     </div>
