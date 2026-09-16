@@ -1,9 +1,7 @@
 import {
   lazy,
-  startTransition,
   Suspense,
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -18,6 +16,8 @@ import { parsePerson } from "./lib/personalization";
 import { usePrefersReducedMotion } from "./lib/reducedMotion";
 import { DevNav } from "./playground/DevNav";
 import { useHashRoute } from "./playground/useHashRoute";
+import { Confirm } from "./steps/Confirm";
+import { Customize } from "./steps/Customize";
 import { Welcome } from "./steps/Welcome";
 import { ActionBar } from "./ui/ActionBar";
 import { StepIndicator, type Step } from "./ui/StepIndicator";
@@ -28,14 +28,6 @@ import { ThemeToggle } from "./ui/ThemeToggle";
 // main app chunk.
 const Playground = lazy(() => import("./playground/Playground"));
 const Explore = lazy(() => import("./explore/Explore"));
-const loadCustomize = () => import("./steps/Customize");
-const loadConfirm = () => import("./steps/Confirm");
-const Customize = lazy(() =>
-  loadCustomize().then(({ Customize: Component }) => ({ default: Component })),
-);
-const Confirm = lazy(() =>
-  loadConfirm().then(({ Confirm: Component }) => ({ default: Component })),
-);
 // TEMPORARY screenshot route (#/wallpaper). Delete this line, the branch in
 // App(), and src/wallpaper/ to remove it.
 const Wallpaper = lazy(() => import("./wallpaper/Wallpaper"));
@@ -107,33 +99,6 @@ function MainFlow() {
   const [atEpilogue, setAtEpilogue] = useState(false);
   const [walletAdded, setWalletAdded] = useState(false);
 
-  // Fetch the next screen while the user is reading or interacting with the
-  // current one. If they move unusually quickly, startTransition keeps the
-  // revealed screen in place until its successor is ready instead of showing
-  // the Suspense fallback.
-  useEffect(() => {
-    const loadNext =
-      step === "welcome"
-        ? loadCustomize
-        : step === "customize"
-          ? loadConfirm
-          : null;
-    if (!loadNext) return;
-
-    if ("requestIdleCallback" in window) {
-      const id = window.requestIdleCallback(() => void loadNext(), {
-        timeout: 1200,
-      });
-      return () => window.cancelIdleCallback(id);
-    }
-    const id = setTimeout(() => void loadNext(), 0);
-    return () => clearTimeout(id);
-  }, [step]);
-
-  const goToStep = useCallback((next: Step) => {
-    startTransition(() => setStep(next));
-  }, []);
-
   // --- Persistent hero card ------------------------------------------------
   // One card node lives here, above the step AnimatePresence, and never
   // unmounts. The steps only report WHERE it should sit (via HeroSlot spacers)
@@ -169,7 +134,7 @@ function MainFlow() {
     setWrapStarted(false);
     setAtEpilogue(false);
     setWalletAdded(false);
-    goToStep("welcome");
+    setStep("welcome");
   };
   // `/first-last` read once — the app never mutates the URL, so this holds
   // for the whole journey (PLAN.md Phase P).
@@ -205,12 +170,12 @@ function MainFlow() {
   // transitions so the CTAs stay fixed across the journey.
   const nav = {
     welcome: {
-      next: () => goToStep("customize"),
+      next: () => setStep("customize"),
       nextLabel: "Start designing",
     },
     customize: {
-      back: () => goToStep("welcome"),
-      next: () => goToStep("confirm"),
+      back: () => setStep("welcome"),
+      next: () => setStep("confirm"),
       nextLabel: "Order this card",
     },
     confirm: atEpilogue
@@ -230,7 +195,7 @@ function MainFlow() {
       : {
           back: () => {
             setWrapStarted(false);
-            goToStep("customize");
+            setStep("customize");
           },
           next: () => setWrapStarted(true),
           nextLabel: "Wrap and post it",
@@ -259,8 +224,7 @@ function MainFlow() {
             surrounding cards fade, rather than waiting for the old step to finish
             leaving first (which read as fade-then-move). The card itself is a
             persistent sibling, so overlapping panels never fight over it. */}
-        <Suspense fallback={null}>
-          <AnimatePresence mode="sync" initial={false}>
+        <AnimatePresence mode="sync" initial={false}>
           {step === "welcome" && (
             <StepShell key="welcome">
               <Welcome firstName={person.first} />
@@ -296,8 +260,7 @@ function MainFlow() {
               />
             </StepShell>
           )}
-          </AnimatePresence>
-        </Suspense>
+        </AnimatePresence>
 
         {/* One card, all three steps. Positioned by the active step's slot,
             visibility by the step + the two hand-off MotionValues. */}
