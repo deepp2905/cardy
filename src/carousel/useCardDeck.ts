@@ -172,10 +172,9 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
 
     const onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0) return;
-      // Only the active card starts a drag. A press on any other card is a
-      // click (handled by the card's onClick), not a drag.
-      const onCard = (e.target as HTMLElement).closest(".deck-item");
-      if (onCard && onCard.getAttribute("data-active") !== "true") return;
+      // The entire deck is one direct-manipulation surface. Starting on a
+      // neighbour or the empty space between cards behaves exactly like
+      // starting on the centred card.
       dragging = true;
       stopSettle();
       startPos = axis === "x" ? e.clientX : e.clientY;
@@ -211,8 +210,7 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
       settle(Math.round(value.current) + (e.key === fwd ? 1 : -1));
     };
 
-    // Expose the spring so a card click can bring itself to centre, and so an
-    // external index change (a parent selecting a card) can drive the deck.
+    // Expose the spring so an external index change can drive the deck.
     settleTo.current = (i: number) => settle(i);
 
     el.addEventListener("wheel", onWheel, { passive: false });

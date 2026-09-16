@@ -17,12 +17,9 @@ import { useSlideW } from "../lib/useSlideW";
 import { useCardDeck } from "./useCardDeck";
 import "./carousel.css";
 
-// The deck re-renders every frame during a drag (the index is React state),
-// but CardPattern rebuilds a several-hundred-cell SVG on each render. Memoise
-// the card subtree so only the wrapper's transform changes per frame — the
-// artwork rebuilds only when its own config actually changes. `config` is
-// stable parent state and `note`/`name` are strings, so the merge happens here
-// behind the memo boundary rather than creating a fresh object every frame.
+// CardPattern can contain several hundred SVG cells. Keep the card subtree
+// memoised so focused-state and settle-state updates do not rebuild artwork
+// whose own config has not changed.
 const DeckCard = memo(function DeckCard({
   config,
   note,
@@ -95,7 +92,6 @@ function DeckItem({
   active,
   activeItemRef,
   label,
-  onSelect,
   children,
 }: {
   i: number;
@@ -106,7 +102,6 @@ function DeckItem({
   active: boolean;
   activeItemRef: RefObject<HTMLDivElement | null>;
   label: string;
-  onSelect: () => void;
   children: ReactNode;
 }) {
   const transform = useTransform(layout, ({ cardW, centres, originX, position }) => {
@@ -131,7 +126,6 @@ function DeckItem({
       role="radio"
       aria-checked={active}
       aria-label={label}
-      onClick={onSelect}
       style={{ transform, zIndex }}
     >
       {children}
@@ -391,9 +385,6 @@ export function CardCarousel({
             active={active}
             activeItemRef={activeItemRef}
             label={PALETTE[i]?.name ?? id}
-            onSelect={() => {
-              if (!active) goTo(i);
-            }}
           >
             <motion.div
               className="deck-card-inner"

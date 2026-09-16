@@ -35,17 +35,6 @@
   position: absolute;
   width: var(--card-w, 372px);
   will-change: transform;
-  /* Non-active cards are clickable (bring themselves to centre); the active
-     card owns the drag. */
-  cursor: pointer;
-}
-
-.carousel-deck .deck-item[data-active="true"] {
-  cursor: grab;
-}
-
-.carousel-deck:active .deck-item[data-active="true"] {
-  cursor: grabbing;
 }
 
 /* Inner wrapper carries the shared layoutId for the hero hand-off; it must not
