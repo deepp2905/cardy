@@ -18,9 +18,9 @@
     <script>
       // Microsoft Clarity — session analytics. The vendor ships this as a
       // minified IIFE with seven single-letter params; unpacked here because it
-      // is the only opaque block in the file. Calls are queued immediately, but
-      // the vendor download waits until load + idle so it cannot compete with
-      // the app's first render for bandwidth or main-thread time.
+      // is the only opaque block in the file. Behaviour is identical: queue any
+      // clarity() calls made before the tag lands, then load it async so it
+      // never blocks paint.
       (function () {
         var PROJECT_ID = "xswvqmri1h";
         window.clarity =
@@ -28,21 +28,11 @@
           function () {
             (window.clarity.q = window.clarity.q || []).push(arguments);
           };
-        function loadClarity() {
-          var tag = document.createElement("script");
-          tag.async = 1;
-          tag.src = "https://www.clarity.ms/tag/" + PROJECT_ID;
-          document.head.appendChild(tag);
-        }
-        function scheduleClarity() {
-          if ("requestIdleCallback" in window) {
-            window.requestIdleCallback(loadClarity, { timeout: 2000 });
-          } else {
-            window.setTimeout(loadClarity, 0);
-          }
-        }
-        if (document.readyState === "complete") scheduleClarity();
-        else window.addEventListener("load", scheduleClarity, { once: true });
+        var tag = document.createElement("script");
+        tag.async = 1;
+        tag.src = "https://www.clarity.ms/tag/" + PROJECT_ID;
+        var first = document.getElementsByTagName("script")[0];
+        first.parentNode.insertBefore(tag, first);
       })();
     </script>
   </head>
