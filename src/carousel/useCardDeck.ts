@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useMotionValue } from "motion/react";
 
 /**
  * THIS is the deck the app ships. src/explore/useCardDeck.ts is a near-identical
@@ -54,12 +53,7 @@ function rubberband(v: number, max: number): number {
 
 export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
   const ref = useRef<HTMLDivElement>(null);
-  // Continuous position lives outside React: pointer and spring frames update
-  // transforms directly through MotionValues instead of reconciling the whole
-  // carousel tree 60 times per second.
-  const index = useMotionValue(initial);
-  const [focusedIndex, setFocusedIndex] = useState(Math.round(initial));
-  const focused = useRef(Math.round(initial));
+  const [index, setIndex] = useState(initial);
   // Motion state is explicit rather than inferred from index. A wheel event can
   // clamp to an exact end index while the gesture is still live, and floating
   // point integration can cross a whole number before the spring is actually at
@@ -77,25 +71,17 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
 
     const max = count - 1;
     const clamp = (v: number) => Math.min(max, Math.max(0, v));
-    const publish = (v: number) => {
-      index.set(v);
-      const nextFocused = Math.round(v);
-      if (nextFocused !== focused.current) {
-        focused.current = nextFocused;
-        setFocusedIndex(nextFocused);
-      }
-    };
     // Hard-clamped commit for wheel/keyboard/settle — discrete moves land on
     // real cards, no bounce.
     const commit = (v: number) => {
       value.current = clamp(v);
-      publish(value.current);
+      setIndex(value.current);
     };
     // Drag commit: resist past the ends so the deck bounces instead of
     // stopping dead, then the release settle springs it back.
     const commitDrag = (v: number) => {
       value.current = rubberband(v, max);
-      publish(value.current);
+      setIndex(value.current);
     };
     const stopSettle = () => {
       if (raf.current !== null) cancelAnimationFrame(raf.current);
@@ -143,7 +129,7 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
         // Write raw, not clamped: settling from a rubberbanded overshoot passes
         // through the out-of-range region, and clamping would freeze it there.
         value.current = next;
-        publish(next);
+        setIndex(next);
         raf.current = requestAnimationFrame(step);
       };
       raf.current = requestAnimationFrame(step);
@@ -230,7 +216,10 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
       el.removeEventListener("pointercancel", onPointerUp);
       el.removeEventListener("keydown", onKeyDown);
     };
-  }, [axis, count, index]);
+  }, [axis, count]);
+
+  /** Nearest whole card — use this for `focused`, never `d === 0`. */
+  const focusedIndex = Math.round(index);
 
   /** Spring the deck so card `i` becomes the centred one. */
   const goTo = (i: number) => settleTo.current(i);
