@@ -2,8 +2,8 @@
 //
 // `/alex-rivera` => { first: "Alex", last: "Rivera", cardName: "ALEX RIVERA" }
 //
-// Read ONCE at mount. The app never mutates the URL — every step change is
-// useState — so the segment survives the whole journey without a router.
+// Read ONCE at mount, before the welcome screen's `/start` path is removed.
+// The parsed person therefore survives the whole journey without a router.
 
 export type Person = {
   first: string;

@@ -2,6 +2,7 @@ import {
   lazy,
   Suspense,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -33,6 +34,15 @@ const Explore = lazy(() => import("./explore/Explore"));
 const Wallpaper = lazy(() => import("./wallpaper/Wallpaper"));
 
 const ids = Object.keys(seedConfigs());
+
+function replacePath(pathname: "/" | "/start") {
+  if (window.location.pathname === pathname) return;
+  window.history.replaceState(
+    window.history.state,
+    "",
+    `${pathname}${window.location.search}${window.location.hash}`,
+  );
+}
 
 export default function App() {
   const route = useHashRoute();
@@ -99,6 +109,13 @@ function MainFlow() {
   const [atEpilogue, setAtEpilogue] = useState(false);
   const [walletAdded, setWalletAdded] = useState(false);
 
+  // The welcome screen has a stable, shareable entry URL. Moving into the
+  // flow removes `/start` without adding an extra browser-history entry; the
+  // app's existing back and restart controls restore it when welcome returns.
+  useEffect(() => {
+    replacePath("/start");
+  }, []);
+
   // --- Persistent hero card ------------------------------------------------
   // One card node lives here, above the step AnimatePresence, and never
   // unmounts. The steps only report WHERE it should sit (via HeroSlot spacers)
@@ -134,10 +151,11 @@ function MainFlow() {
     setWrapStarted(false);
     setAtEpilogue(false);
     setWalletAdded(false);
+    replacePath("/start");
     setStep("welcome");
   };
-  // `/first-last` read once — the app never mutates the URL, so this holds
-  // for the whole journey (PLAN.md Phase P).
+  // Read personalization once before the step URL changes, so it holds for
+  // the whole journey (PLAN.md Phase P).
   const person = useMemo(() => parsePerson(), []);
 
   // Which position/visibility the hero holds. Welcome hides it; customize is the
@@ -170,11 +188,17 @@ function MainFlow() {
   // transitions so the CTAs stay fixed across the journey.
   const nav = {
     welcome: {
-      next: () => setStep("customize"),
+      next: () => {
+        replacePath("/");
+        setStep("customize");
+      },
       nextLabel: "Start designing",
     },
     customize: {
-      back: () => setStep("welcome"),
+      back: () => {
+        replacePath("/start");
+        setStep("welcome");
+      },
       next: () => setStep("confirm"),
       nextLabel: "Order this card",
     },
