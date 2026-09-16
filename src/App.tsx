@@ -2,7 +2,6 @@ import {
   lazy,
   Suspense,
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -88,7 +87,9 @@ function RouteFallback() {
 }
 
 function MainFlow() {
-  const [step, setStep] = useState<Step>("welcome");
+  const [step, setStep] = useState<Step>(() =>
+    window.location.pathname === "/start" ? "welcome" : "customize",
+  );
   const [configs, setConfigs] = useState<Record<string, CardConfig>>(
     seedConfigs,
   );
@@ -108,13 +109,6 @@ function MainFlow() {
   // so it can drive that swap from here.
   const [atEpilogue, setAtEpilogue] = useState(false);
   const [walletAdded, setWalletAdded] = useState(false);
-
-  // The welcome screen has a stable, shareable entry URL. Moving into the
-  // flow removes `/start` without adding an extra browser-history entry; the
-  // app's existing back and restart controls restore it when welcome returns.
-  useEffect(() => {
-    replacePath("/start");
-  }, []);
 
   // --- Persistent hero card ------------------------------------------------
   // One card node lives here, above the step AnimatePresence, and never
