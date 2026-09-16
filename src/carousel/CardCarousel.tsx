@@ -79,11 +79,8 @@ export function CardCarousel({
   const count = ids.length;
   const activePos = Math.max(0, ids.indexOf(activeId));
 
-  const { ref, index, focusedIndex, settled, goTo } = useCardDeck(
-    "x",
-    count,
-    activePos,
-  );
+  const { ref, index, focusedIndex, settled, hasInteracted, goTo } =
+    useCardDeck("x", count, activePos);
 
   // Card width: the SAME resolved --slide-w the hero and confirm use — one
   // source of truth. The deck used to measure its own width (full-bleed dvw
@@ -348,6 +345,15 @@ export function CardCarousel({
           </div>
         );
       })}
+      <div
+        className={`carousel-swipe-hint${hasInteracted ? " is-hidden" : ""}`}
+        aria-hidden="true"
+      >
+        <svg viewBox="0 0 30 12" focusable="false">
+          <path d="M1 6h28M5 2 1 6l4 4M25 2l4 4-4 4" />
+        </svg>
+        <span>Swipe to explore colors</span>
+      </div>
     </div>
   );
 }

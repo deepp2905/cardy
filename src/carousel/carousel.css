@@ -50,8 +50,56 @@
   will-change: transform;
 }
 
+/* Gesture teaching belongs to touch-sized layouts only. The cue sits in the
+   deck's existing lower breathing room and retires after the first real drag. */
+.carousel-swipe-hint {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .carousel-swipe-hint {
+    position: absolute;
+    inset-block-end: 6px;
+    inset-inline-start: 50%;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-10);
+    font-size: var(--text-xs);
+    font-weight: 550;
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translateX(-50%);
+    transition:
+      opacity 180ms ease-out,
+      transform 180ms ease-out;
+  }
+
+  .carousel-swipe-hint svg {
+    width: 30px;
+    height: 12px;
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .carousel-swipe-hint.is-hidden {
+    opacity: 0;
+    transform: translate(-50%, 4px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .carousel-deck {
     touch-action: pan-x;
+  }
+
+  .carousel-swipe-hint {
+    transition: opacity 120ms linear;
   }
 }

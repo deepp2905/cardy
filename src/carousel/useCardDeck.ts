@@ -54,6 +54,7 @@ function rubberband(v: number, max: number): number {
 export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
   const ref = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(initial);
+  const [hasInteracted, setHasInteracted] = useState(false);
   // Motion state is explicit rather than inferred from index. A wheel event can
   // clamp to an exact end index while the gesture is still live, and floating
   // point integration can cross a whole number before the spring is actually at
@@ -145,6 +146,7 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
           : e.deltaY;
       if (!delta) return;
       e.preventDefault();
+      setHasInteracted(true);
       stopSettle();
       setSettled(false);
       commit(value.current + delta / WHEEL_DIVISOR);
@@ -172,6 +174,7 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
     const onPointerMove = (e: PointerEvent) => {
       if (!dragging) return;
       const now = axis === "x" ? e.clientX : e.clientY;
+      if (Math.abs(now - startPos) >= 8) setHasInteracted(true);
       // Dragging left/up advances the deck, matching scroll direction.
       setSettled(false);
       commitDrag(startIndex - (now - startPos) / DRAG_DIVISOR);
@@ -190,6 +193,7 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
       const fwd = axis === "x" ? "ArrowRight" : "ArrowDown";
       if (e.key !== back && e.key !== fwd) return;
       e.preventDefault();
+      setHasInteracted(true);
       // Spring, don't hard-set: clicking a card glides it to centre, and the
       // keyboard deserves the same designed motion. settle() clamps its
       // target, so holding an arrow at either end just re-settles in place.
@@ -224,5 +228,5 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
   /** Spring the deck so card `i` becomes the centred one. */
   const goTo = (i: number) => settleTo.current(i);
 
-  return { ref, index, focusedIndex, settled, goTo };
+  return { ref, index, focusedIndex, settled, hasInteracted, goTo };
 }
