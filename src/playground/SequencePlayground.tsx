@@ -8,9 +8,10 @@ import { Envelope } from "../confirm/Envelope";
 import { MailSlot } from "../confirm/MailSlot";
 import { SheetCard } from "../confirm/SheetCard";
 import { useStageScale } from "../confirm/useStageScale";
-import { CARD, ENVELOPE_ENTER_Y } from "../confirm/geometry";
+import { CARD } from "../confirm/geometry";
 import {
   TUG_MM,
+  ENVELOPE_ENTRY_MM,
   packetDipMM,
 } from "../confirm/useWrapSequence";
 import { useSlideW } from "../lib/useSlideW";
@@ -74,12 +75,12 @@ export function SequencePlayground() {
   // slot). A timeline has no events, so those handoffs are baked in here as the
   // absolute times they land at with the shipped springs (simulated:
   // envelope 1.178 as fold 2 lands, insert 1.516 as its fade completes, close
-  // 1.712, flip 1.996, slot 2.246). Retune a spring here and those clips will
+  // 1.768, flip 2.138, slot 2.388). Retune a spring here and those clips will
   // NOT follow it the way the app's handoffs do — move them.
   const t = useDialTimeline(
     "Wrap sequence",
     {
-      duration: 5.0,
+      duration: 5.2,
 
       // Sheet beat. The hero disappears instantly — the sheet card (opacity =
       // 1 - restOpacity) takes over on the same frame, pixel-identical — while
@@ -139,7 +140,8 @@ export function SequencePlayground() {
       },
 
       // Envelope enters only once fold 2 has LANDED (178deg), fading in IN
-      // PLACE below the packet — no movement until the insert.
+      // PLACE at ENVELOPE_ENTRY_MM (21mm below the old entry point) — no
+      // movement until the insert.
       envelope: {
         at: 1.178,
         duration: 0.3375,
@@ -162,18 +164,19 @@ export function SequencePlayground() {
       },
 
       // Flap closes as the paper goes in (88% into the rising envelope).
+      // The flap runs 1.3x slower than the folds (FLAP_SLOW): k/1.69, c/1.3.
       close: {
-        at: 1.712,
-        duration: 0.45,
+        at: 1.768,
+        duration: 0.6,
         from: { flapRot: -165, flapLift: 1 },
         to: { flapRot: 0, flapLift: 0 },
-        transition: { type: "spring", stiffness: 141, damping: 20.8 },
+        transition: { type: "spring", stiffness: 83.4, damping: 16 },
       },
 
       // The whole packet layer is hidden as the flip starts — nothing shows
       // behind the envelope as it turns.
       hidePacket: {
-        at: 1.996,
+        at: 2.138,
         duration: 0.01,
         from: { packetOpacity: 1 },
         to: { packetOpacity: 0 },
@@ -183,7 +186,7 @@ export function SequencePlayground() {
       // Flip (`flip` at tempo) as the flap passes -15deg, the envelope still
       // rising — no hold. Its settle rock is the punctuation.
       flip: {
-        at: 1.996,
+        at: 2.138,
         duration: 0.85,
         from: { flipRot: 0 },
         to: { flipRot: 180 },
@@ -192,7 +195,7 @@ export function SequencePlayground() {
 
       // Slot arrives during the rock (flip past 150deg), hint 0.35s later.
       slot: {
-        at: 2.246,
+        at: 2.388,
         props: {
           slotOpacity: {
             from: 0,
@@ -209,7 +212,7 @@ export function SequencePlayground() {
         },
       },
       hint: {
-        at: 2.596,
+        at: 2.738,
         duration: 0.375,
         from: { hintOpacity: 0 },
         to: { hintOpacity: 1 },
@@ -220,7 +223,7 @@ export function SequencePlayground() {
       // keyframes [0, 7, 0, 4.34, 0] at times [0, .22, .46, .66, 1] of 1.875s,
       // easeInOut.
       tug: {
-        at: 2.996,
+        at: 3.138,
         from: { tugMM: 0 },
         steps: [
           {
@@ -248,7 +251,7 @@ export function SequencePlayground() {
     },
     // New key per schedule change, so state tuned against an older schedule
     // can't load over these defaults.
-    { autoplay: false, loop: false, persist: { key: "dialkit:wrap-sequence-fade-in-place" } },
+    { autoplay: false, loop: false, persist: { key: "dialkit:wrap-sequence-slow-flap" } },
   );
 
   // --- Bind timeline output to the real components' MotionValues ------------
@@ -314,7 +317,7 @@ export function SequencePlayground() {
     // Travel values are unit lerps in the timeline, scaled to mm here so the
     // dials stay readable (0..1) instead of raw millimetre counts.
     // Envelope: entry rise, then the insert's rise to centre, plus the tug.
-    const envMM = t.insert.current.envLerp * ENVELOPE_ENTER_Y;
+    const envMM = t.insert.current.envLerp * ENVELOPE_ENTRY_MM;
     envY.set((envMM + t.tug.current.tugMM) * mmPx);
     // Packet dips into the rising envelope — the app's exact mapping.
     sheetY.set(packetDipMM(envMM) * mmPx);
@@ -429,6 +432,9 @@ export function SequencePlayground() {
             dragScale={one}
             dragTilt={zero}
             vanish={one}
+            // No post on this bench, and the envelope fades in below the
+            // slot's mouth — never clipped here.
+            clipped={false}
           />
 
           {/* No post gesture on this bench, so the slot never closes: both

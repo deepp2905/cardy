@@ -217,6 +217,7 @@ export function Confirm({
             dragScale={dragScale}
             dragTilt={dragTilt}
             vanish={vanish}
+            clipped={phase === "idle" || phase === "posting" || phase === "done"}
           />
 
           <MailSlot v={values} close={slotClose} fade={slotFade} />

@@ -45,6 +45,11 @@ export type Phase =
  * one dial instead of thirteen numbers to keep in sync.
  */
 const TEMPO = 1.25;
+/** The flap's close runs this much slower than the fold spring it shares a
+ *  character with, so the seal reads as its own deliberate moment. Simulated
+ *  with the insert: the paper is still ~1.4mm inside the mouth when the
+ *  (slower) flap passes vertical, so slowing it only adds margin. */
+const FLAP_SLOW = 1.3;
 /** Scale a base duration/beat by the global tempo. */
 const slow = (seconds: number) => seconds * TEMPO;
 /**
@@ -63,6 +68,12 @@ const S = {
   insert: tempo(insert),
   flip: tempo(flip),
   wrap: tempo(wrap),
+  // The flap closes FLAP_SLOW x slower than the folds (same damping ratio).
+  flap: tempo({
+    ...fold,
+    stiffness: (fold as { stiffness: number }).stiffness / FLAP_SLOW ** 2,
+    damping: (fold as { damping: number }).damping / FLAP_SLOW,
+  }),
 };
 
 /**
@@ -126,9 +137,19 @@ const HANDOFF = {
  * packet never moves backwards relative to the envelope.
  */
 export const INSERT_DIP_MM = 18;
+/**
+ * How much further below its old entry point (ENVELOPE_ENTER_Y) the envelope
+ * fades in, in mm: 21mm is ~48px at the desktop stage scale, and like every
+ * dimension here it scales with the stage. The insert's rise covers the extra
+ * distance. Below the slot's mouth, so the envelope's post clip is only
+ * applied once it is grabbable (see Envelope's `clipped`).
+ */
+export const ENVELOPE_ENTER_DROP_MM = 21;
+/** Where the envelope fades in, in mm below stage centre. */
+export const ENVELOPE_ENTRY_MM = ENVELOPE_ENTER_Y + ENVELOPE_ENTER_DROP_MM;
 /** Packet y (mm) for a given envelope y (mm) during the insert. */
 export function packetDipMM(envMM: number): number {
-  const p = Math.min(1, Math.max(0, 1 - envMM / ENVELOPE_ENTER_Y));
+  const p = Math.min(1, Math.max(0, 1 - envMM / ENVELOPE_ENTRY_MM));
   return INSERT_DIP_MM * Math.sin(Math.PI * p);
 }
 
@@ -489,7 +510,7 @@ export function useWrapSequence({
       // jump(), not set(): set() records the 0 -> entry leap as velocity, and
       // the insert's animate() later inherits it — the envelope flew ~80mm
       // past its entry point. jump() places it with zero velocity.
-      envY.jump(ENVELOPE_ENTER_Y * mmPx);
+      envY.jump(ENVELOPE_ENTRY_MM * mmPx);
       animate(envOpacity, 1, { duration: slow(0.27), ease: crossfade.ease });
     });
 
@@ -516,8 +537,11 @@ export function useWrapSequence({
         () => {
           // The lift runs first and fast: the flap slides the 1.5mm up to the
           // envelope's top edge, then folds from there, so it lands flush.
-          animate(flapLift, 0, { duration: slow(0.16), ease: crossfade.ease });
-          animate(flapRot, 0, S.fold);
+          animate(flapLift, 0, {
+            duration: slow(0.16 * FLAP_SLOW),
+            ease: crossfade.ease,
+          });
+          animate(flapRot, 0, S.flap);
 
           // The flip starts while the flap is still landing and the envelope
           // is still rising — one throw, no hold. The flip's own settle rock

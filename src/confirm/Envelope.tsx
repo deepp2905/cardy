@@ -24,6 +24,7 @@ export function Envelope({
   dragScale,
   dragTilt,
   vanish,
+  clipped,
 }: {
   v: SequenceValues;
   firstName: string;
@@ -36,6 +37,9 @@ export function Envelope({
   dragScale: MotionValue<number>;
   dragTilt: MotionValue<number>;
   vanish: MotionValue<number>;
+  /** Cut the envelope at the slot's mouth. Only while it can be posted: it
+   *  fades in below that line, and the cut would hide its lower half. */
+  clipped: boolean;
 }) {
   const opacity = useTransform(
     [v.envOpacity, vanish],
@@ -105,7 +109,7 @@ export function Envelope({
           cannot live on .envelope itself. The flap layer stays OUTSIDE this
           wrapper: it needs to interleave with the packet by z-index, and a
           clip-path here would trap it in this stacking context. */}
-      <div className="env-clip" style={{ clipPath: envClip }}>
+      <div className="env-clip" style={{ clipPath: clipped ? envClip : "none" }}>
         <motion.div
           className="env-shadow"
           style={{ opacity: shadowOpacity, scaleX: v.shadowScaleX, y: v.envY }}
