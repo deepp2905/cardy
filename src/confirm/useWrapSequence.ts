@@ -11,13 +11,12 @@ import {
   flip,
   fold,
   insert,
-  stamp,
   wrap,
 } from "../lib/motionConfig";
 import { CARD, ENVELOPE, ENVELOPE_ENTER_Y, INSERT_TRAVEL } from "./geometry";
 
 /**
- * The whole wrap sequence (~3s to grabbable), as MotionValues plus a beat schedule.
+ * The whole wrap sequence (~1.8s to grabbable), as MotionValues plus a beat schedule.
  * PRD-CONFIRM.md §4 — retimed, see note below.
  *
  * The PRD's beat sheet opened with an `arrive` beat that carried the card from
@@ -44,7 +43,7 @@ export type Phase =
  * by it, so the choreography keeps its proportions and only the pace changes —
  * one dial instead of thirteen numbers to keep in sync.
  */
-const TEMPO = 1.25;
+const TEMPO = 1;
 /** Scale a base duration/beat by the global tempo. */
 const slow = (seconds: number) => seconds * TEMPO;
 
@@ -56,14 +55,18 @@ const slow = (seconds: number) => seconds * TEMPO;
  * than to a guessed delay, so the handoffs overlap and stay locked to their
  * cause when a spring is retuned. The old schedule let each beat settle fully
  * and then waited ~0.25s more, which read as a queue of separate animations.
+ *
+ * From the insert on it is meant to read as ONE action: the packet drops, the
+ * flap shuts over it, and the envelope rises and turns over in a single throw.
+ * Grabbable at ~1.8s. The flip's settle rock is the punctuation.
  */
 const BEAT_BASE = {
   sheet: 0,
-  printing: 0.16, // early enough that the sheet reads as a letter before it folds
-  fold1: 0.52, // as the card's arrive settles
-  fold2: 0.77, // overlaps fold 1
-  envelope: 1.0, // rises in as fold 2 lands — the folded packet is the cause
-  insert: 1.24, // drops in as the envelope arrives
+  printing: 0.1, // early enough that the sheet reads as a letter before it folds
+  fold1: 0.35, // as the card's arrive settles
+  fold2: 0.55, // overlaps fold 1
+  envelope: 0.7, // rises in during fold 2 — folding and arrival read as one
+  insert: 0.9, // drops in as the envelope arrives
 } as const;
 
 const BEAT = Object.fromEntries(
@@ -72,13 +75,14 @@ const BEAT = Object.fromEntries(
 
 /** Event-tied handoffs. */
 const HANDOFF = {
-  /** Flap starts closing when the packet is this far into the pocket. Below
-   *  ~0.96 its top edge would still stand proud of the mouth. */
-  closeAtInsert: 0.97,
-  /** Flap counts as landed (impact nudge, packet hide) past this angle. */
-  flapLandedDeg: -3,
-  /** Held breath between the flap's impact and the flip, before TEMPO. */
-  flipHold: 0.2,
+  /** Flap starts closing when the packet is this far into the pocket. The
+   *  insert's momentum carries the packet the rest of the way while the pair
+   *  rises; simulated, 0.85 seats it just 0.4mm inside by the time the flap
+   *  passes vertical (where it would start to cover a protruding edge), so
+   *  0.88 keeps ~1mm of margin. Lower and paper pokes out over the flap. */
+  closeAtInsert: 0.88,
+  /** Flip starts as the flap passes this angle, still landing — no hold. */
+  flipAtFlapDeg: -15,
   /** Slot arrives once the flip has passed this angle — name readable. */
   slotAtFlipDeg: 150,
   /** Envelope becomes draggable this long after the flip starts (its rock
@@ -92,14 +96,14 @@ const HANDOFF = {
 
 /** The envelope rises this far (mm) into its entry position instead of
  *  materialising in place. */
-const ENVELOPE_RISE_MM = 10;
+export const ENVELOPE_RISE_MM = 10;
 
 /** Reduced-motion path: two crossfades, 0.7s total (PLAN.md §7). */
 const REDUCED = { swap: 0.35 } as const;
 
 /** How far the idle tug pulls the envelope, in mm. Small — it's a hint that
  *  the object is grabbable, not a demonstration of the whole travel. */
-const TUG_MM = 7;
+export const TUG_MM = 7;
 
 export function useWrapSequence({
   mmPx,
@@ -164,7 +168,6 @@ export function useWrapSequence({
   const sealScale = useMotionValue(0);
   const sealRot = useMotionValue(-8);
   const flipRot = useMotionValue(0);
-  const nudgeY = useMotionValue(0);
 
   // --- Slot ----------------------------------------------------------------
   const slotOpacity = useMotionValue(0);
@@ -265,7 +268,6 @@ export function useWrapSequence({
       sealScale,
       sealRot,
       flipRot,
-      nudgeY,
       slotOpacity,
       slotScaleX,
       slotSwallow,
@@ -368,7 +370,6 @@ export function useWrapSequence({
       hardSet(rotTop, 180);
       hardSet(sheetY, 0);
       hardSet(envY, 0);
-      hardSet(nudgeY, 0);
       animate(cardScale, restScale, t);
       animate(restOpacity, 0, t);
       animate(sheetOpacity, 0, t);
@@ -466,28 +467,26 @@ export function useWrapSequence({
         animate(envY, 0, fold);
         animate(sheetY, 0, fold);
 
-        // The impact. Lands on the frame the flap goes flat, so the bump reads
-        // as the flap's own weight rather than a separate jolt.
+        // The flip starts while the flap is still landing and the pair is still
+        // rising — one throw, no hold. No impact nudge any more: with the turn
+        // already under way, a jolt at the flap's landing would interrupt it.
+        // The flip's own settle rock is the punctuation.
         when(
           flapRot,
-          (r) => r >= HANDOFF.flapLandedDeg,
+          (r) => r >= HANDOFF.flipAtFlapDeg,
           () => {
-            setPhase("sealing");
-            // `stamp` is under-damped (ζ ≈ 0.34): a small press and recover.
-            animate(sealScale, 1, stamp);
-            animate(sealRot, 0, stamp);
-            nudgeY.set(-2);
-            animate(nudgeY, 0, stamp);
-            // Fully occluded by the closed flap — stop compositing it. Instant:
-            // nobody can see it, so it must not cost time.
+            // Seated and covered by now. Hidden instantly, before the flip
+            // narrows the envelope and would reveal it behind.
             sheetOpacity.stop();
             sheetOpacity.set(0);
+            // The wax seal is cut (PRD note); keep its values at their end
+            // state so the settle/rewind paths stay consistent.
+            sealScale.set(1);
+            sealRot.set(0);
 
-            at(slow(HANDOFF.flipHold), () => {
-              setPhase("flipping");
-              animate(flipRot, 180, flip);
-              at(slow(HANDOFF.idleAfterFlip), () => setPhase("idle"));
-            });
+            setPhase("flipping");
+            animate(flipRot, 180, flip);
+            at(slow(HANDOFF.idleAfterFlip), () => setPhase("idle"));
           },
         );
       },
@@ -562,7 +561,6 @@ export function useWrapSequence({
     reset(sealScale, 0);
     reset(sealRot, -8);
     reset(flipRot, 0);
-    reset(nudgeY, 0);
     reset(slotOpacity, 0);
     reset(slotScaleX, 0.9);
     reset(slotSwallow, 1);

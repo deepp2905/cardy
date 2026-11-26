@@ -182,7 +182,7 @@ export function Confirm({
       </AnimatePresence>
 
       {!showEpilogue && (
-        <motion.div className="wrap-scene" style={{ y: values.nudgeY }}>
+        <motion.div className="wrap-scene">
           {/* The at-rest card is the PERSISTENT hero (mounted in App), not a
               local node — so there is no hand-off and nothing to measure across
               the customize->confirm swap. This invisible slot only reports where

@@ -530,10 +530,9 @@
   clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
 
-/* The wax seal is gone — the envelope closes without a sticker. The `seal`
-   BEAT survives in useWrapSequence (it still drives nudgeY, the little settle
-   bump as the flap lands), so sealScale/sealRot remain as unused outputs
-   rather than being torn out of the timeline. */
+/* The wax seal is gone — the envelope closes without a sticker. sealScale and
+   sealRot remain as unused outputs of useWrapSequence, held at their end
+   state, rather than being torn out of every settle/rewind path. */
 
 .env-for {
   font-size: calc(6 * var(--mm));

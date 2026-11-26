@@ -22,8 +22,8 @@ the code, the code wins. Live divergences:
   `snapshot.ts`, `html-to-image`, and the "Download your design" CTA (§11, §9
   secondary) are all gone. Ignore every snapshot reference below.
 - **The wax seal is cut.** §3.4 and beat 5 of §4 no longer render anything; the
-  envelope closes with just the flap. The `seal` BEAT survives in
-  `useWrapSequence` because it also drives `nudgeY`, the settle bump.
+  envelope closes with just the flap. The settle bump it used to drive
+  (`nudgeY`) is cut too — the flip now starts before the flap lands.
 - **The sequence does not start on step entry.** It is armed by the forward
   arrow, so the finished card gets a rest beat to itself first. Every beat in
   §4 shifted 0.35s earlier, and `arrive` became a scale settle rather than a
@@ -34,9 +34,12 @@ the code, the code wins. Live divergences:
   masking plate below the aperture — not the single plate §6.4 describes.
 - **The post goes straight to the epilogue.** A "creating your card" loading
   beat used to sit between them; it was cut.
-- **The wrap is retimed into overlapping handoffs** (`useWrapSequence`): only
-  the first act is on the clock; the flap close, impact, flip, slot and hint
-  are each tied to a moment of the beat before. Envelope ready at ~3.2s.
+- **The wrap is one overlapping action** (`useWrapSequence`), at full spring
+  speed (TEMPO 1): only the first act is on the clock; the flap close (packet
+  88% in), flip (flap past −15°, no hold), slot and hint are each tied to a
+  moment of the beat before. Envelope ready at ~1.8s. The flip's settle rock is
+  the punctuation; there is no impact bump and no colour effect. The playground
+  (Sequence page under #/play) mirrors these times as fixed clips.
 - **The epilogue swaps state**: adding the digital card changes the heading to
   "Email sent." and the secondary CTA to "Resend the email".
 - Rest copy ("One of one.") now sits above the resting card before the arrow.
