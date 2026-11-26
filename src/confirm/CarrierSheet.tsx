@@ -83,7 +83,7 @@ export function CarrierSheet({
     <motion.div className="sheet-clip" style={{ clipPath: clip }}>
       <motion.div
         className="sheet"
-        style={{ opacity: v.sheetOpacity, scale: v.sheetScale, y: v.sheetY }}
+        style={{ opacity: v.sheetOpacity, y: v.sheetY }}
         aria-hidden="true"
       >
       {/* Middle panel — static. The card's bed; nothing else on it. */}

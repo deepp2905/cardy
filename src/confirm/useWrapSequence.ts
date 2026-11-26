@@ -17,7 +17,7 @@ import {
 import { CARD, ENVELOPE, ENVELOPE_ENTER_Y, INSERT_TRAVEL } from "./geometry";
 
 /**
- * The whole 3.85s wrap sequence, as MotionValues plus a beat schedule.
+ * The whole wrap sequence (~3s to grabbable), as MotionValues plus a beat schedule.
  * PRD-CONFIRM.md §4 — retimed, see note below.
  *
  * The PRD's beat sheet opened with an `arrive` beat that carried the card from
@@ -48,26 +48,51 @@ const TEMPO = 1.25;
 /** Scale a base duration/beat by the global tempo. */
 const slow = (seconds: number) => seconds * TEMPO;
 
-/** Beat times in seconds from the arrow press, before TEMPO. */
+/**
+ * Beat times in seconds from the arrow press, before TEMPO.
+ *
+ * Only the first act is on the clock. Every beat from the flap close on is
+ * hooked to a MOMENT of the beat before it (see the thresholds below) rather
+ * than to a guessed delay, so the handoffs overlap and stay locked to their
+ * cause when a spring is retuned. The old schedule let each beat settle fully
+ * and then waited ~0.25s more, which read as a queue of separate animations.
+ */
 const BEAT_BASE = {
   sheet: 0,
-  printing: 0.35,
-  fold1: 0.6,
-  fold2: 0.85,
-  envelope: 1.4,
-  insert: 1.7,
-  close: 2.25,
-  seal: 2.7,
-  hidePacket: 3.1,
-  flip: 3.3,
-  rest: 3.85,
-  slot: 4.25,
-  hint: 4.4,
+  printing: 0.16, // early enough that the sheet reads as a letter before it folds
+  fold1: 0.52, // as the card's arrive settles
+  fold2: 0.77, // overlaps fold 1
+  envelope: 1.0, // rises in as fold 2 lands — the folded packet is the cause
+  insert: 1.24, // drops in as the envelope arrives
 } as const;
 
 const BEAT = Object.fromEntries(
   Object.entries(BEAT_BASE).map(([k, v]) => [k, slow(v)]),
 ) as Record<keyof typeof BEAT_BASE, number>;
+
+/** Event-tied handoffs. */
+const HANDOFF = {
+  /** Flap starts closing when the packet is this far into the pocket. Below
+   *  ~0.96 its top edge would still stand proud of the mouth. */
+  closeAtInsert: 0.97,
+  /** Flap counts as landed (impact nudge, packet hide) past this angle. */
+  flapLandedDeg: -3,
+  /** Held breath between the flap's impact and the flip, before TEMPO. */
+  flipHold: 0.2,
+  /** Slot arrives once the flip has passed this angle — name readable. */
+  slotAtFlipDeg: 150,
+  /** Envelope becomes draggable this long after the flip starts (its rock
+   *  is still settling, which is fine to grab through), before TEMPO. */
+  idleAfterFlip: 0.45,
+  /** Hint follows the slot, before TEMPO. */
+  hintAfterSlot: 0.28,
+  /** Tug waits until the hint is visible, before TEMPO. */
+  tugAfterHint: 0.32,
+} as const;
+
+/** The envelope rises this far (mm) into its entry position instead of
+ *  materialising in place. */
+const ENVELOPE_RISE_MM = 10;
 
 /** Reduced-motion path: two crossfades, 0.7s total (PLAN.md §7). */
 const REDUCED = { swap: 0.35 } as const;
@@ -119,8 +144,9 @@ export function useWrapSequence({
   // and size, so the crossfade can't pop.
 
   // --- Sheet ---------------------------------------------------------------
+  // No sheet scale: the card is the lead and lands ON the sheet. The sheet
+  // growing while the card shrinks read as two objects pulling apart.
   const sheetOpacity = useMotionValue(0);
-  const sheetScale = useMotionValue(0.97);
   const sheetY = useMotionValue(0);
   const printOpacity = useMotionValue(0);
   const rotBottom = useMotionValue(0); // 0 → -180
@@ -228,7 +254,6 @@ export function useWrapSequence({
     () => ({
       cardScale,
       sheetOpacity,
-      sheetScale,
       sheetY,
       printOpacity,
       rotBottom,
@@ -274,9 +299,13 @@ export function useWrapSequence({
   // bulk — so its length says nothing about what is still outstanding. The
   // visibility recovery below needs exactly that question answered.
   const pendingBeats = useRef(0);
+  /** Unsubscribers for event-tied beats (see `when`). */
+  const listeners = useRef<(() => void)[]>([]);
   const clear = useCallback(() => {
     timers.current.forEach(clearTimeout);
     timers.current = [];
+    listeners.current.forEach((off) => off());
+    listeners.current = [];
     pendingBeats.current = 0;
   }, []);
 
@@ -289,6 +318,25 @@ export function useWrapSequence({
       }, seconds * 1000),
     );
   }, []);
+
+  // Event-tied beats: run once, the first frame `mv` passes `test`. Counted as
+  // pending like a timer, and torn down by clear(), so the rewind and the
+  // visibility recovery cancel them exactly as they cancel timed beats.
+  const when = useCallback(
+    (mv: MotionValue<number>, test: (v: number) => boolean, run: () => void) => {
+      pendingBeats.current++;
+      let fired = false;
+      const off = mv.on("change", (value) => {
+        if (fired || !test(value)) return;
+        fired = true;
+        off();
+        pendingBeats.current--;
+        run();
+      });
+      listeners.current.push(off);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!started || mmPx <= 0) return;
@@ -362,12 +410,23 @@ export function useWrapSequence({
     };
     document.addEventListener("visibilitychange", onVisibility);
 
+    // Any press or key after the envelope is grabbable cancels the tug: the
+    // drag handler stops envY on pointerdown, but a tug that STARTED after that
+    // pointerdown would yank the envelope out from under the user's finger.
+    let touched = false;
+    const onTouch = () => {
+      touched = true;
+    };
+    document.addEventListener("pointerdown", onTouch);
+    document.addEventListener("keydown", onTouch);
+
     at(BEAT.sheet, () => {
       // Hand the hero card off from the standalone rest copy to the one on the
-      // sheet: the sheet fades in as the rest card fades out, same beat.
+      // sheet: the sheet fades in as the rest card fades out, same beat. The
+      // card is the lead; the sheet only fades (no scale) so it reads as the
+      // surface the card lands on.
       animate(restOpacity, 0, crossfade);
       animate(sheetOpacity, 1, crossfade);
-      animate(sheetScale, 1, wrap);
       animate(cardScale, 1, arrive);
     });
     at(BEAT.printing, () => {
@@ -382,65 +441,94 @@ export function useWrapSequence({
     });
     at(BEAT.envelope, () => {
       setPhase("inserting");
-      envY.set(ENVELOPE_ENTER_Y * mmPx);
+      // Rises the last few mm into its entry point rather than materialising
+      // in place — it is the lead of the second act and arrives from somewhere.
+      envY.set((ENVELOPE_ENTER_Y + ENVELOPE_RISE_MM) * mmPx);
+      animate(envY, ENVELOPE_ENTER_Y * mmPx, wrap);
       animate(envOpacity, 1, { duration: slow(0.3), ease: crossfade.ease });
     });
     at(BEAT.insert, () => {
       animate(sheetY, INSERT_TRAVEL * mmPx, insert);
     });
-    at(BEAT.close, () => {
-      // Flap closes while the pair rises to centre — one beat, two motions.
-      // The lift runs first and fast: the flap slides the 1.5mm up to the
-      // envelope's top edge, then folds from there, so it lands flush instead
-      // of a radius low. Short enough (0.16s) to read as part of the same
-      // gesture rather than a separate beat.
-      animate(flapLift, 0, { duration: slow(0.16), ease: crossfade.ease });
-      animate(flapRot, 0, fold);
-      animate(envY, 0, fold);
-      animate(sheetY, 0, fold);
-    });
-    at(BEAT.seal, () => {
-      setPhase("sealing");
-      // `stamp` is under-damped (ζ ≈ 0.34), so a plain 0 → 1 produces the
-      // ~1.15 overshoot the PRD asks for. No keyframes needed.
-      animate(sealScale, 1, stamp);
-      animate(sealRot, 0, stamp);
-      nudgeY.set(-2);
-      animate(nudgeY, 0, stamp);
-    });
-    at(BEAT.hidePacket, () => {
-      // Fully occluded by now — stop compositing it.
-      animate(sheetOpacity, 0, { duration: slow(0.2) });
-    });
-    at(BEAT.flip, () => {
-      setPhase("flipping");
-      animate(flipRot, 180, flip);
-    });
-    at(BEAT.rest, () => setPhase("idle"));
-    at(BEAT.slot, () => {
-      animate(slotOpacity, 1, { duration: slow(0.4), ease: crossfade.ease });
-      animate(slotScaleX, 1, wrap);
-    });
-    at(BEAT.hint, () => {
-      animate(hintOpacity, 1, { duration: slow(0.3), ease: crossfade.ease });
-      // Tug the envelope down twice and let it snap back — the gesture the
-      // chevron is asking for, performed once so it reads as "this thing
-      // moves, and it moves DOWN". Keyframes on one animate() call so the two
-      // pulls are one interruptible animation: the drag handler stops envY on
-      // pointerdown, so grabbing mid-tug hands control straight over.
-      animate(
-        envY,
-        [0, TUG_MM * mmPx, 0, TUG_MM * 0.62 * mmPx, 0],
-        {
-          duration: slow(1.5),
-          times: [0, 0.22, 0.46, 0.66, 1],
-          ease: "easeInOut",
-        },
-      );
-    });
+
+    // Flap closes as the packet seats — not after it has settled and waited.
+    when(
+      sheetY,
+      (y) => y >= HANDOFF.closeAtInsert * INSERT_TRAVEL * mmPx,
+      () => {
+        // Flap closes while the pair rises to centre — one beat, two motions.
+        // The lift runs first and fast: the flap slides the 1.5mm up to the
+        // envelope's top edge, then folds from there, so it lands flush instead
+        // of a radius low. Short enough (0.16s) to read as part of the same
+        // gesture rather than a separate beat.
+        animate(flapLift, 0, { duration: slow(0.16), ease: crossfade.ease });
+        animate(flapRot, 0, fold);
+        animate(envY, 0, fold);
+        animate(sheetY, 0, fold);
+
+        // The impact. Lands on the frame the flap goes flat, so the bump reads
+        // as the flap's own weight rather than a separate jolt.
+        when(
+          flapRot,
+          (r) => r >= HANDOFF.flapLandedDeg,
+          () => {
+            setPhase("sealing");
+            // `stamp` is under-damped (ζ ≈ 0.34): a small press and recover.
+            animate(sealScale, 1, stamp);
+            animate(sealRot, 0, stamp);
+            nudgeY.set(-2);
+            animate(nudgeY, 0, stamp);
+            // Fully occluded by the closed flap — stop compositing it. Instant:
+            // nobody can see it, so it must not cost time.
+            sheetOpacity.stop();
+            sheetOpacity.set(0);
+
+            at(slow(HANDOFF.flipHold), () => {
+              setPhase("flipping");
+              animate(flipRot, 180, flip);
+              at(slow(HANDOFF.idleAfterFlip), () => setPhase("idle"));
+            });
+          },
+        );
+      },
+    );
+
+    // The slot arrives during the flip's settle, once the name is readable, so
+    // the target is already there when the envelope becomes grabbable.
+    when(
+      flipRot,
+      (r) => r >= HANDOFF.slotAtFlipDeg,
+      () => {
+        animate(slotOpacity, 1, { duration: slow(0.4), ease: crossfade.ease });
+        animate(slotScaleX, 1, wrap);
+        at(slow(HANDOFF.hintAfterSlot), () => {
+          animate(hintOpacity, 1, { duration: slow(0.3), ease: crossfade.ease });
+          at(slow(HANDOFF.tugAfterHint), () => {
+            if (touched) return;
+            // Tug the envelope down twice and let it snap back — the gesture
+            // the chevron is asking for, performed once so it reads as "this
+            // thing moves, and it moves DOWN". Keyframes on one animate() call
+            // so the two pulls are one interruptible animation: the drag
+            // handler stops envY on pointerdown, so grabbing mid-tug hands
+            // control straight over.
+            animate(
+              envY,
+              [0, TUG_MM * mmPx, 0, TUG_MM * 0.62 * mmPx, 0],
+              {
+                duration: slow(1.5),
+                times: [0, 0.22, 0.46, 0.66, 1],
+                ease: "easeInOut",
+              },
+            );
+          });
+        });
+      },
+    );
 
     return () => {
       document.removeEventListener("visibilitychange", onVisibility);
+      document.removeEventListener("pointerdown", onTouch);
+      document.removeEventListener("keydown", onTouch);
       clear();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -463,7 +551,6 @@ export function useWrapSequence({
     reset(cardScale, restScale);
     reset(restOpacity, 1);
     reset(sheetOpacity, 0);
-    reset(sheetScale, 0.97);
     reset(sheetY, 0);
     reset(printOpacity, 0);
     reset(rotBottom, 0);
