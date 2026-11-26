@@ -14,7 +14,7 @@ import {
   insert,
   wrap,
 } from "../lib/motionConfig";
-import { CARD, ENVELOPE, ENVELOPE_ENTER_Y, INSERT_TRAVEL } from "./geometry";
+import { CARD, ENVELOPE, ENVELOPE_ENTER_Y } from "./geometry";
 
 /**
  * The whole wrap sequence (~1.8s to grabbable), as MotionValues plus a beat schedule.
@@ -46,9 +46,8 @@ export type Phase =
  */
 const TEMPO = 1.25;
 /** The flap's close runs this much slower than the fold spring it shares a
- *  character with, so the seal reads as its own deliberate moment. Simulated
- *  with the insert: the paper is still ~1.4mm inside the mouth when the
- *  (slower) flap passes vertical, so slowing it only adds margin. */
+ *  character with, so the seal reads as its own deliberate moment. It only
+ *  starts once the paper is fully inside, so its pace can't expose paper. */
 const FLAP_SLOW = 1.3;
 /** Scale a base duration/beat by the global tempo. */
 const slow = (seconds: number) => seconds * TEMPO;
@@ -84,13 +83,17 @@ const S = {
  * than to a guessed delay, so the handoffs overlap and stay locked to their
  * cause when a spring is retuned.
  *
- * The folds run on an even beat (~0.33s apart) and are allowed to finish
- * COMPLETELY: the envelope only enters once fold 2 has landed, so the paper is
- * a finished packet before anything else moves. It fades in in place, and once
- * it is fully in the insert begins — the envelope's rise and the packet's dip
- * start together: the envelope rises over the packet as the packet dips into it,
- * the flap shuts as the paper goes in, and the envelope turns over. The flip's
- * settle rock is the punctuation. Grabbable at ~2.5s.
+ * It reads as THREE motions, with overlap inside each and a short hold between:
+ *
+ *   1. Fold the card in — the card settles onto the sheet, then the two folds
+ *      on an even beat (~0.33s apart). Hold once fold 2 has landed.
+ *   2. Into the envelope — the envelope fades in in place, then rises to centre
+ *      as the packet dips into it and is carried up. Hold once it's fully in.
+ *   3. Close, then flip — the flap closes, and the flip starts as it lands.
+ *      The flip's settle rock is the punctuation.
+ *
+ * Every hold hangs off the previous motion actually landing (an event), not a
+ * timer, so the gaps survive retuning. Grabbable at ~3.5s.
  */
 const BEAT_BASE = {
   sheet: 0,
@@ -108,14 +111,19 @@ const HANDOFF = {
   /** Envelope enters once fold 2 has landed — past this angle (of 180). The
    *  fold spring barely overshoots (ζ 0.876), so 178 is "landed". */
   envelopeAtFoldDeg: 178,
-  /** Flap starts closing when the packet is this far into the pocket
-   *  (relative to the envelope). Simulated at TEMPO 1.25 with an 18mm dip,
-   *  0.88 leaves the paper 1.3mm inside the mouth by the time the flap passes
-   *  vertical (where it starts to cover a protruding edge). Lower and paper
-   *  pokes out over the flap. */
-  closeAtInsert: 0.88,
-  /** Flip starts as the flap passes this angle, still landing — no hold. */
-  flipAtFlapDeg: -15,
+  /** Hold between motion 1 (folding) and motion 2 (into the envelope), before
+   *  TEMPO: the folded packet reads as finished before the envelope appears. */
+  envelopeHold: 0.16,
+  /** The insert counts as finished when the envelope is this close (mm) to
+   *  centre — the paper is fully in. */
+  insertSettledMM: 0.5,
+  /** Hold between motion 2 and motion 3 (close + flip), before TEMPO. The flap
+   *  only closes over paper that is already fully inside, so nothing can poke
+   *  out over it. */
+  flapHold: 0.12,
+  /** Flip starts when the flap has LANDED (flat, past this angle) — "close,
+   *  then flip", the two steps of motion 3, back to back. */
+  flipAtFlapDeg: -2,
   /** Slot arrives once the flip has passed this angle — name readable. */
   slotAtFlipDeg: 150,
   /** Envelope becomes draggable this long after the flip starts (its rock
@@ -503,15 +511,19 @@ export function useWrapSequence({
     at(BEAT.fold2, () => {
       animate(rotTop, 180, S.fold);
     });
-    // The envelope waits for the folds to finish completely, then fades in
-    // IN PLACE below the packet — no movement of its own until the insert.
+    // Motion 2. The envelope waits for the folds to finish completely, holds a
+    // beat, then fades in IN PLACE below the packet — no movement of its own
+    // until the insert.
     when(rotTop, (r) => r >= HANDOFF.envelopeAtFoldDeg, () => {
       setPhase("inserting");
       // jump(), not set(): set() records the 0 -> entry leap as velocity, and
       // the insert's animate() later inherits it — the envelope flew ~80mm
       // past its entry point. jump() places it with zero velocity.
       envY.jump(ENVELOPE_ENTRY_MM * mmPx);
-      animate(envOpacity, 1, { duration: slow(0.27), ease: crossfade.ease });
+      // The hold that separates motion 1 from motion 2.
+      at(slow(HANDOFF.envelopeHold), () => {
+        animate(envOpacity, 1, { duration: slow(0.27), ease: crossfade.ease });
+      });
     });
 
     // The insert starts once the envelope has fully faded in — the envelope's
@@ -526,15 +538,12 @@ export function useWrapSequence({
       listeners.current.push(offDip);
       animate(envY, 0, S.insert);
 
-      // Flap closes as the paper goes in — keyed to how far the packet is into
-      // the pocket RELATIVE to the envelope, since both are moving.
+      // Motion 3 waits for motion 2 to finish: envelope at centre, paper fully
+      // in. Then a held beat, then the flap.
       when(
         envY,
-        (y) => {
-          const into = (sheetY.get() - y) / mmPxRef.current + INSERT_TRAVEL;
-          return into >= HANDOFF.closeAtInsert * INSERT_TRAVEL;
-        },
-        () => {
+        (y) => y <= HANDOFF.insertSettledMM * mmPxRef.current,
+        () => at(slow(HANDOFF.flapHold), () => {
           // The lift runs first and fast: the flap slides the 1.5mm up to the
           // envelope's top edge, then folds from there, so it lands flush.
           animate(flapLift, 0, {
@@ -543,9 +552,8 @@ export function useWrapSequence({
           });
           animate(flapRot, 0, S.flap);
 
-          // The flip starts while the flap is still landing and the envelope
-          // is still rising — one throw, no hold. The flip's own settle rock
-          // is the punctuation.
+          // Close, THEN flip: the flip starts as the flap lands flat. The
+          // flip's own settle rock is the punctuation.
           when(
             flapRot,
             (r) => r >= HANDOFF.flipAtFlapDeg,
@@ -567,7 +575,7 @@ export function useWrapSequence({
               at(slow(HANDOFF.idleAfterFlip), () => setPhase("idle"));
             },
           );
-        },
+        }),
       );
     });
 

@@ -69,18 +69,19 @@ export function SequencePlayground() {
   // --- The sequence, as a timeline -----------------------------------------
   // Mirrors useWrapSequence at TEMPO 1.25 (beats x1.25; springs k/1.5625,
   // c/1.25 — same damping ratios as motionConfig) so this opens on the shipped
-  // choreography; drag the clips to retime it. The app ties its second half to
-  // MOMENTS of the beat before (packet 88% into the rising envelope -> flap
-  // closes; flap past -15deg -> flip + packet hidden; flip past 150deg ->
-  // slot). A timeline has no events, so those handoffs are baked in here as the
-  // absolute times they land at with the shipped springs (simulated:
-  // envelope 1.178 as fold 2 lands, insert 1.516 as its fade completes, close
-  // 1.768, flip 2.138, slot 2.388). Retune a spring here and those clips will
+  // choreography; drag the clips to retime it. It reads as THREE motions with a
+  // hold between each: (1) folds, (2) into the envelope, (3) close then flip.
+  // The app hangs each handoff off the previous motion LANDING (fold 2 at
+  // 178deg -> 0.2s hold -> envelope; envelope at centre -> 0.15s hold -> flap;
+  // flap flat -> flip + packet hidden; flip past 150deg -> slot). A timeline
+  // has no events, so those are baked in here as the absolute times they land
+  // at with the shipped springs (simulated: envelope 1.378, insert 1.716, flap
+  // 2.452, flip 2.971, slot 3.221). Retune a spring here and those clips will
   // NOT follow it the way the app's handoffs do — move them.
   const t = useDialTimeline(
     "Wrap sequence",
     {
-      duration: 5.2,
+      duration: 6.0,
 
       // Sheet beat. The hero disappears instantly — the sheet card (opacity =
       // 1 - restOpacity) takes over on the same frame, pixel-identical — while
@@ -139,11 +140,11 @@ export function SequencePlayground() {
         ],
       },
 
-      // Envelope enters only once fold 2 has LANDED (178deg), fading in IN
+      // Motion 2. Envelope enters 0.2s after fold 2 has LANDED (178deg), fading in IN
       // PLACE at ENVELOPE_ENTRY_MM (21mm below the old entry point) — no
       // movement until the insert.
       envelope: {
-        at: 1.178,
+        at: 1.378,
         duration: 0.3375,
         from: { envOpacity: 0 },
         to: { envOpacity: 1 },
@@ -156,17 +157,18 @@ export function SequencePlayground() {
       // back up — the dip is derived from envLerp below, exactly as the app
       // slaves the packet to envY.
       insert: {
-        at: 1.5155,
-        duration: 0.6,
+        at: 1.7155,
+        duration: 0.8,
         from: { envLerp: 1 },
         to: { envLerp: 0 },
         transition: { type: "spring", stiffness: 128, damping: 22.4, mass: 1.1 },
       },
 
-      // Flap closes as the paper goes in (88% into the rising envelope).
+      // Motion 3. Flap closes 0.15s after the insert has finished (envelope at
+      // centre, paper fully in).
       // The flap runs 1.3x slower than the folds (FLAP_SLOW): k/1.69, c/1.3.
       close: {
-        at: 1.768,
+        at: 2.4515,
         duration: 0.6,
         from: { flapRot: -165, flapLift: 1 },
         to: { flapRot: 0, flapLift: 0 },
@@ -176,17 +178,17 @@ export function SequencePlayground() {
       // The whole packet layer is hidden as the flip starts — nothing shows
       // behind the envelope as it turns.
       hidePacket: {
-        at: 2.138,
+        at: 2.9705,
         duration: 0.01,
         from: { packetOpacity: 1 },
         to: { packetOpacity: 0 },
         transition: { type: "easing", duration: 0.01, ease: [0, 0, 1, 1] },
       },
 
-      // Flip (`flip` at tempo) as the flap passes -15deg, the envelope still
-      // rising — no hold. Its settle rock is the punctuation.
+      // Flip (`flip` at tempo) as the flap lands flat — close, then flip. Its
+      // settle rock is the punctuation.
       flip: {
-        at: 2.138,
+        at: 2.9705,
         duration: 0.85,
         from: { flipRot: 0 },
         to: { flipRot: 180 },
@@ -195,7 +197,7 @@ export function SequencePlayground() {
 
       // Slot arrives during the rock (flip past 150deg), hint 0.35s later.
       slot: {
-        at: 2.388,
+        at: 3.2205,
         props: {
           slotOpacity: {
             from: 0,
@@ -212,7 +214,7 @@ export function SequencePlayground() {
         },
       },
       hint: {
-        at: 2.738,
+        at: 3.5705,
         duration: 0.375,
         from: { hintOpacity: 0 },
         to: { hintOpacity: 1 },
@@ -223,7 +225,7 @@ export function SequencePlayground() {
       // keyframes [0, 7, 0, 4.34, 0] at times [0, .22, .46, .66, 1] of 1.875s,
       // easeInOut.
       tug: {
-        at: 3.138,
+        at: 3.9705,
         from: { tugMM: 0 },
         steps: [
           {
@@ -251,7 +253,7 @@ export function SequencePlayground() {
     },
     // New key per schedule change, so state tuned against an older schedule
     // can't load over these defaults.
-    { autoplay: false, loop: false, persist: { key: "dialkit:wrap-sequence-slow-flap" } },
+    { autoplay: false, loop: false, persist: { key: "dialkit:wrap-sequence-three-motions" } },
   );
 
   // --- Bind timeline output to the real components' MotionValues ------------

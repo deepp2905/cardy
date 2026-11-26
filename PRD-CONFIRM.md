@@ -34,13 +34,15 @@ the code, the code wins. Live divergences:
   masking plate below the aperture — not the single plate §6.4 describes.
 - **The post goes straight to the epilogue.** A "creating your card" loading
   beat used to sit between them; it was cut.
-- **The wrap is one overlapping action** (`useWrapSequence`, TEMPO 1.25 over
-  beats AND springs). The hero swaps to the sheet card on one frame (no fade).
-  Folds run on an even beat and land fully; the envelope then fades in in
-  place, with no movement of its own. Once it is in, it rises to centre while
-  the packet dips into it and is carried up, the flap closing as the paper goes in (88% in) and the flip starting as
-  the flap passes −15°. The whole packet layer is hidden at the flip. Grabbable
-  at ~2.6s. The playground (Sequence page under #/play) mirrors these times.
+- **The wrap reads as three motions** (`useWrapSequence`, TEMPO 1.25 over
+  beats AND springs), overlapping inside each and with a short hold between:
+  (1) the hero swaps to the sheet card on one frame, which shrinks, then the
+  two folds on an even beat; (2) after a 0.2s hold the envelope fades in in
+  place, then rises to centre while the packet dips into it; (3) after a 0.15s
+  hold the flap closes (1.3x slower than the folds), and the flip starts as it
+  lands. Each hold hangs off the previous motion landing, not a timer. The
+  packet layer is hidden at the flip. Grabbable at ~3.5s. The playground
+  (Sequence page under #/play) mirrors these times.
 - **The epilogue swaps state**: adding the digital card changes the heading to
   "Email sent." and the secondary CTA to "Resend the email".
 - Rest copy ("One of one.") now sits above the resting card before the arrow.
