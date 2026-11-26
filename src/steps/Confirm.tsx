@@ -10,6 +10,7 @@ import { Envelope } from "../confirm/Envelope";
 import { Epilogue } from "../confirm/Epilogue";
 import { MailSlot } from "../confirm/MailSlot";
 import { PostHint } from "../confirm/PostHint";
+import { SheetCard } from "../confirm/SheetCard";
 import { usePostDrag } from "../confirm/usePostDrag";
 import { useStageScale } from "../confirm/useStageScale";
 import { useSlideW } from "../lib/useSlideW";
@@ -63,7 +64,7 @@ export function Confirm({
   const slideW = useSlideW();
   const [showEpilogue, setShowEpilogue] = useState(false);
 
-  const { phase, setPhase, values } = useWrapSequence({
+  const { phase, setPhase, values, restScale } = useWrapSequence({
     mmPx,
     slideW,
     started,
@@ -126,14 +127,11 @@ export function Confirm({
   // The live card is only mounted while it can be seen. From `inserting` on it
   // is behind two folded paper panels and the envelope body.
   //
-  // At true rest (before the arrow) the card is a standalone hero OUTSIDE the
-  // sheet — the sheet fades in from opacity 0 and a child can't out-fade a
-  // faded ancestor, so an in-sheet card would be invisible on step entry. Once
-  // the sequence has started it lives on the sheet's mid panel, so the fold can
-  // cover it; the two crossfade at the sheet beat.
-  // Rest card stays mounted through the sheet-beat crossfade (phase is still
-  // "rest" for ~0.6s after start) so it fades out rather than vanishing; by
-  // "folding" its opacity has reached 0 and it can unmount.
+  // At true rest (before the arrow) the card is the standalone hero. Once the
+  // sequence starts it lives on the sheet's mid panel (SheetCard), so the fold
+  // can cover it. The two SWAP on one frame at the sheet beat — never a
+  // crossfade — and only one card is visible in any frame. The sheet's fade is
+  // on the paper, not on the card, so the copy is at full strength at once.
   const restCardVisible = phase === "rest";
   const sheetCardVisible = started && (phase === "rest" || phase === "folding");
 
@@ -199,12 +197,13 @@ export function Confirm({
 
           <CarrierSheet v={values} clip={values.sheetClip}>
             {sheetCardVisible && (
-              <motion.div
-                className="card-holder"
-                style={{ scale: values.cardScale }}
+              <SheetCard
+                cardScale={values.cardScale}
+                restScale={restScale}
+                restOpacity={restOpacity}
               >
                 <Card config={config} name={name} />
-              </motion.div>
+              </SheetCard>
             )}
           </CarrierSheet>
 

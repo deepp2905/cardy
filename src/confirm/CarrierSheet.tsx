@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { motion, type MotionValue } from "motion/react";
+import { motion, type MotionStyle, type MotionValue } from "motion/react";
 import {
   BOTTOM_PANEL,
   TOP_PANEL,
@@ -83,7 +83,11 @@ export function CarrierSheet({
     <motion.div className="sheet-clip" style={{ clipPath: clip }}>
       <motion.div
         className="sheet"
-        style={{ opacity: v.sheetOpacity, y: v.sheetY }}
+        // The fade is the PAPER's, not the sheet's: --paper-o drives the panels
+        // and the drop shadow in CSS, but never the card on the mid panel, so
+        // the card can take over from the hero at full strength while the
+        // paper fades in beneath it.
+        style={{ "--paper-o": v.sheetOpacity, y: v.sheetY } as unknown as MotionStyle}
         aria-hidden="true"
       >
       {/* Middle panel — static. The card's bed; nothing else on it. */}

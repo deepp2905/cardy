@@ -6,6 +6,7 @@ import { seedConfigs, type CardConfig } from "../card/cardConfig";
 import { CarrierSheet } from "../confirm/CarrierSheet";
 import { Envelope } from "../confirm/Envelope";
 import { MailSlot } from "../confirm/MailSlot";
+import { SheetCard } from "../confirm/SheetCard";
 import { useStageScale } from "../confirm/useStageScale";
 import { CARD, ENVELOPE_ENTER_Y, INSERT_TRAVEL } from "../confirm/geometry";
 import { ENVELOPE_RISE_MM, TUG_MM } from "../confirm/useWrapSequence";
@@ -82,11 +83,13 @@ export function SequencePlayground() {
       sheet: {
         at: 0,
         props: {
+          // Hard swap to the sheet card (its opacity is the inverse), not a
+          // crossfade — effectively instant.
           restOpacity: {
             from: 1,
             to: 0,
-            duration: 0.3,
-            transition: { type: "easing", duration: 0.3, ease: [0.32, 0.72, 0, 1] },
+            duration: 0.01,
+            transition: { type: "easing", duration: 0.01, ease: [0, 0, 1, 1] },
           },
           sheetOpacity: {
             from: 0,
@@ -293,6 +296,12 @@ export function SequencePlayground() {
     restOpacity.set(n(sheetTrack.restOpacity));
     // cardScale runs restScale -> 1; the clip carries 1 -> 0 as a lerp factor.
     cardScale.set(1 + (restScale - 1) * n(sheetTrack.cardScale));
+    // The app keys the mid panel's raised z-index off data-phase="rest" (until
+    // the first fold). The bench has no phase machine, so derive it.
+    if (stageRef.current) {
+      stageRef.current.dataset.phase =
+        t.folds.current.rotBottom === 0 ? "rest" : "folding";
+    }
     // Packet opacity is the sheet fade in, gated by the later hidePacket fade.
     sheetOpacity.set(
       n(sheetTrack.sheetOpacity) * t.hidePacket.current.sheetOpacity2,
@@ -408,9 +417,13 @@ export function SequencePlayground() {
           </motion.div>
 
           <CarrierSheet v={values}>
-            <motion.div className="card-holder" style={{ scale: cardScale }}>
+            <SheetCard
+              cardScale={cardScale}
+              restScale={restScale}
+              restOpacity={restOpacity}
+            >
               <Card config={config} name="ALEX RIVERA" />
-            </motion.div>
+            </SheetCard>
           </CarrierSheet>
 
           <Envelope

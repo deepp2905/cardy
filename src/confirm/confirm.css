@@ -136,7 +136,10 @@
   height: calc(192 * var(--mm));
   transform-style: preserve-3d;
   z-index: 1;
-  filter: drop-shadow(0 calc(6 * var(--mm)) calc(14 * var(--mm)) oklch(0 0 0 / var(--sheet-drop)));
+  /* Shadow strength follows the paper's fade (--paper-o, set by CarrierSheet)
+     so at the hero->card swap, when no paper is showing yet, the card on the
+     mid panel picks up no extra drop shadow the hero didn't have. */
+  filter: drop-shadow(0 calc(6 * var(--mm)) calc(14 * var(--mm)) oklch(0 0 0 / calc(var(--sheet-drop) * var(--paper-o, 1))));
 }
 
 /* The packet sits between the two envelope layers during the insert: above the
@@ -152,11 +155,38 @@
   background: var(--paper);
   transform-style: preserve-3d;
   box-shadow: 0 0 0 1px var(--paper-edge);
+  /* The paper fades in; set by CarrierSheet. */
+  opacity: var(--paper-o, 1);
 }
 
+/* The mid panel carries the CARD, so it can't take the paper's opacity (the
+   card would fade with it). Its paper is a pseudo-layer that fades instead,
+   and the card above it stays at full strength. */
 .panel--mid {
   top: calc(64 * var(--mm));
   z-index: 1;
+  background: none;
+  box-shadow: none;
+  opacity: 1;
+}
+
+.panel--mid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--paper);
+  box-shadow: 0 0 0 1px var(--paper-edge);
+  opacity: var(--paper-o, 1);
+}
+
+/* Until the first fold, the mid panel paints ABOVE the flat outer panels. The
+   card starts at hero size — taller than its 64mm panel — and the outer
+   panels, stacked over the mid so they can fold onto it, were painting over
+   its top and bottom edges: it looked clipped while it shrank. By the fold it
+   has shrunk to fit inside the mid panel, so dropping back to z 1 there (to be
+   folded over) changes nothing visible. */
+.confirm-stage[data-phase="rest"] .panel--mid {
+  z-index: 4;
 }
 
 /* Hinged on its TOP edge (the lower crease); rotateX(-180deg) swings it up and
@@ -303,7 +333,20 @@
 }
 
 .card-holder {
+  position: relative;
+  /* Width is set inline by SheetCard (hero size -> 85.6mm). Container so the
+     ground shadow can use the card's own corner radius in cqw. */
   width: calc(85.6 * var(--mm));
+  container-type: inline-size;
+}
+
+/* The "lying on paper" shadow, as its own layer so it can fade in as the card
+   lands — the hero it swaps from has only the card's own shadow. */
+.card-ground {
+  position: absolute;
+  inset: 0;
+  border-radius: 3.715cqw;
+  box-shadow: var(--oncard-shadow);
 }
 
 /* The at-rest hero: a normal grid child of .wrap-scene (which centres its
@@ -319,8 +362,8 @@
 }
 
 .card-holder .card-frame {
+  position: relative; /* above .card-ground */
   width: 100%;
-  box-shadow: var(--oncard-shadow);
 }
 
 /* ------------------------------------------------------------- envelope --- */

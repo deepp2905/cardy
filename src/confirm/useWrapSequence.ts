@@ -422,11 +422,15 @@ export function useWrapSequence({
     document.addEventListener("keydown", onTouch);
 
     at(BEAT.sheet, () => {
-      // Hand the hero card off from the standalone rest copy to the one on the
-      // sheet: the sheet fades in as the rest card fades out, same beat. The
-      // card is the lead; the sheet only fades (no scale) so it reads as the
-      // surface the card lands on.
-      animate(restOpacity, 0, crossfade);
+      // Hand the hero card off to the copy on the sheet with a hard SWAP, not
+      // a crossfade. The sheet card's opacity is 1 - restOpacity, so this one
+      // set hides the hero and shows the copy in the same frame. At that frame
+      // the two are pixel-identical (same width, same native shadows), so the
+      // swap is invisible. A crossfade here showed two half-transparent cards,
+      // offset as soon as the copy started shrinking.
+      restOpacity.stop();
+      restOpacity.set(0);
+      // The PAPER fades in beneath it; the card itself never fades.
       animate(sheetOpacity, 1, crossfade);
       animate(cardScale, 1, arrive);
     });
