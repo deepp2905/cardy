@@ -73,13 +73,14 @@ export function SequencePlayground() {
   // MOMENTS of the beat before (packet 88% into the rising envelope -> flap
   // closes; flap past -15deg -> flip + packet hidden; flip past 150deg ->
   // slot). A timeline has no events, so those handoffs are baked in here as the
-  // absolute times they land at with the shipped springs (simulated: close
-  // 1.309, flip 1.593, slot 1.843). Retune a spring here and those clips will
+  // absolute times they land at with the shipped springs (simulated:
+  // envelope 1.178 as fold 2 lands, insert 1.453, close 1.649, flip 1.933,
+  // slot 2.183). Retune a spring here and those clips will
   // NOT follow it the way the app's handoffs do — move them.
   const t = useDialTimeline(
     "Wrap sequence",
     {
-      duration: 4.6,
+      duration: 4.9,
 
       // Sheet beat. The hero disappears instantly — the sheet card (opacity =
       // 1 - restOpacity) takes over on the same frame, pixel-identical — while
@@ -138,11 +139,11 @@ export function SequencePlayground() {
         ],
       },
 
-      // Envelope fades in below the packet DURING fold 2, rising the last 10mm
+      // Envelope enters only once fold 2 has LANDED (178deg), rising the last 10mm
       // into its entry point (`wrap` at tempo). envRise is the entry y as a
       // multiple of ENVELOPE_ENTER_Y: (69 + 10) / 69 -> 1.
       envelope: {
-        at: 0.775,
+        at: 1.178,
         props: {
           envOpacity: {
             from: 0,
@@ -159,12 +160,13 @@ export function SequencePlayground() {
         },
       },
 
-      // The insert, as one motion: the envelope rises all the way to centre
+      // The insert starts as the entry rise settles (90% into place), as one
+      // motion: the envelope rises all the way to centre
       // (`insert` at tempo) and the packet dips down into it and is carried
       // back up — the dip is derived from envLerp below, exactly as the app
       // slaves the packet to envY.
       insert: {
-        at: 1.1125,
+        at: 1.453,
         duration: 0.6,
         from: { envLerp: 1 },
         to: { envLerp: 0 },
@@ -173,7 +175,7 @@ export function SequencePlayground() {
 
       // Flap closes as the paper goes in (88% into the rising envelope).
       close: {
-        at: 1.309,
+        at: 1.649,
         duration: 0.45,
         from: { flapRot: -165, flapLift: 1 },
         to: { flapRot: 0, flapLift: 0 },
@@ -183,7 +185,7 @@ export function SequencePlayground() {
       // The whole packet layer is hidden as the flip starts — nothing shows
       // behind the envelope as it turns.
       hidePacket: {
-        at: 1.593,
+        at: 1.933,
         duration: 0.01,
         from: { packetOpacity: 1 },
         to: { packetOpacity: 0 },
@@ -193,7 +195,7 @@ export function SequencePlayground() {
       // Flip (`flip` at tempo) as the flap passes -15deg, the envelope still
       // rising — no hold. Its settle rock is the punctuation.
       flip: {
-        at: 1.593,
+        at: 1.933,
         duration: 0.85,
         from: { flipRot: 0 },
         to: { flipRot: 180 },
@@ -202,7 +204,7 @@ export function SequencePlayground() {
 
       // Slot arrives during the rock (flip past 150deg), hint 0.35s later.
       slot: {
-        at: 1.843,
+        at: 2.183,
         props: {
           slotOpacity: {
             from: 0,
@@ -219,7 +221,7 @@ export function SequencePlayground() {
         },
       },
       hint: {
-        at: 2.193,
+        at: 2.533,
         duration: 0.375,
         from: { hintOpacity: 0 },
         to: { hintOpacity: 1 },
@@ -230,7 +232,7 @@ export function SequencePlayground() {
       // keyframes [0, 7, 0, 4.34, 0] at times [0, .22, .46, .66, 1] of 1.875s,
       // easeInOut.
       tug: {
-        at: 2.593,
+        at: 2.933,
         from: { tugMM: 0 },
         steps: [
           {
@@ -258,7 +260,7 @@ export function SequencePlayground() {
     },
     // New key per schedule change, so state tuned against an older schedule
     // can't load over these defaults.
-    { autoplay: false, loop: false, persist: { key: "dialkit:wrap-sequence-t125" } },
+    { autoplay: false, loop: false, persist: { key: "dialkit:wrap-sequence-folds-first" } },
   );
 
   // --- Bind timeline output to the real components' MotionValues ------------
