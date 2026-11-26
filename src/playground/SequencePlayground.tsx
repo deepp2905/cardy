@@ -8,8 +8,12 @@ import { Envelope } from "../confirm/Envelope";
 import { MailSlot } from "../confirm/MailSlot";
 import { SheetCard } from "../confirm/SheetCard";
 import { useStageScale } from "../confirm/useStageScale";
-import { CARD, ENVELOPE_ENTER_Y, INSERT_TRAVEL } from "../confirm/geometry";
-import { ENVELOPE_RISE_MM, TUG_MM } from "../confirm/useWrapSequence";
+import { CARD, ENVELOPE_ENTER_Y } from "../confirm/geometry";
+import {
+  ENVELOPE_RISE_MM,
+  TUG_MM,
+  packetDipMM,
+} from "../confirm/useWrapSequence";
 import { useSlideW } from "../lib/useSlideW";
 import "../confirm/confirm.css";
 import "./playground.css";
@@ -63,28 +67,26 @@ export function SequencePlayground() {
   }, [scene.card]);
 
   // --- The sequence, as a timeline -----------------------------------------
-  // Mirrors useWrapSequence so this opens on the shipped choreography; drag
-  // the clips to retime it. The app ties its second half to MOMENTS of the
-  // beat before (packet 88% in -> flap closes; flap past -15deg -> flip; flip
-  // past 150deg -> slot). A timeline has no events, so those handoffs are
-  // baked in here as the absolute times they land at with the shipped springs
-  // (simulated: close 1.153, flip 1.381, slot 1.581). Retune a spring here and
-  // those clips will NOT follow it the way the app's handoffs do — move them.
+  // Mirrors useWrapSequence at TEMPO 1.25 (beats x1.25; springs k/1.5625,
+  // c/1.25 — same damping ratios as motionConfig) so this opens on the shipped
+  // choreography; drag the clips to retime it. The app ties its second half to
+  // MOMENTS of the beat before (packet 88% into the rising envelope -> flap
+  // closes; flap past -15deg -> flip + packet hidden; flip past 150deg ->
+  // slot). A timeline has no events, so those handoffs are baked in here as the
+  // absolute times they land at with the shipped springs (simulated: close
+  // 1.309, flip 1.593, slot 1.843). Retune a spring here and those clips will
+  // NOT follow it the way the app's handoffs do — move them.
   const t = useDialTimeline(
     "Wrap sequence",
     {
-      duration: 3.8,
+      duration: 4.6,
 
-      // Sheet beat. Separate tracks on independent curves: the rest card and
-      // the sheet card are DIFFERENT sizes (--slide-w vs sequence scale), so
-      // the handoff opacity must finish while the scale settle is still
-      // running, or both cards show at once, offset and half-transparent. The
-      // sheet only fades — it lands under the card, it doesn't scale.
+      // Sheet beat. The hero disappears instantly — the sheet card (opacity =
+      // 1 - restOpacity) takes over on the same frame, pixel-identical — while
+      // the PAPER fades in under it and the card shrinks to sequence size.
       sheet: {
         at: 0,
         props: {
-          // Hard swap to the sheet card (its opacity is the inverse), not a
-          // crossfade — effectively instant.
           restOpacity: {
             from: 1,
             to: 0,
@@ -97,12 +99,12 @@ export function SequencePlayground() {
             duration: 0.3,
             transition: { type: "easing", duration: 0.3, ease: [0.32, 0.72, 0, 1] },
           },
-          // `arrive`. Lerp factor 1 -> 0 (restScale -> 1).
+          // `arrive` at tempo. Lerp factor 1 -> 0 (restScale -> 1).
           cardScale: {
             from: 1,
             to: 0,
-            duration: 0.5,
-            transition: { type: "spring", stiffness: 200, damping: 28 },
+            duration: 0.6,
+            transition: { type: "spring", stiffness: 128, damping: 22.4 },
           },
         },
       },
@@ -110,150 +112,153 @@ export function SequencePlayground() {
       // Wireframe printing — early, so the sheet reads as a letter before it
       // folds.
       printing: {
-        at: 0.1,
-        duration: 0.25,
+        at: 0.125,
+        duration: 0.3125,
         from: { printOpacity: 0 },
         to: { printOpacity: 1 },
-        transition: { type: "easing", duration: 0.25, ease: [0.32, 0.72, 0, 1] },
+        transition: { type: "easing", duration: 0.3125, ease: [0.32, 0.72, 0, 1] },
       },
 
-      // The two folds (`fold`), 0.2s apart so they overlap: bottom panel up at
-      // 0.35, top panel down over it at 0.55.
+      // The two folds (`fold` at tempo), an EVEN beat apart: bottom up at
+      // 0.4375, top down at 0.775 — the same spacing as fold 2 -> insert.
       folds: {
-        at: 0.35,
+        at: 0.4375,
         from: { rotBottom: 0, rotTop: 0 },
         steps: [
           {
-            duration: 0.2,
+            duration: 0.3375,
             to: { rotBottom: -180 },
-            transition: { type: "spring", stiffness: 220, damping: 26 },
+            transition: { type: "spring", stiffness: 141, damping: 20.8 },
           },
           {
             duration: 0.45,
             to: { rotTop: 180 },
-            transition: { type: "spring", stiffness: 220, damping: 26 },
+            transition: { type: "spring", stiffness: 141, damping: 20.8 },
           },
         ],
       },
 
-      // Envelope rises into its entry point during fold 2 (`wrap` for the
-      // rise, crossfade for the opacity). envRise is the entry y as a multiple
-      // of ENVELOPE_ENTER_Y: (69 + 10) / 69 -> 1.
+      // Envelope fades in below the packet DURING fold 2, rising the last 10mm
+      // into its entry point (`wrap` at tempo). envRise is the entry y as a
+      // multiple of ENVELOPE_ENTER_Y: (69 + 10) / 69 -> 1.
       envelope: {
-        at: 0.7,
+        at: 0.775,
         props: {
           envOpacity: {
             from: 0,
             to: 1,
-            duration: 0.3,
-            transition: { type: "easing", duration: 0.3, ease: [0.32, 0.72, 0, 1] },
+            duration: 0.3375,
+            transition: { type: "easing", duration: 0.3375, ease: [0.32, 0.72, 0, 1] },
           },
           envRise: {
             from: (ENVELOPE_ENTER_Y + ENVELOPE_RISE_MM) / ENVELOPE_ENTER_Y,
             to: 1,
-            duration: 0.4,
-            transition: { type: "spring", stiffness: 260, damping: 30 },
+            duration: 0.45,
+            transition: { type: "spring", stiffness: 166, damping: 24 },
           },
         },
       },
 
-      // Packet drops in as the envelope arrives (`insert`).
+      // The insert, as one motion: the envelope rises all the way to centre
+      // (`insert` at tempo) and the packet dips down into it and is carried
+      // back up — the dip is derived from envLerp below, exactly as the app
+      // slaves the packet to envY.
       insert: {
-        at: 0.9,
-        duration: 0.5,
-        from: { sheetY: 0 },
-        to: { sheetY: 1 },
-        transition: { type: "spring", stiffness: 200, damping: 28, mass: 1.1 },
+        at: 1.1125,
+        duration: 0.6,
+        from: { envLerp: 1 },
+        to: { envLerp: 0 },
+        transition: { type: "spring", stiffness: 128, damping: 22.4, mass: 1.1 },
       },
 
-      // Flap closes while the pair rises to centre (`fold`), starting when the
-      // packet is 88% in. flapLift slides the hinge up to the top edge first.
+      // Flap closes as the paper goes in (88% into the rising envelope).
       close: {
-        at: 1.153,
+        at: 1.309,
         duration: 0.45,
-        from: { flapRot: -165, flapLift: 1, envY: 1, packetY: 1 },
-        to: { flapRot: 0, flapLift: 0, envY: 0, packetY: 0 },
-        transition: { type: "spring", stiffness: 220, damping: 26 },
+        from: { flapRot: -165, flapLift: 1 },
+        to: { flapRot: 0, flapLift: 0 },
+        transition: { type: "spring", stiffness: 141, damping: 20.8 },
       },
 
-      // Packet hidden instantly as the flip starts — seated and covered.
+      // The whole packet layer is hidden as the flip starts — nothing shows
+      // behind the envelope as it turns.
       hidePacket: {
-        at: 1.381,
+        at: 1.593,
         duration: 0.01,
-        from: { sheetOpacity2: 1 },
-        to: { sheetOpacity2: 0 },
+        from: { packetOpacity: 1 },
+        to: { packetOpacity: 0 },
         transition: { type: "easing", duration: 0.01, ease: [0, 0, 1, 1] },
       },
 
-      // Flip (`flip`), starting as the flap passes -15deg — no hold. Its
-      // settle rock is the sequence's punctuation.
+      // Flip (`flip` at tempo) as the flap passes -15deg, the envelope still
+      // rising — no hold. Its settle rock is the punctuation.
       flip: {
-        at: 1.381,
-        duration: 0.7,
+        at: 1.593,
+        duration: 0.85,
         from: { flipRot: 0 },
         to: { flipRot: 180 },
-        transition: { type: "spring", stiffness: 180, damping: 22, mass: 1.1 },
+        transition: { type: "spring", stiffness: 115, damping: 17.6, mass: 1.1 },
       },
 
-      // Slot arrives during the rock (flip past 150deg), hint 0.28s later.
+      // Slot arrives during the rock (flip past 150deg), hint 0.35s later.
       slot: {
-        at: 1.581,
+        at: 1.843,
         props: {
           slotOpacity: {
             from: 0,
             to: 1,
-            duration: 0.4,
-            transition: { type: "easing", duration: 0.4, ease: [0.32, 0.72, 0, 1] },
+            duration: 0.5,
+            transition: { type: "easing", duration: 0.5, ease: [0.32, 0.72, 0, 1] },
           },
           slotScaleX: {
             from: 0.9,
             to: 1,
-            duration: 0.4,
-            transition: { type: "spring", stiffness: 260, damping: 30 },
+            duration: 0.5,
+            transition: { type: "spring", stiffness: 166, damping: 24 },
           },
         },
       },
       hint: {
-        at: 1.861,
-        duration: 0.3,
+        at: 2.193,
+        duration: 0.375,
         from: { hintOpacity: 0 },
         to: { hintOpacity: 1 },
-        transition: { type: "easing", duration: 0.3, ease: [0.32, 0.72, 0, 1] },
+        transition: { type: "easing", duration: 0.375, ease: [0.32, 0.72, 0, 1] },
       },
 
-      // Idle tug, 0.32s after the hint: two pulls down (mm) and back — the
-      // app's keyframes [0, 7, 0, 4.34, 0] at times [0, .22, .46, .66, 1] of
-      // 1.5s, easeInOut.
+      // Idle tug, 0.4s after the hint: two pulls down (mm) and back — the app's
+      // keyframes [0, 7, 0, 4.34, 0] at times [0, .22, .46, .66, 1] of 1.875s,
+      // easeInOut.
       tug: {
-        at: 2.181,
+        at: 2.593,
         from: { tugMM: 0 },
         steps: [
           {
-            duration: 0.33,
+            duration: 0.4125,
             to: { tugMM: TUG_MM },
-            transition: { type: "easing", duration: 0.33, ease: [0.42, 0, 0.58, 1] },
+            transition: { type: "easing", duration: 0.4125, ease: [0.42, 0, 0.58, 1] },
           },
           {
-            duration: 0.36,
+            duration: 0.45,
             to: { tugMM: 0 },
-            transition: { type: "easing", duration: 0.36, ease: [0.42, 0, 0.58, 1] },
+            transition: { type: "easing", duration: 0.45, ease: [0.42, 0, 0.58, 1] },
           },
           {
-            duration: 0.3,
+            duration: 0.375,
             to: { tugMM: TUG_MM * 0.62 },
-            transition: { type: "easing", duration: 0.3, ease: [0.42, 0, 0.58, 1] },
+            transition: { type: "easing", duration: 0.375, ease: [0.42, 0, 0.58, 1] },
           },
           {
-            duration: 0.51,
+            duration: 0.6375,
             to: { tugMM: 0 },
-            transition: { type: "easing", duration: 0.51, ease: [0.42, 0, 0.58, 1] },
+            transition: { type: "easing", duration: 0.6375, ease: [0.42, 0, 0.58, 1] },
           },
         ],
       },
     },
-    // New key: the old one holds state tuned against the pre-overlap schedule,
-    // which would otherwise load over these defaults.
-    { autoplay: false, loop: false, persist: { key: "dialkit:wrap-sequence-overlap" } },
+    // New key per schedule change, so state tuned against an older schedule
+    // can't load over these defaults.
+    { autoplay: false, loop: false, persist: { key: "dialkit:wrap-sequence-t125" } },
   );
 
   // --- Bind timeline output to the real components' MotionValues ------------
@@ -261,6 +266,7 @@ export function SequencePlayground() {
   const restOpacity = useMotionValue(1);
   const cardScale = useMotionValue(1);
   const sheetOpacity = useMotionValue(0);
+  const packetOpacity = useMotionValue(1);
   const sheetY = useMotionValue(0);
   const printOpacity = useMotionValue(0);
   const rotBottom = useMotionValue(0);
@@ -302,10 +308,9 @@ export function SequencePlayground() {
       stageRef.current.dataset.phase =
         t.folds.current.rotBottom === 0 ? "rest" : "folding";
     }
-    // Packet opacity is the sheet fade in, gated by the later hidePacket fade.
-    sheetOpacity.set(
-      n(sheetTrack.sheetOpacity) * t.hidePacket.current.sheetOpacity2,
-    );
+    // The paper's fade; the whole packet layer is switched off separately.
+    sheetOpacity.set(n(sheetTrack.sheetOpacity));
+    packetOpacity.set(t.hidePacket.current.packetOpacity);
     printOpacity.set(t.printing.current.printOpacity);
     rotBottom.set(t.folds.current.rotBottom);
     rotTop.set(t.folds.current.rotTop);
@@ -318,14 +323,12 @@ export function SequencePlayground() {
     hintOpacity.set(t.hint.current.hintOpacity);
     // Travel values are unit lerps in the timeline, scaled to mm here so the
     // dials stay readable (0..1) instead of raw millimetre counts.
-    sheetY.set(
-      t.insert.current.sheetY * INSERT_TRAVEL * mmPx * t.close.current.packetY,
-    );
-    // Entry rise, then the close's rise to centre, plus the idle tug.
-    envY.set(
-      n(t.envelope.current.envRise) * t.close.current.envY * ENVELOPE_ENTER_Y * mmPx +
-        t.tug.current.tugMM * mmPx,
-    );
+    // Envelope: entry rise, then the insert's rise to centre, plus the tug.
+    const envMM =
+      n(t.envelope.current.envRise) * t.insert.current.envLerp * ENVELOPE_ENTER_Y;
+    envY.set((envMM + t.tug.current.tugMM) * mmPx);
+    // Packet dips into the rising envelope — the app's exact mapping.
+    sheetY.set(packetDipMM(envMM) * mmPx);
   });
 
   // Derived values the real components expect — same maths as useWrapSequence.
@@ -356,6 +359,7 @@ export function SequencePlayground() {
   const values = {
     cardScale,
     sheetOpacity,
+    packetOpacity,
     sheetY,
     printOpacity,
     rotBottom,

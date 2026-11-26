@@ -80,7 +80,12 @@ export function CarrierSheet({
        preserve-3d (the panels rotate in 3D), and clip-path on it would flatten
        that. This wrapper is static and stage-sized, so the cut line stays fixed
        while the packet travels through it. */
-    <motion.div className="sheet-clip" style={{ clipPath: clip }}>
+    <motion.div
+      className="sheet-clip"
+      // packetOpacity hides EVERYTHING on the packet (paper, print, casts) once
+      // it is sealed in, so nothing shows behind the envelope as it flips.
+      style={{ clipPath: clip, opacity: v.packetOpacity }}
+    >
       <motion.div
         className="sheet"
         // The fade is the PAPER's, not the sheet's: --paper-o drives the panels

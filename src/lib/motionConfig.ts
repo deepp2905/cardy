@@ -54,11 +54,11 @@ export const cardMove: Transition = {
 
 // --- Confirm-sequence springs ---
 //
-// fold, stamp, arrive, wrap, insert and flip run at their original tuning
-// again: the wrap sequence's TEMPO went back to 1 when it was retimed into one
-// overlapping action. postCatch is the one spring still slowed 1.25x (k/T²,
-// c/T, so the damping ratio is unchanged) — it belongs to the user's post
-// gesture, not the wrap, and was left alone.
+// fold, stamp, arrive, wrap, insert and flip are tuned here at their natural
+// pace. useWrapSequence slows them by its TEMPO (k/T², c/T — damping ratio
+// unchanged) together with its beat times, so one dial sets the whole wrap's
+// pace. postCatch is pre-slowed 1.25x by hand: it belongs to the user's post
+// gesture, not the wrap.
 
 export const fold: Transition = {
   type: "spring",

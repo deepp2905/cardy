@@ -4,6 +4,7 @@ import {
   useMotionValue,
   useTransform,
   type MotionValue,
+  type Transition,
 } from "motion/react";
 import {
   arrive,
@@ -43,9 +44,26 @@ export type Phase =
  * by it, so the choreography keeps its proportions and only the pace changes —
  * one dial instead of thirteen numbers to keep in sync.
  */
-const TEMPO = 1;
+const TEMPO = 1.25;
 /** Scale a base duration/beat by the global tempo. */
 const slow = (seconds: number) => seconds * TEMPO;
+/**
+ * Slow a spring by the same tempo. Stiffness by 1/T² and damping by 1/T keeps
+ * the damping ratio exactly, so the character (bounce, overshoot) is the
+ * motionConfig tuning and only the pace changes. Springs AND beats ride the
+ * one dial, so the event-tied handoffs keep landing where they were tuned.
+ */
+const tempo = (t: Transition): Transition =>
+  t.type === "spring" && typeof t.stiffness === "number" && typeof t.damping === "number"
+    ? { ...t, stiffness: t.stiffness / TEMPO ** 2, damping: t.damping / TEMPO }
+    : t;
+const S = {
+  arrive: tempo(arrive),
+  fold: tempo(fold),
+  insert: tempo(insert),
+  flip: tempo(flip),
+  wrap: tempo(wrap),
+};
 
 /**
  * Beat times in seconds from the arrow press, before TEMPO.
@@ -53,20 +71,22 @@ const slow = (seconds: number) => seconds * TEMPO;
  * Only the first act is on the clock. Every beat from the flap close on is
  * hooked to a MOMENT of the beat before it (see the thresholds below) rather
  * than to a guessed delay, so the handoffs overlap and stay locked to their
- * cause when a spring is retuned. The old schedule let each beat settle fully
- * and then waited ~0.25s more, which read as a queue of separate animations.
+ * cause when a spring is retuned.
  *
- * From the insert on it is meant to read as ONE action: the packet drops, the
- * flap shuts over it, and the envelope rises and turns over in a single throw.
- * Grabbable at ~1.8s. The flip's settle rock is the punctuation.
+ * Even rhythm through the folds: fold 1, fold 2 (with the envelope fading in
+ * below), then the insert, each one fold-length (~0.27 base, ~0.33s) apart, so
+ * the second fold gets as long as the first instead of being rushed by the
+ * insert. From the insert on it reads as ONE action: the envelope rises over
+ * the packet as the packet dips down into it, the flap shuts as the paper goes
+ * in, and the envelope turns over. The flip's settle rock is the punctuation.
  */
 const BEAT_BASE = {
   sheet: 0,
   printing: 0.1, // early enough that the sheet reads as a letter before it folds
-  fold1: 0.35, // as the card's arrive settles
-  fold2: 0.55, // overlaps fold 1
-  envelope: 0.7, // rises in during fold 2 — folding and arrival read as one
-  insert: 0.9, // drops in as the envelope arrives
+  fold1: 0.35, // as the card's size settles
+  fold2: 0.62, // one fold-length later
+  envelope: 0.62, // fades in DURING fold 2
+  insert: 0.89, // one fold-length after fold 2 — the even beat
 } as const;
 
 const BEAT = Object.fromEntries(
@@ -75,11 +95,11 @@ const BEAT = Object.fromEntries(
 
 /** Event-tied handoffs. */
 const HANDOFF = {
-  /** Flap starts closing when the packet is this far into the pocket. The
-   *  insert's momentum carries the packet the rest of the way while the pair
-   *  rises; simulated, 0.85 seats it just 0.4mm inside by the time the flap
-   *  passes vertical (where it would start to cover a protruding edge), so
-   *  0.88 keeps ~1mm of margin. Lower and paper pokes out over the flap. */
+  /** Flap starts closing when the packet is this far into the pocket
+   *  (relative to the envelope). Simulated at TEMPO 1.25 with an 18mm dip,
+   *  0.88 leaves the paper 1.3mm inside the mouth by the time the flap passes
+   *  vertical (where it starts to cover a protruding edge). Lower and paper
+   *  pokes out over the flap. */
   closeAtInsert: 0.88,
   /** Flip starts as the flap passes this angle, still landing — no hold. */
   flipAtFlapDeg: -15,
@@ -97,6 +117,21 @@ const HANDOFF = {
 /** The envelope rises this far (mm) into its entry position instead of
  *  materialising in place. */
 export const ENVELOPE_RISE_MM = 10;
+
+/**
+ * How far the packet dips (mm) as the envelope rises over it. The envelope
+ * must end at stage centre (the slot and drag geometry hang off envY = 0), so
+ * the pair can't meet anywhere else; instead the packet slides DOWN into the
+ * rising envelope and is carried back up with it — both visibly moving at
+ * once. Shaped as sin(π·progress) of the envelope's rise; under ~22mm the
+ * packet never moves backwards relative to the envelope.
+ */
+export const INSERT_DIP_MM = 18;
+/** Packet y (mm) for a given envelope y (mm) during the insert. */
+export function packetDipMM(envMM: number): number {
+  const p = Math.min(1, Math.max(0, 1 - envMM / ENVELOPE_ENTER_Y));
+  return INSERT_DIP_MM * Math.sin(Math.PI * p);
+}
 
 /** Reduced-motion path: two crossfades, 0.7s total (PLAN.md §7). */
 const REDUCED = { swap: 0.35 } as const;
@@ -151,6 +186,9 @@ export function useWrapSequence({
   // No sheet scale: the card is the lead and lands ON the sheet. The sheet
   // growing while the card shrinks read as two objects pulling apart.
   const sheetOpacity = useMotionValue(0);
+  /** The whole packet layer (paper, print, casts). sheetOpacity fades only the
+   *  paper, so hiding the packet behind the flip needs its own switch. */
+  const packetOpacity = useMotionValue(1);
   const sheetY = useMotionValue(0);
   const printOpacity = useMotionValue(0);
   const rotBottom = useMotionValue(0); // 0 → -180
@@ -257,6 +295,7 @@ export function useWrapSequence({
     () => ({
       cardScale,
       sheetOpacity,
+      packetOpacity,
       sheetY,
       printOpacity,
       rotBottom,
@@ -369,6 +408,7 @@ export function useWrapSequence({
       hardSet(rotBottom, -180);
       hardSet(rotTop, 180);
       hardSet(sheetY, 0);
+      hardSet(packetOpacity, 0);
       hardSet(envY, 0);
       animate(cardScale, restScale, t);
       animate(restOpacity, 0, t);
@@ -424,77 +464,89 @@ export function useWrapSequence({
     at(BEAT.sheet, () => {
       // Hand the hero card off to the copy on the sheet with a hard SWAP, not
       // a crossfade. The sheet card's opacity is 1 - restOpacity, so this one
-      // set hides the hero and shows the copy in the same frame. At that frame
-      // the two are pixel-identical (same width, same native shadows), so the
-      // swap is invisible. A crossfade here showed two half-transparent cards,
-      // offset as soon as the copy started shrinking.
+      // set hides the hero and shows the copy in the same frame — the hero
+      // disappears instantly. At that frame the two are pixel-identical (same
+      // width, same native shadows), so the swap is invisible.
       restOpacity.stop();
       restOpacity.set(0);
       // The PAPER fades in beneath it; the card itself never fades.
       animate(sheetOpacity, 1, crossfade);
-      animate(cardScale, 1, arrive);
+      animate(cardScale, 1, S.arrive);
     });
     at(BEAT.printing, () => {
       animate(printOpacity, 1, { duration: slow(0.25), ease: crossfade.ease });
     });
     at(BEAT.fold1, () => {
       setPhase("folding");
-      animate(rotBottom, -180, fold);
+      animate(rotBottom, -180, S.fold);
     });
     at(BEAT.fold2, () => {
-      animate(rotTop, 180, fold);
+      animate(rotTop, 180, S.fold);
     });
     at(BEAT.envelope, () => {
       setPhase("inserting");
-      // Rises the last few mm into its entry point rather than materialising
-      // in place — it is the lead of the second act and arrives from somewhere.
-      envY.set((ENVELOPE_ENTER_Y + ENVELOPE_RISE_MM) * mmPx);
-      animate(envY, ENVELOPE_ENTER_Y * mmPx, wrap);
-      animate(envOpacity, 1, { duration: slow(0.3), ease: crossfade.ease });
+      // Fades in below the packet DURING fold 2, rising the last few mm into
+      // its entry point so it arrives from somewhere. The fade spans the fold.
+      // jump(), not set(): set() records the 0 -> entry leap as velocity, and the
+      // animate() below inherits it — the envelope flew ~80mm past its entry
+      // point before settling. jump() places it with zero velocity.
+      envY.jump((ENVELOPE_ENTER_Y + ENVELOPE_RISE_MM) * mmPx);
+      animate(envY, ENVELOPE_ENTER_Y * mmPx, S.wrap);
+      animate(envOpacity, 1, { duration: slow(0.27), ease: crossfade.ease });
     });
+
+    // The insert, as one motion: the envelope rises all the way to centre while
+    // the packet dips down into it and is carried back up (packetDipMM). Both
+    // move at once; the packet is slaved to the envelope's rise, so they can
+    // never drift out of step.
     at(BEAT.insert, () => {
-      animate(sheetY, INSERT_TRAVEL * mmPx, insert);
+      const offDip = envY.on("change", (y) => {
+        sheetY.set(packetDipMM(y / mmPxRef.current) * mmPxRef.current);
+      });
+      listeners.current.push(offDip);
+      animate(envY, 0, S.insert);
+
+      // Flap closes as the paper goes in — keyed to how far the packet is into
+      // the pocket RELATIVE to the envelope, since both are moving.
+      when(
+        envY,
+        (y) => {
+          const into = (sheetY.get() - y) / mmPxRef.current + INSERT_TRAVEL;
+          return into >= HANDOFF.closeAtInsert * INSERT_TRAVEL;
+        },
+        () => {
+          // The lift runs first and fast: the flap slides the 1.5mm up to the
+          // envelope's top edge, then folds from there, so it lands flush.
+          animate(flapLift, 0, { duration: slow(0.16), ease: crossfade.ease });
+          animate(flapRot, 0, S.fold);
+
+          // The flip starts while the flap is still landing and the envelope
+          // is still rising — one throw, no hold. The flip's own settle rock
+          // is the punctuation.
+          when(
+            flapRot,
+            (r) => r >= HANDOFF.flipAtFlapDeg,
+            () => {
+              // The packet is done: stop slaving it to the envelope (the tug
+              // and the post move envY later) and hide the WHOLE packet layer.
+              // sheetOpacity only fades the paper now, so it left the mid
+              // panel's printed outline and the fold casts visible behind the
+              // envelope as it turned.
+              offDip();
+              packetOpacity.set(0);
+              // The wax seal is cut (PRD note); keep its values at their end
+              // state so the settle/rewind paths stay consistent.
+              sealScale.set(1);
+              sealRot.set(0);
+
+              setPhase("flipping");
+              animate(flipRot, 180, S.flip);
+              at(slow(HANDOFF.idleAfterFlip), () => setPhase("idle"));
+            },
+          );
+        },
+      );
     });
-
-    // Flap closes as the packet seats — not after it has settled and waited.
-    when(
-      sheetY,
-      (y) => y >= HANDOFF.closeAtInsert * INSERT_TRAVEL * mmPx,
-      () => {
-        // Flap closes while the pair rises to centre — one beat, two motions.
-        // The lift runs first and fast: the flap slides the 1.5mm up to the
-        // envelope's top edge, then folds from there, so it lands flush instead
-        // of a radius low. Short enough (0.16s) to read as part of the same
-        // gesture rather than a separate beat.
-        animate(flapLift, 0, { duration: slow(0.16), ease: crossfade.ease });
-        animate(flapRot, 0, fold);
-        animate(envY, 0, fold);
-        animate(sheetY, 0, fold);
-
-        // The flip starts while the flap is still landing and the pair is still
-        // rising — one throw, no hold. No impact nudge any more: with the turn
-        // already under way, a jolt at the flap's landing would interrupt it.
-        // The flip's own settle rock is the punctuation.
-        when(
-          flapRot,
-          (r) => r >= HANDOFF.flipAtFlapDeg,
-          () => {
-            // Seated and covered by now. Hidden instantly, before the flip
-            // narrows the envelope and would reveal it behind.
-            sheetOpacity.stop();
-            sheetOpacity.set(0);
-            // The wax seal is cut (PRD note); keep its values at their end
-            // state so the settle/rewind paths stay consistent.
-            sealScale.set(1);
-            sealRot.set(0);
-
-            setPhase("flipping");
-            animate(flipRot, 180, flip);
-            at(slow(HANDOFF.idleAfterFlip), () => setPhase("idle"));
-          },
-        );
-      },
-    );
 
     // The slot arrives during the flip's settle, once the name is readable, so
     // the target is already there when the envelope becomes grabbable.
@@ -503,7 +555,7 @@ export function useWrapSequence({
       (r) => r >= HANDOFF.slotAtFlipDeg,
       () => {
         animate(slotOpacity, 1, { duration: slow(0.4), ease: crossfade.ease });
-        animate(slotScaleX, 1, wrap);
+        animate(slotScaleX, 1, S.wrap);
         at(slow(HANDOFF.hintAfterSlot), () => {
           animate(hintOpacity, 1, { duration: slow(0.3), ease: crossfade.ease });
           at(slow(HANDOFF.tugAfterHint), () => {
@@ -554,6 +606,7 @@ export function useWrapSequence({
     reset(cardScale, restScale);
     reset(restOpacity, 1);
     reset(sheetOpacity, 0);
+    reset(packetOpacity, 1);
     reset(sheetY, 0);
     reset(printOpacity, 0);
     reset(rotBottom, 0);
