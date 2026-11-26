@@ -4,8 +4,8 @@ import type { SequenceValues } from "./useWrapSequence";
 
 /**
  * The post affordance, between the envelope and the slot. A downward chevron
- * that bobs on a sine curve — pure "drag me down", no copy. Fades out on first
- * pointerdown and never returns.
+ * that bobs on a sine curve, with a caption. Fades out as soon as a drag
+ * starts, and back in if the drag is let go before the envelope is posted.
  *
  * Under reduced motion the drag is replaced entirely by a button (PLAN.md §7) —
  * the gesture is the terminal action of the whole flow, so it can never be the
@@ -20,9 +20,9 @@ export function PostHint({
   v: SequenceValues;
   reduce: boolean;
   onMail: () => void;
-  /** 1 until the envelope reaches the slot mouth, → 0 as it is swallowed.
-   *  Multiplied with the sequence's arrival fade-in, so the hint appears on
-   *  the timeline's schedule and leaves on the envelope's position. */
+  /** 1 at rest, → 0 while the envelope is being dragged or posted, back to 1
+   *  if a drag is released short of the slot. Multiplied with the sequence's
+   *  arrival fade-in, so the hint appears on the timeline's schedule. */
   fade: MotionValue<number>;
 }) {
   // Two independent reasons to be hidden; they multiply rather than override.

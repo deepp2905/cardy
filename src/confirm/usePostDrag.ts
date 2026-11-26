@@ -10,6 +10,7 @@ import {
 import {
   POST_CATCH_PAUSE_MS,
   postCatch,
+  crossfade,
   postHintDismiss,
   postPull,
   postRecoil,
@@ -84,9 +85,10 @@ export function usePostDrag({
   // gesture is reversible until the user lets go.
   const committed = useMotionValue(0);
 
-  // The arrow and caption leave as one affordance only after the machine has
-  // caught the envelope. Keeping this independent of position means a user can
-  // pull into the brake zone and reverse without losing the instruction.
+  // The arrow and caption, as one affordance. They fade out the moment a drag
+  // starts (the user has understood the instruction and is doing it), and fade
+  // back in only if the drag is let go without posting — the envelope springs
+  // home and the instruction is needed again. Once posting, they stay gone.
   const hintFade = useMotionValue(1);
 
   // Slot closing has its own fixed animation, but its start is tied to the
@@ -197,7 +199,8 @@ export function usePostDrag({
     // Stop the idle tug at its presentation value, then continue from there.
     v.envY.stop();
     dragOrigin.current = v.envY.get();
-  }, [v.envY]);
+    animate(hintFade, 0, postHintDismiss);
+  }, [v.envY, hintFade]);
 
   const onPan = useCallback(
     (_e: unknown, info: PanInfo) => {
@@ -234,8 +237,10 @@ export function usePostDrag({
       }
       animate(dragScale, 1, snappy);
       animate(v.envY, 0, snappy);
+      // Let go short of the slot: the instruction comes back.
+      animate(hintFade, 1, crossfade);
     },
-    [mmPx, runPost, dragScale, v.envY],
+    [mmPx, runPost, dragScale, v.envY, hintFade],
   );
 
   const onPointerRelease = useCallback(() => {
@@ -247,7 +252,8 @@ export function usePostDrag({
     if (committed.get()) return;
     animate(dragScale, 1, snappy);
     animate(v.envY, 0, snappy);
-  }, [committed, dragScale, v.envY]);
+    animate(hintFade, 1, crossfade);
+  }, [committed, dragScale, v.envY, hintFade]);
 
   const dragProps =
     phase === "idle" && !reduce
