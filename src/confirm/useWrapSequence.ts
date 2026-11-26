@@ -75,9 +75,9 @@ const S = {
  *
  * The folds run on an even beat (~0.33s apart) and are allowed to finish
  * COMPLETELY: the envelope only enters once fold 2 has landed, so the paper is
- * a finished packet before anything else moves. It fades in rising the last
- * few mm, and as that rise settles the insert begins — one continuous upward
- * move: the envelope rises over the packet as the packet dips down into it,
+ * a finished packet before anything else moves. It fades in in place, and once
+ * it is fully in the insert begins — the envelope's rise and the packet's dip
+ * start together: the envelope rises over the packet as the packet dips into it,
  * the flap shuts as the paper goes in, and the envelope turns over. The flip's
  * settle rock is the punctuation. Grabbable at ~2.5s.
  */
@@ -97,9 +97,6 @@ const HANDOFF = {
   /** Envelope enters once fold 2 has landed — past this angle (of 180). The
    *  fold spring barely overshoots (ζ 0.876), so 178 is "landed". */
   envelopeAtFoldDeg: 178,
-  /** Insert starts as the envelope's entry rise settles: this fraction of the
-   *  way into place, so arriving and rising read as one upward move. */
-  insertAtRise: 0.9,
   /** Flap starts closing when the packet is this far into the pocket
    *  (relative to the envelope). Simulated at TEMPO 1.25 with an 18mm dip,
    *  0.88 leaves the paper 1.3mm inside the mouth by the time the flap passes
@@ -119,9 +116,6 @@ const HANDOFF = {
   tugAfterHint: 0.32,
 } as const;
 
-/** The envelope rises this far (mm) into its entry position instead of
- *  materialising in place. */
-export const ENVELOPE_RISE_MM = 10;
 
 /**
  * How far the packet dips (mm) as the envelope rises over it. The envelope
@@ -488,30 +482,23 @@ export function useWrapSequence({
     at(BEAT.fold2, () => {
       animate(rotTop, 180, S.fold);
     });
-    // The envelope waits for the folds to finish completely.
-    let envelopeIn = false;
+    // The envelope waits for the folds to finish completely, then fades in
+    // IN PLACE below the packet — no movement of its own until the insert.
     when(rotTop, (r) => r >= HANDOFF.envelopeAtFoldDeg, () => {
       setPhase("inserting");
-      envelopeIn = true;
-      // Fades in below the packet, rising the last few mm into its entry
-      // point so it arrives from somewhere.
-      // jump(), not set(): set() records the 0 -> entry leap as velocity, and the
-      // animate() below inherits it — the envelope flew ~80mm past its entry
-      // point before settling. jump() places it with zero velocity.
-      envY.jump((ENVELOPE_ENTER_Y + ENVELOPE_RISE_MM) * mmPx);
-      animate(envY, ENVELOPE_ENTER_Y * mmPx, S.wrap);
+      // jump(), not set(): set() records the 0 -> entry leap as velocity, and
+      // the insert's animate() later inherits it — the envelope flew ~80mm
+      // past its entry point. jump() places it with zero velocity.
+      envY.jump(ENVELOPE_ENTER_Y * mmPx);
       animate(envOpacity, 1, { duration: slow(0.27), ease: crossfade.ease });
     });
 
-    // The insert, as one motion, starting as the entry rise settles: the
-    // envelope rises all the way to centre while the packet dips down into it
-    // and is carried back up (packetDipMM). Both move at once; the packet is
-    // slaved to the envelope's rise, so they can never drift out of step.
-    // Gated on envelopeIn: envY sits at 0 before the envelope enters, which
-    // would otherwise satisfy the threshold at once.
-    const insertLine =
-      ENVELOPE_ENTER_Y + ENVELOPE_RISE_MM * (1 - HANDOFF.insertAtRise);
-    when(envY, (y) => envelopeIn && y <= insertLine * mmPxRef.current, () => {
+    // The insert starts once the envelope has fully faded in — the envelope's
+    // rise and the packet's dip begin together, as one motion: the envelope
+    // rises all the way to centre while the packet dips down into it and is
+    // carried back up (packetDipMM). The packet is slaved to the envelope's
+    // rise, so they can never drift out of step.
+    when(envOpacity, (o) => o >= 1, () => {
       const offDip = envY.on("change", (y) => {
         sheetY.set(packetDipMM(y / mmPxRef.current) * mmPxRef.current);
       });

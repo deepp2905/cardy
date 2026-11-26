@@ -36,11 +36,11 @@ the code, the code wins. Live divergences:
   beat used to sit between them; it was cut.
 - **The wrap is one overlapping action** (`useWrapSequence`, TEMPO 1.25 over
   beats AND springs). The hero swaps to the sheet card on one frame (no fade).
-  Folds run on an even beat; the envelope fades in during fold 2; then the
-  envelope (entering only once fold 2 has landed) rises to centre while the packet dips into it and is carried
-  up, the flap closing as the paper goes in (88% in) and the flip starting as
+  Folds run on an even beat and land fully; the envelope then fades in in
+  place, with no movement of its own. Once it is in, it rises to centre while
+  the packet dips into it and is carried up, the flap closing as the paper goes in (88% in) and the flip starting as
   the flap passes −15°. The whole packet layer is hidden at the flip. Grabbable
-  at ~2.5s. The playground (Sequence page under #/play) mirrors these times.
+  at ~2.6s. The playground (Sequence page under #/play) mirrors these times.
 - **The epilogue swaps state**: adding the digital card changes the heading to
   "Email sent." and the secondary CTA to "Resend the email".
 - Rest copy ("One of one.") now sits above the resting card before the arrow.

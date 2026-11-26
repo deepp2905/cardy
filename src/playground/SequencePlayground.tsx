@@ -10,7 +10,6 @@ import { SheetCard } from "../confirm/SheetCard";
 import { useStageScale } from "../confirm/useStageScale";
 import { CARD, ENVELOPE_ENTER_Y } from "../confirm/geometry";
 import {
-  ENVELOPE_RISE_MM,
   TUG_MM,
   packetDipMM,
 } from "../confirm/useWrapSequence";
@@ -74,13 +73,13 @@ export function SequencePlayground() {
   // closes; flap past -15deg -> flip + packet hidden; flip past 150deg ->
   // slot). A timeline has no events, so those handoffs are baked in here as the
   // absolute times they land at with the shipped springs (simulated:
-  // envelope 1.178 as fold 2 lands, insert 1.453, close 1.649, flip 1.933,
-  // slot 2.183). Retune a spring here and those clips will
+  // envelope 1.178 as fold 2 lands, insert 1.516 as its fade completes, close
+  // 1.712, flip 1.996, slot 2.246). Retune a spring here and those clips will
   // NOT follow it the way the app's handoffs do — move them.
   const t = useDialTimeline(
     "Wrap sequence",
     {
-      duration: 4.9,
+      duration: 5.0,
 
       // Sheet beat. The hero disappears instantly — the sheet card (opacity =
       // 1 - restOpacity) takes over on the same frame, pixel-identical — while
@@ -139,34 +138,23 @@ export function SequencePlayground() {
         ],
       },
 
-      // Envelope enters only once fold 2 has LANDED (178deg), rising the last 10mm
-      // into its entry point (`wrap` at tempo). envRise is the entry y as a
-      // multiple of ENVELOPE_ENTER_Y: (69 + 10) / 69 -> 1.
+      // Envelope enters only once fold 2 has LANDED (178deg), fading in IN
+      // PLACE below the packet — no movement until the insert.
       envelope: {
         at: 1.178,
-        props: {
-          envOpacity: {
-            from: 0,
-            to: 1,
-            duration: 0.3375,
-            transition: { type: "easing", duration: 0.3375, ease: [0.32, 0.72, 0, 1] },
-          },
-          envRise: {
-            from: (ENVELOPE_ENTER_Y + ENVELOPE_RISE_MM) / ENVELOPE_ENTER_Y,
-            to: 1,
-            duration: 0.45,
-            transition: { type: "spring", stiffness: 166, damping: 24 },
-          },
-        },
+        duration: 0.3375,
+        from: { envOpacity: 0 },
+        to: { envOpacity: 1 },
+        transition: { type: "easing", duration: 0.3375, ease: [0.32, 0.72, 0, 1] },
       },
 
-      // The insert starts as the entry rise settles (90% into place), as one
-      // motion: the envelope rises all the way to centre
+      // The insert starts once the envelope has fully faded in — its rise and
+      // the packet's dip begin together: the envelope rises all the way to centre
       // (`insert` at tempo) and the packet dips down into it and is carried
       // back up — the dip is derived from envLerp below, exactly as the app
       // slaves the packet to envY.
       insert: {
-        at: 1.453,
+        at: 1.5155,
         duration: 0.6,
         from: { envLerp: 1 },
         to: { envLerp: 0 },
@@ -175,7 +163,7 @@ export function SequencePlayground() {
 
       // Flap closes as the paper goes in (88% into the rising envelope).
       close: {
-        at: 1.649,
+        at: 1.712,
         duration: 0.45,
         from: { flapRot: -165, flapLift: 1 },
         to: { flapRot: 0, flapLift: 0 },
@@ -185,7 +173,7 @@ export function SequencePlayground() {
       // The whole packet layer is hidden as the flip starts — nothing shows
       // behind the envelope as it turns.
       hidePacket: {
-        at: 1.933,
+        at: 1.996,
         duration: 0.01,
         from: { packetOpacity: 1 },
         to: { packetOpacity: 0 },
@@ -195,7 +183,7 @@ export function SequencePlayground() {
       // Flip (`flip` at tempo) as the flap passes -15deg, the envelope still
       // rising — no hold. Its settle rock is the punctuation.
       flip: {
-        at: 1.933,
+        at: 1.996,
         duration: 0.85,
         from: { flipRot: 0 },
         to: { flipRot: 180 },
@@ -204,7 +192,7 @@ export function SequencePlayground() {
 
       // Slot arrives during the rock (flip past 150deg), hint 0.35s later.
       slot: {
-        at: 2.183,
+        at: 2.246,
         props: {
           slotOpacity: {
             from: 0,
@@ -221,7 +209,7 @@ export function SequencePlayground() {
         },
       },
       hint: {
-        at: 2.533,
+        at: 2.596,
         duration: 0.375,
         from: { hintOpacity: 0 },
         to: { hintOpacity: 1 },
@@ -232,7 +220,7 @@ export function SequencePlayground() {
       // keyframes [0, 7, 0, 4.34, 0] at times [0, .22, .46, .66, 1] of 1.875s,
       // easeInOut.
       tug: {
-        at: 2.933,
+        at: 2.996,
         from: { tugMM: 0 },
         steps: [
           {
@@ -260,7 +248,7 @@ export function SequencePlayground() {
     },
     // New key per schedule change, so state tuned against an older schedule
     // can't load over these defaults.
-    { autoplay: false, loop: false, persist: { key: "dialkit:wrap-sequence-folds-first" } },
+    { autoplay: false, loop: false, persist: { key: "dialkit:wrap-sequence-fade-in-place" } },
   );
 
   // --- Bind timeline output to the real components' MotionValues ------------
@@ -316,7 +304,7 @@ export function SequencePlayground() {
     printOpacity.set(t.printing.current.printOpacity);
     rotBottom.set(t.folds.current.rotBottom);
     rotTop.set(t.folds.current.rotTop);
-    envOpacity.set(n(t.envelope.current.envOpacity));
+    envOpacity.set(t.envelope.current.envOpacity);
     flapRot.set(t.close.current.flapRot);
     flapLift.set(t.close.current.flapLift);
     flipRot.set(t.flip.current.flipRot);
@@ -326,8 +314,7 @@ export function SequencePlayground() {
     // Travel values are unit lerps in the timeline, scaled to mm here so the
     // dials stay readable (0..1) instead of raw millimetre counts.
     // Envelope: entry rise, then the insert's rise to centre, plus the tug.
-    const envMM =
-      n(t.envelope.current.envRise) * t.insert.current.envLerp * ENVELOPE_ENTER_Y;
+    const envMM = t.insert.current.envLerp * ENVELOPE_ENTER_Y;
     envY.set((envMM + t.tug.current.tugMM) * mmPx);
     // Packet dips into the rising envelope — the app's exact mapping.
     sheetY.set(packetDipMM(envMM) * mmPx);
