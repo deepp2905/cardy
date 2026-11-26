@@ -275,7 +275,13 @@ export function CardCarousel({
         : footprintOf(i - 1) / 2 + gapOf(i) + footprintOf(i) / 2;
     centres.push(acc);
   }
-  const lo = Math.floor(index);
+  // The segment is always a REAL pair of neighbouring cards, so a rubberbanded
+  // index past either end extrapolates along the end segment and the whole
+  // strip slides with the pull. Previously past the first card floor(-0.3) was
+  // -1 and centres[-1] undefined — every transform went NaN and the left pull
+  // did nothing — while past the last card lo === hi pinned the strip, so the
+  // two ends behaved differently. Same treatment on both sides now.
+  const lo = Math.min(Math.max(0, count - 2), Math.max(0, Math.floor(index)));
   const hi = Math.min(count - 1, lo + 1);
   const originX = centres[lo] + (centres[hi] - centres[lo]) * (index - lo);
 

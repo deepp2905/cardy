@@ -42,6 +42,22 @@ const REST_VELOCITY = 0.01; // speed: and moving slower than this, in cards/sec
 const RUBBER_CEILING = 0.85; // most it can travel past the end, in cards
 const RUBBER_RESISTANCE = 1.1; // overshoot (in cards) that reaches half the ceiling
 
+// Wheel/trackpad overscroll bounce. Only a FAST scroll into an end bounces; a
+// slow one just stops at the end card, so careful scrolling never wobbles.
+// The bounce is the settle spring launched outward from the end card with the
+// scroll's own speed, so it flies out and springs back on its own — no stretch
+// to hold while a trackpad's momentum tail keeps pushing.
+const WHEEL_BOUNCE_SPEED = 6; // cards/sec into the end needed to bounce (~1300px/s)
+const WHEEL_BOUNCE_GAIN = 1; // scroll speed -> launch speed
+// Launch cap. The settle spring is integrated per frame, which bleeds energy
+// at big steps, so its overshoot depends on refresh rate: a 14 cards/sec
+// launch peaks ~0.26 of a card past the end at 60Hz, ~0.33 at 120Hz.
+const WHEEL_BOUNCE_MAX_LAUNCH = 14;
+// Wheel events further apart than this start a new gesture: velocity resets,
+// and a bounce stops swallowing the momentum tail that caused it.
+const WHEEL_GESTURE_GAP_MS = 100;
+const WHEEL_LINE_PX = 16; // deltaMode 1 (Firefox mouse wheels report lines)
+
 /** Fold a value that has run past [0, max] back under resistance. */
 function rubberband(v: number, max: number): number {
   const over = v < 0 ? v : v > max ? v - max : 0;
@@ -91,7 +107,9 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
 
     // Spring to the nearest whole card on release — integrated each frame so
     // the motion has real spring character rather than a fixed-duration tween.
-    const settle = (target?: number) => {
+    // `launch` is an initial velocity in cards/sec — the wheel bounce starts
+    // the spring AT the end card moving outward, and lets it come back.
+    const settle = (target?: number, launch = 0) => {
       stopSettle();
       // Clamp the target: a rubberbanded overshoot rounds to an index outside
       // the deck, so snap to the real end card. On a card click, `target` is
@@ -99,14 +117,14 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
       const to = clamp(target ?? Math.round(value.current));
       // A press/release or boundary key can ask to settle an already-resting
       // card. Keep ownership with the hero instead of flashing the deck copy.
-      if (Math.abs(value.current - to) < REST_DELTA) {
+      if (!launch && Math.abs(value.current - to) < REST_DELTA) {
         commit(to);
         setSettled(true);
         return;
       }
       setSettled(false);
       const damping = SETTLE_DAMPING_RATIO * 2 * Math.sqrt(SETTLE_STIFFNESS);
-      let velocity = 0;
+      let velocity = launch;
       let last = performance.now();
 
       const step = (now: number) => {
@@ -137,20 +155,64 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
     };
 
     let wheelIdle: ReturnType<typeof setTimeout>;
+    let lastWheel = -Infinity;
+    let wheelSpeed = 0; // smoothed, cards/sec, signed
+    let bounceDir = 0; // direction of a live bounce whose momentum tail we swallow
     const onWheel = (e: WheelEvent) => {
-      const delta =
+      let delta =
         axis === "x"
           ? Math.abs(e.deltaX) > Math.abs(e.deltaY)
             ? e.deltaX
             : e.deltaY
           : e.deltaY;
+      if (e.deltaMode === 1) delta *= WHEEL_LINE_PX;
+      else if (e.deltaMode === 2) delta *= WHEEL_DIVISOR;
       if (!delta) return;
       e.preventDefault();
       setHasInteracted(true);
+
+      const now = e.timeStamp;
+      const gap = now - lastWheel;
+      lastWheel = now;
+      const dir = Math.sign(delta);
+      const sameGesture = gap < WHEEL_GESTURE_GAP_MS;
+
+      // A bounce is in flight: the trackpad's momentum tail (or the rest of a
+      // fast wheel spin) keeps pushing into the end. Swallow it so the spring
+      // can fly out and come back on its own; a pause or a reversal ends that.
+      if (bounceDir !== 0) {
+        if (dir === bounceDir && sameGesture) return;
+        bounceDir = 0;
+      }
+
+      // Speed from consecutive events of one gesture. The first event of a
+      // gesture has no interval, so it counts as zero — a single wheel notch
+      // at the end must never bounce, however big its delta.
+      const step = delta / WHEEL_DIVISOR;
+      const instant = sameGesture ? step / (Math.max(gap, 8) / 1000) : 0;
+      wheelSpeed = sameGesture ? wheelSpeed * 0.5 + instant * 0.5 : 0;
+
       stopSettle();
       setSettled(false);
-      commit(value.current + delta / WHEEL_DIVISOR);
       clearTimeout(wheelIdle);
+      const next = value.current + step;
+
+      const pastEnd = next < 0 || next > max;
+      if (
+        pastEnd &&
+        Math.sign(wheelSpeed) === dir &&
+        Math.abs(wheelSpeed) >= WHEEL_BOUNCE_SPEED
+      ) {
+        commit(next); // pin to the end card, then launch outward from it
+        bounceDir = dir;
+        settle(
+          undefined,
+          dir * Math.min(Math.abs(wheelSpeed) * WHEEL_BOUNCE_GAIN, WHEEL_BOUNCE_MAX_LAUNCH),
+        );
+        return;
+      }
+
+      commit(next);
       wheelIdle = setTimeout(settle, 110);
     };
 
@@ -222,8 +284,9 @@ export function useCardDeck(axis: "x" | "y" = "x", count = 1, initial = 0) {
     };
   }, [axis, count]);
 
-  /** Nearest whole card — use this for `focused`, never `d === 0`. */
-  const focusedIndex = Math.round(index);
+  /** Nearest whole card — use this for `focused`, never `d === 0`. Clamped:
+   *  a rubberband past an end can round to -1 or count, which is no card. */
+  const focusedIndex = Math.min(count - 1, Math.max(0, Math.round(index)));
 
   /** Spring the deck so card `i` becomes the centred one. */
   const goTo = (i: number) => settleTo.current(i);
