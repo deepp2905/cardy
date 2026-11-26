@@ -32,8 +32,11 @@ the code, the code wins. Live divergences:
   Confirm renders an invisible `HeroSlot` that reports where it should sit.
 - **The mail slot is two halves** with the envelope between them, plus a
   masking plate below the aperture — not the single plate §6.4 describes.
-- **A "creating your card" beat** (`PostLoading`) sits between the post and the
-  epilogue, showing the user's own pattern shape.
+- **The post goes straight to the epilogue.** A "creating your card" loading
+  beat used to sit between them; it was cut.
+- **The wrap is retimed into overlapping handoffs** (`useWrapSequence`): only
+  the first act is on the clock; the flap close, impact, flip, slot and hint
+  are each tied to a moment of the beat before. Envelope ready at ~3.2s.
 - **The epilogue swaps state**: adding the digital card changes the heading to
   "Email sent." and the secondary CTA to "Resend the email".
 - Rest copy ("One of one.") now sits above the resting card before the arrow.

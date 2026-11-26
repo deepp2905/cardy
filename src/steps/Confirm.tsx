@@ -10,7 +10,6 @@ import { Envelope } from "../confirm/Envelope";
 import { Epilogue } from "../confirm/Epilogue";
 import { MailSlot } from "../confirm/MailSlot";
 import { PostHint } from "../confirm/PostHint";
-import { PostLoading, POST_LOADING_MS } from "../confirm/PostLoading";
 import { usePostDrag } from "../confirm/usePostDrag";
 import { useStageScale } from "../confirm/useStageScale";
 import { useSlideW } from "../lib/useSlideW";
@@ -63,10 +62,6 @@ export function Confirm({
   // hook measures a probe so the min() actually resolves.
   const slideW = useSlideW();
   const [showEpilogue, setShowEpilogue] = useState(false);
-  // Between the envelope sinking into the slot and the epilogue: a short
-  // "making it" beat (the user's own shape spinning — see PostLoading). Also
-  // papers over the scene teardown so the epilogue arrives as a clean fade.
-  const [showLoading, setShowLoading] = useState(false);
 
   const { phase, setPhase, values } = useWrapSequence({
     mmPx,
@@ -91,23 +86,14 @@ export function Confirm({
     phase,
     setPhase,
     reduce,
+    // Straight to the epilogue: the envelope is swallowed and the slot shut
+    // by the time this fires, so the scene has nothing left on screen to tear
+    // down visibly.
     onPosted: () => {
       setPhase("done");
-      setShowLoading(true);
+      setShowEpilogue(true);
     },
   });
-
-  // Hold the loading beat, then hand over to the epilogue.
-  useEffect(() => {
-    if (!showLoading) return;
-    const t = window.setTimeout(() => {
-      setShowLoading(false);
-      setShowEpilogue(true);
-      // Length owned by PostLoading, so its stage list and this hand-off can't
-      // drift apart — the last stage must still be on screen when we cut away.
-    }, POST_LOADING_MS);
-    return () => clearTimeout(t);
-  }, [showLoading]);
 
   // Chrome hides for the wrap sequence, then RETURNS on the epilogue: the
   // ActionBar there hosts "Start over" + the wallet CTA, so it must be visible.
@@ -129,7 +115,6 @@ export function Confirm({
   useEffect(() => {
     if (!started) {
       setShowEpilogue(false);
-      setShowLoading(false);
     }
   }, [started]);
 
@@ -152,18 +137,13 @@ export function Confirm({
   const restCardVisible = phase === "rest";
   const sheetCardVisible = started && (phase === "rest" || phase === "folding");
 
-  // While the loading beat runs, PostLoading owns the announcement — it has its
-  // own live region that reads each stage as it arrives. Staying silent here
-  // avoids announcing the same progress from two regions at once.
   const status = showEpilogue
     ? "Posted. Your card arrives in about 7 days."
-    : showLoading
-      ? ""
-      : phase === "idle"
-        ? "Sealed. Drag down or press Enter to post."
-        : started
-          ? "Packing your card."
-          : "";
+    : phase === "idle"
+      ? "Sealed. Drag down or press Enter to post."
+      : started
+        ? "Packing your card."
+        : "";
 
   return (
     <div
@@ -181,7 +161,7 @@ export function Confirm({
           the payoff of everything the user just tuned. Leaves the moment the
           sequence starts, so it never competes with the wrap. */}
       <AnimatePresence>
-        {!started && !showEpilogue && !showLoading && (
+        {!started && !showEpilogue && (
           <motion.div
             key="rest-copy"
             className="confirm-copy"
@@ -201,7 +181,7 @@ export function Confirm({
         )}
       </AnimatePresence>
 
-      {!showEpilogue && !showLoading && (
+      {!showEpilogue && (
         <motion.div className="wrap-scene" style={{ y: values.nudgeY }}>
           {/* The at-rest card is the PERSISTENT hero (mounted in App), not a
               local node — so there is no hand-off and nothing to measure across
@@ -252,17 +232,7 @@ export function Confirm({
         </motion.div>
       )}
 
-      {/* mode="wait": the loading beat fades fully out before the epilogue
-          fades in — one thing on stage at a time. */}
-      <AnimatePresence mode="wait">
-        {showLoading && (
-          <PostLoading
-            key="loading"
-            shape={config.shape}
-            filled={config.filled}
-            reduce={reduce}
-          />
-        )}
+      <AnimatePresence>
         {showEpilogue && <Epilogue key="epilogue" walletAdded={walletAdded} />}
       </AnimatePresence>
     </div>
